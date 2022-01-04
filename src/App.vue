@@ -1,5 +1,4 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
   <HelloWorld msg="Welcome to Your Vue.js App"/>
 </template>
 
@@ -13,6 +12,8 @@ export default {
   }
 }
 </script>
+
+<style src="./assets/tailwind.css"></style>
 
 <style>
 #app {
