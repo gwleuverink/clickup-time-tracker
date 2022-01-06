@@ -1,27 +1,16 @@
 <template>
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <TimeTracker />
 </template>
 
+<style src="./assets/tailwind.css"></style>
+
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import TimeTracker from './components/TimeTracker.vue'
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
+    TimeTracker
   }
 }
 </script>
-
-<style src="./assets/tailwind.css"></style>
-
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
