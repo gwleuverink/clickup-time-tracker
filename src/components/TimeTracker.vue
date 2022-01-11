@@ -1,10 +1,15 @@
 <template>
 
     <!-- START | Calendar view -->
+    <!--
+        :on-event-create="onEventCreate"
+        :on-event-dblclick="selectEvent"
+        :on-event-click="selectEvent"
+    -->
     <vue-cal
         :editable-events="{ drag: true, resize: true, create: true }"
         :disable-views="['years', 'year', 'month', 'day']"
-        :on-event-dblclick="selectEvent"
+        :on-event-create="onEventCreate"
         :click-to-navigate="false"
         :hide-view-selector="true"
         :watch-real-time="true"
@@ -16,22 +21,31 @@
     <!-- END | Calendar view -->
 
 
-    <!-- START | Task detail modal -->
-    <n-modal v-model:show="showModal">
+    <!-- START | Task creation modal -->
+    <n-modal v-model:show="showEventCreationDialog">
         <n-card
             :bordered="false"
             style="max-width: 600px"
-            title="Task details"
+            title="Log a new task"
             size="huge"
             role="dialog"
             aria-modal="true"
         >
-            <template #header> Oops! </template>
-            Content
-            <template #footer> Footer </template>
+            <template #header> Log a new task </template>
+
+
+            <n-input v-model:value="selectedEvent.contentFull" type="textarea" placeholder="Describe what you worked on" />
+
+
+            <template #footer>
+                <div class="flex justify-end space-x-2">
+                    <n-button @click="cancelEventCreation()" round>Cancel</n-button>
+                    <n-button @click="closeCreationDialog()" round type="primary">Create</n-button>
+                </div>
+            </template>
         </n-card>
     </n-modal>
-    <!-- END | Task detail modal -->
+    <!-- END | Task creation modal -->
 
 
 </template>
@@ -41,31 +55,31 @@
 // In your Vue.js component.
 import { ref } from 'vue'
 import VueCal from 'vue-cal'
-import { NModal, NCard } from 'naive-ui';
+import { NModal, NCard, NButton, NInput } from 'naive-ui';
 import 'vue-cal/dist/drag-and-drop.js'
 import 'vue-cal/dist/vuecal.css'
 
 export default {
-  components: { VueCal, NModal, NCard },
+  components: { VueCal, NModal, NCard, NButton, NInput },
 
   setup () {
     return {
-      showModal: ref(false),
       selectedEvent: ref({}),
+      deleteCallable: ref(() => null),
+      showEventCreationDialog: ref(false),
+
       events: [
           {
             start: '2022-01-10 14:00',
             end: '2022-01-10 18:00',
             title: 'Editable',
-            content: 'Click to see my shopping list',
-            contentFull: 'My shopping list is rather long:<br><ul><li>Avocados</li><li>Tomatoes</li><li>Potatoes</li><li>Mangoes</li></ul>', // Custom attribute.
+            contentFull: 'Click to see my shopping list',
          },
           {
             start: '2022-01-10 18:00',
             end: '2022-01-10 19:00',
             title: 'Not Editable',
-            content: 'Click to see my shopping list',
-            contentFull: 'My shopping list is rather long:<br><ul><li>Avocados</li><li>Tomatoes</li><li>Potatoes</li><li>Mangoes</li></ul>', // Custom attribute.
+            contentFull: 'Click to see my shopping list',
             deletable: false,
             resizable: false,
             draggable: false
@@ -76,24 +90,23 @@ export default {
 
 
   methods: {
+      onEventCreate (event, deleteCallable) {
+            this.selectedEvent = event
+            this.showEventCreationDialog = true
+            this.deleteCallable = deleteCallable
 
-    getEventsInRange(start, end) {
-        console.log(start, end)
-    },
+            return event
+        },
 
-    // onEventCreate (event, deleteEventFunction) {
-    //     // You can modify event here and return it.
-    //     // You can also return false to reject the event creation.
-    //     return event
-    // },
+        cancelEventCreation () {
+            this.closeCreationDialog()
+            this.deleteCallable()
+        },
 
-    selectEvent (event, e) {
-      this.selectedEvent = event
-      this.showModal = true
-
-      // Prevent navigating to narrower view (default vue-cal behavior).
-      e.stopPropagation()
-    }
+        closeCreationDialog () {
+            this.showEventCreationDialog = false
+            this.selectedEvent = {}
+        },
   }
 }
 </script>
