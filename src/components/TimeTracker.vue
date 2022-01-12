@@ -58,11 +58,13 @@ import VueCal from 'vue-cal'
 import { NModal, NCard, NButton, NInput } from 'naive-ui';
 import 'vue-cal/dist/drag-and-drop.js'
 import 'vue-cal/dist/vuecal.css'
+import db from '../database'
 
 export default {
   components: { VueCal, NModal, NCard, NButton, NInput },
 
   setup () {
+      db
     return {
       selectedEvent: ref({}),
       deleteCallable: ref(() => null),

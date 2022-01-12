@@ -6,7 +6,7 @@ module.exports = {
       electronBuilder: {
         nodeIntegration: true,
         builderOptions: {
-          // options placed here will be merged with default configuration and passed to electron-builder
+            extraResources: ['database.sqlite']
         }
       }
     }
