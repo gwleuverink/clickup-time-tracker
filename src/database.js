@@ -1,31 +1,36 @@
 // Wherever you use the database
 import path from 'path'
-
+const sqlite3 = require('sqlite3').verbose();
 const isBuild = process.env.NODE_ENV === 'production'
 
-/* global __static */
-const pathToDbFile = path.join(
-    isBuild ? __dirname : __static,
-    '../database.sqlite',
-  );
+const database = {
 
-const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database(pathToDbFile);
+    /* global __static */
+    path: path.join(
+        isBuild ? __dirname : __static,
+        '../database.sqlite',
+    ),
+
+    open() {
+        return new sqlite3.Database(this.path);
+    }
+}
+
+export default database;
 
 export function migrateDatabase() {
+    const db = database.open();
+
     db.serialize(function() {
-      db.run(`CREATE TABLE if not exists logs (
+      db.run(`CREATE TABLE if not exists tasks (
         id INT AUTO_INCREMENT PRIMARY KEY,
         service_id VARCHAR(85) NULL,
         description VARCHAR(255) NULL,
         logged BOOLEAN NOT NULL DEFAULT FALSE,
-        start DATETIME NOT NULL,
-        end DATETIME NOT NULL
+        starts_at DATETIME NOT NULL,
+        ends_at DATETIME NOT NULL
       )`);
     });
 
     db.close();
 }
-
-
-export default db;
