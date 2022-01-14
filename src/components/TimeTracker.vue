@@ -41,8 +41,8 @@
       />
 
       <template #footer>
-        <div class="flex justify-end space-x-2">
-          <n-button @click="cancelTaskCreation()" round>Cancel</n-button>
+        <div style="display: flex; justify-content: flex-end;">
+          <n-button @click="cancelTaskCreation()" round>Cancel</n-button> &nbsp;
           <n-button @click="createTask()" round type="primary">Create</n-button>
         </div>
       </template>
