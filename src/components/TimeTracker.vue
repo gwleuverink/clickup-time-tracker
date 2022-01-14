@@ -15,6 +15,10 @@
         :watch-real-time="true"
         :snap-to-time="5"
         :events="events"
+
+        @ready="fetchEvents"
+        @view-change="fetchEvents"
+
         active-view="week"
         today-button
         ref="calendar"
@@ -80,14 +84,14 @@ export default {
 
   mounted() {
 
-      this.populateCalendarEvents('2022-01-10 07:00', '2022-01-16 23:59')
+    //   this.populateCalendarEvents('2022-01-10 07:00', '2022-01-16 23:59')
 
   },
 
 
   methods: {
-      async populateCalendarEvents(start, end) {
-          tasks.getRange(moment(start), moment(end)).then(tasks => {
+      async fetchEvents ({ startDate, endDate }) {
+          tasks.getRange(moment(startDate), moment(endDate)).then(tasks => {
             this.events = tasks.map(task => event.fromTask(task))
           })
       },
