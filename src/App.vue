@@ -2,8 +2,6 @@
   <TimeTracker />
 </template>
 
-<style src="./assets/tailwind.css"></style>
-
 <script>
 import TimeTracker from './components/TimeTracker.vue'
 
