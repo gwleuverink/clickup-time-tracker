@@ -1,5 +1,6 @@
-# time-tracker-v2
+# ClickUp Time tracker
 
+Abracadabra.. please make my life easier! Shazam! Also, ClickUp Time tracking can eat a d**k
 ## Project setup
 ```
 npm install
@@ -7,18 +8,15 @@ npm install
 
 ### Compiles and hot-reloads for development
 ```
-npm run serve
+npm run electron:serve
 ```
 
-### Compiles and minifies for production
+### Build for production
 ```
-npm run build
+npm run electron:build
 ```
 
 ### Lints and fixes files
 ```
 npm run lint
 ```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
