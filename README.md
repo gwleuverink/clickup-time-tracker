@@ -1,5 +1,7 @@
 # ClickUp Time tracker
 
+This is a work in progress..
+
 Abracadabra.. please make my life easier! Shazam! Also, ClickUp Time tracking can eat a d**k
 ## Project setup
 ```
