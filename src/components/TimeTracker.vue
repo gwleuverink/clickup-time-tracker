@@ -1,10 +1,10 @@
 <template>
   <!-- START | Calendar view -->
+
   <!--
-        :on-event-create="onTaskCreate"
-        :on-event-dblclick="selectEvent"
-        :on-event-click="selectEvent"
-    -->
+    :on-event-dblclick="selectEvent"
+    :on-event-click="selectEvent"
+  -->
   <vue-cal
     :editable-events="{ drag: true, resize: true, create: true }"
     :disable-views="['years', 'year', 'month', 'day']"
@@ -16,6 +16,8 @@
     :events="events"
     @ready="fetchEvents"
     @view-change="fetchEvents"
+    @event-drop="updateEventTime"
+    @event-duration-change="updateEventTime"
     active-view="week"
     today-button
     ref="calendar"
@@ -133,7 +135,13 @@ export default {
     |--------------------------------------------------------------------------
     */
 
-    //...
+    async updateEventTime({ event, originalEvent }) {
+
+        console.dir(event);
+        console.dir(originalEvent);
+
+    },
+
   },
 };
 </script>
