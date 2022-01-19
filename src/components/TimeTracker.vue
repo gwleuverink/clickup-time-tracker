@@ -61,6 +61,7 @@ import VueCal from "vue-cal";
 import moment from "moment";
 
 import clickupService from '../clickup-service'
+import eventFactory from '../events-factory'
 
 import "vue-cal/dist/drag-and-drop.js";
 import "vue-cal/dist/vuecal.css";
@@ -87,8 +88,8 @@ export default {
     async fetchEvents({ startDate, endDate }) {
 
       clickupService.getTimeTrackingRange(moment(startDate), moment(endDate))
-            .then(response => console.dir(response))
-            .catch(error => console.error(error))
+            .then(entries => this.events = entries.map(entry => eventFactory.fromClickup(entry)))
+            .catch(error => alert(error) /* TODO: Show pretty toast */)
 
     // tasks.getRange(moment(startDate), moment(endDate)).then((tasks) => {
     //     this.events = tasks.map((task) => event.fromTask(task))

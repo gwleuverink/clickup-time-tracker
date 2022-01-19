@@ -22,7 +22,7 @@ export default  {
                 }
             }, (error, response) => {
                 if(error) return reject(error)
-                resolve(JSON.parse(response.body))
+                resolve(JSON.parse(response.body).data || [])
             });
         })
     }
