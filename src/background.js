@@ -1,13 +1,10 @@
 'use strict'
 
-import { migrateDatabase } from './database'
+import 'dotenv/config'
 import { app, protocol, BrowserWindow } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS3_DEVTOOLS } from 'electron-devtools-installer'
 const isDevelopment = process.env.NODE_ENV !== 'production'
-
-// Run database migrations
-migrateDatabase()
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([

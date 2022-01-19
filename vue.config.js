@@ -4,10 +4,7 @@ module.exports = {
     },
     pluginOptions: {
       electronBuilder: {
-        nodeIntegration: true,
-        builderOptions: {
-            extraResources: ['database.sqlite']
-        }
+        nodeIntegration: true
       }
     }
   }

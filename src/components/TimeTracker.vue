@@ -60,9 +60,7 @@ import { NModal, NCard, NButton, NInput } from "naive-ui";
 import VueCal from "vue-cal";
 import moment from "moment";
 
-import tasks from "../task-repository";
-import task from "../data-transfer/task";
-import event from "../data-transfer/event";
+import clickupService from '../clickup-service'
 
 import "vue-cal/dist/drag-and-drop.js";
 import "vue-cal/dist/vuecal.css";
@@ -79,10 +77,6 @@ export default {
     };
   },
 
-  mounted() {
-    //   this.populateCalendarEvents('2022-01-10 07:00', '2022-01-16 23:59')
-  },
-
   methods: {
 
     /*
@@ -91,9 +85,14 @@ export default {
     |--------------------------------------------------------------------------
     */
     async fetchEvents({ startDate, endDate }) {
-      tasks.getRange(moment(startDate), moment(endDate)).then((tasks) => {
-        this.events = tasks.map((task) => event.fromTask(task));
-      });
+
+      clickupService.getTimeTrackingRange(moment(startDate), moment(endDate))
+            .then(response => console.dir(response))
+            .catch(error => console.error(error))
+
+    // tasks.getRange(moment(startDate), moment(endDate)).then((tasks) => {
+    //     this.events = tasks.map((task) => event.fromTask(task))
+    //   });
     },
 
     /*
@@ -110,13 +109,13 @@ export default {
     },
 
     createTask() {
-      tasks
-        .create(task.fromCalendar(this.selectedTask))
-        .catch(() => {
-          alert("Failed to create task");
-          this.cancelTaskCreation();
-        })
-        .then(this.closeCreationDialog());
+    //   tasks
+    //     .create(task.fromCalendar(this.selectedTask))
+    //     .catch(() => {
+    //       alert("Failed to create task");
+    //       this.cancelTaskCreation();
+    //     })
+    //     .then(this.closeCreationDialog());
     },
 
     cancelTaskCreation() {
