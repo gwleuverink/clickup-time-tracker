@@ -31,6 +31,7 @@ npm run lint
 - [x] Refresh cached Clickup tasks asynchronously in the background process with convenient UI control
 - [x] Update a time entry when resizing/moving the event
 - [x] Disable editing (resize/drag/delete) when the associated task is closed
+- [ ] Make tracked entries deletable
 - [ ] Sort selectable tasks by latest log entry (with your user id)
 - [ ] After that sort selectable tasks by updated_at date
 - [ ] Reset a task when an API error occured while editing (resize/drag etc)
