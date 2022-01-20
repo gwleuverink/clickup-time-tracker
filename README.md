@@ -38,6 +38,7 @@ npm run lint
 - [ ] After that sort selectable tasks by updated_at date
 - [ ] Reset a task when an API error occured while editing (resize/drag etc)
 - [ ] Show proper toast alerts when things happen in the app
-- [ ] Button to refresh current view (and tracked entries in that view)
+- [ ] Add a button to refresh current view (and tracked entries in that view)
 - [ ] Double click event to show details/edit dialog
 - [ ] Filter Tasks API call to exclude Tasks with status 'Requested, Backlog, Closed' etc
+- [ ] Add copy/paste support
