@@ -1,10 +1,18 @@
 'use strict'
 
 import 'dotenv/config'
-import { app, protocol, BrowserWindow } from 'electron'
+import { app, protocol, ipcMain, BrowserWindow } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS3_DEVTOOLS } from 'electron-devtools-installer'
+import clickupService from './clickup-service'
+
 const isDevelopment = process.env.NODE_ENV !== 'production'
+
+// Register background ipc protocol listeners
+ipcMain.on('get-clickup-cards', event => {
+  clickupService.getTasks().then(tasks => event.reply('set-clickup-cards', tasks))
+})
+
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
@@ -14,10 +22,9 @@ protocol.registerSchemesAsPrivileged([
 async function createWindow() {
   // Create the browser window.
   const win = new BrowserWindow({
-    width: 1000,
+    width: 1200,
     height: 700,
     webPreferences: {
-
       // Use pluginOptions.nodeIntegration, leave this alone
       // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
       nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
