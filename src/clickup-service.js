@@ -112,6 +112,9 @@ export default  {
         })
     },
 
+    /*
+     * Update an exisiting time tracking entry
+     */
     async updateTimeTrackingEntry(entryId, description, start, end) {
         return await new Promise((resolve, reject) => {
 
