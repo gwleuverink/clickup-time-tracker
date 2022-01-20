@@ -14,9 +14,9 @@
   "main": "background.js",
   "dependencies": {
     "core-js": "^3.6.5",
+    "dotenv": "^14.2.0",
     "moment": "^2.29.1",
     "naive-ui": "^2.23.2",
-    "sqlite3": "^5.0.2",
     "vue": "^3.0.0",
     "vue-cal": "^4.2.0"
   },
