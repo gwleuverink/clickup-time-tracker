@@ -83,7 +83,6 @@ import { ref } from "vue";
 import { ipcRenderer } from 'electron'
 import { NModal, NCard, NSpace, NIcon, NButton, NInput, NSelect } from "naive-ui";
 import VueCal from "vue-cal";
-import moment from "moment";
 
 import clickupService from '../clickup-service'
 import eventFactory from '../events-factory'
@@ -123,7 +122,7 @@ export default {
     */
 
     async fetchEvents({ startDate, endDate }) {
-      clickupService.getTimeTrackingRange(moment(startDate), moment(endDate))
+      clickupService.getTimeTrackingRange(startDate, endDate)
         .then(entries => this.events = entries.map(entry => eventFactory.fromClickup(entry)))
         .catch(error => alert(error) /* TODO: Show pretty toast */)
     },

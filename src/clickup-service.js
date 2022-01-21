@@ -1,4 +1,3 @@
-import moment from 'moment';
 import request from 'request';
 
 const TEAM_ID = process.env.VUE_APP_CLICKUP_TEAM_ID;
@@ -48,9 +47,6 @@ export default  {
                     page: page,
                     archived: false,
                     include_closed: false,
-
-                    // Only tasks created less than 3 months ago
-                    date_created_gt: moment().subtract(3, 'month').valueOf(),
                 }),
 
                 headers: {

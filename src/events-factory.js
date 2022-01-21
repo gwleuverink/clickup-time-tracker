@@ -1,4 +1,3 @@
-import moment from 'moment'
 
 export default {
   fromClickup: entry => {
@@ -10,8 +9,8 @@ export default {
       taskId: entry.task.id,
       title: entry.task.name,
       description: entry.description,
-      start: moment(Number(entry.start)).format('YYYY-MM-DD HH:MM'),
-      end: moment(Number(entry.start) + Number(entry.duration)).format('YYYY-MM-DD HH:MM'),
+      start: new Date(Number(entry.start)),
+      end: new Date(Number(entry.start) + Number(entry.duration)),
 
       // Only make draggable/resizable/editable if task is not closed or archived
       draggable: editable,
