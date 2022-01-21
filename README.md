@@ -1,5 +1,7 @@
 # ClickUp Time tracker
 
+This is a work in progress..
+
 Abracadabra.. please make my life easier! Shazam! Also, ClickUp Time tracking can eat a d**k
 ## Project setup
 ```
@@ -41,4 +43,6 @@ npm run lint
 - [ ] Double click event to show details
 - [ ] In details modal make an option to opdate tracking description/attached task
 - [ ] In details modal add a button to delete the tracking entry
+- [ ] Add select + backspace to delete support
 - [ ] Filter Tasks API call to exclude Tasks with status 'Requested, Backlog, Closed' etc
+- [ ] Add copy/paste support
