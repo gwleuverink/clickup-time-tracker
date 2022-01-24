@@ -160,9 +160,20 @@ export default {
     |--------------------------------------------------------------------------
     */
     onTaskCreate(event, deleteCallable) {
+
+      // Workaround: Open modal when mouse is released
+      // Register mouseup listener that deregisters itself
+      const openDialogWhenMouseReleased = () => {
+          this.showTaskCreationDialog = true;
+          document.removeEventListener('mouseup', openDialogWhenMouseReleased);
+      }
+      document.addEventListener('mouseup', openDialogWhenMouseReleased);
+      // End workaround
+
       this.selectedTask = event;
-      this.showTaskCreationDialog = true;
       this.deleteCallable = deleteCallable;
+
+
 
       return this.selectedTask;
     },
