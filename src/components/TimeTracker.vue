@@ -100,7 +100,9 @@
       <template #header>
 
         <span style="display: flex; align-items: center">
+
           <n-popconfirm
+            v-if="selectedTask.deletable"
             :negative-text="null"
             @positive-click="deleteSelectedTask"
             positive-text="delete"
@@ -136,7 +138,15 @@
 <script>
 import { ref } from "vue";
 import { ipcRenderer } from "electron";
+import VueCal from "vue-cal";
+
 import { isEmptyObject } from "../helpers";
+import clickupService from "../clickup-service";
+import eventFactory from "../events-factory";
+
+import "vue-cal/dist/drag-and-drop.js";
+import "vue-cal/dist/vuecal.css";
+
 import {
   NModal,
   NCard,
@@ -147,13 +157,6 @@ import {
   NInput,
   NSelect,
 } from "naive-ui";
-import VueCal from "vue-cal";
-
-import clickupService from "../clickup-service";
-import eventFactory from "../events-factory";
-
-import "vue-cal/dist/drag-and-drop.js";
-import "vue-cal/dist/vuecal.css";
 
 export default {
   components: {
@@ -256,6 +259,8 @@ export default {
 
     createTask() {
 
+      if (isEmptyObject(this.selectedTask)) return;
+
       clickupService.createTimeTrackingEntry(
           this.selectedTask.taskId,
           this.selectedTask.description,
@@ -282,6 +287,32 @@ export default {
     closeCreationModal() {
       this.showTaskCreationModal = false;
       this.selectedTask = {};
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | DELETE A TASK
+    |--------------------------------------------------------------------------
+    */
+
+    async deleteSelectedTask() {
+      if (isEmptyObject(this.selectedTask)) return;
+
+      clickupService.deleteTimeTrackingEntry(this.selectedTask.entryId)
+        .then(() => {
+
+          const taskIndex = this.events.findIndex(
+            event => event.entryId === this.selectedTask.entryId
+          );
+
+          this.events.splice(taskIndex, 1);
+          this.showTaskDetailsModal = false;
+          this.selectedTask = {};
+        })
+        .catch((error) => {
+          console.error(error);
+          alert("Something went wrong deleting the tracking entry"); /* TODO: Show pretty toast */
+        });
     },
 
     /*
@@ -330,33 +361,8 @@ export default {
         });
 
       originalEvent; /*  */
-    },
+    }
 
-    /*
-    |--------------------------------------------------------------------------
-    | DELETE A TASK
-    |--------------------------------------------------------------------------
-    */
-
-    async deleteSelectedTask() {
-      if (isEmptyObject(this.selectedTask)) return;
-
-      clickupService.deleteTimeTrackingEntry(this.selectedTask.entryId)
-        .then(() => {
-
-          const taskIndex = this.events.findIndex(
-            event => event.entryId === this.selectedTask.entryId
-          );
-
-          this.events.splice(taskIndex, 1);
-          this.showTaskDetailsModal = false;
-          this.selectedTask = {};
-        })
-        .catch((error) => {
-          console.error(error);
-          alert("Something went wrong deleting the tracking entry"); /* TODO: Show pretty toast */
-        });
-    },
   },
 };
 </script>
