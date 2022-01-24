@@ -131,5 +131,25 @@ export default  {
                 resolve(JSON.parse(response.body).data[0])
             })
         })
+    },
+
+    /*
+     * Deleta a time tracking entry
+     */
+    async deleteTimeTrackingEntry(entryId) {
+        return await new Promise((resolve, reject) => {
+
+            request({
+                method: 'DELETE',
+                url: `${BASE_URL}/time_entries/${entryId}`,
+                headers: {
+                    'Authorization': API_TOKEN,
+                    'Content-Type': 'application/json'
+                }
+            }, (error, response) => {
+                if(error) return reject(error)
+                resolve(JSON.parse(response.body).data[0])
+            })
+        })
     }
 }
