@@ -34,16 +34,15 @@ npm run lint
 - [x] Update a time entry when resizing/moving the event
 - [x] Disable editing (resize/drag/delete) when the associated task is closed
 - [x] Add proper accesibility support & hooks to create & detail modals
+- [x] Double click event to show details
+- [x] In details modal add a button to delete the tracking entry
+- [x] Add select + backspace to delete support
 
-- [ ] Make tracked entries deletable
 - [ ] Sort selectable tasks by latest log entry (with your user id)
 - [ ] After that sort selectable tasks by updated_at date
 - [ ] Reset a task when an API error occured while editing (resize/drag etc)
 - [ ] Show proper toast alerts when things happen in the app
 - [ ] Button to refresh current view (and tracked entries in that view)
-- [ ] Double click event to show details
 - [ ] In details modal make an option to opdate tracking description/attached task
-- [ ] In details modal add a button to delete the tracking entry
-- [ ] Add select + backspace to delete support
 - [ ] Filter Tasks API call to exclude Tasks with status 'Requested, Backlog, Closed' etc
 - [ ] Add copy/paste support
