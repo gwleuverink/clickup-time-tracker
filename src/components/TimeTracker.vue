@@ -4,6 +4,8 @@
     :editable-events="{ drag: true, resize: true, create: true }"
     :disable-views="['years', 'year', 'month', 'day']"
     :on-event-create="onTaskCreate"
+    :on-event-click="onTaskSingleClick"
+    :on-event-dblclick="onTaskDoubleClick"
     :drag-to-create-threshold="30"
     :click-to-navigate="false"
     :hide-view-selector="true"
@@ -23,7 +25,11 @@
   <!-- END | Calendar view -->
 
   <!-- START | Task creation modal -->
-  <n-modal v-model:show="showTaskCreationDialog">
+  <n-modal
+    v-model:show="showTaskCreationModal"
+    :on-mask-click="cancelTaskCreation"
+    @keydown.esc="cancelTaskCreation"
+  >
     <n-card
       :bordered="false"
       style="max-width: 600px"
@@ -75,6 +81,41 @@
     </n-card>
   </n-modal>
   <!-- END | Task creation modal -->
+
+  <!-- START | Task creation modal -->
+  <n-modal v-model:show="showTaskDetailsModal">
+      <n-card
+      :bordered="false"
+      style="max-width: 600px"
+      title="Log a new task"
+      size="huge"
+      role="dialog"
+      aria-modal="true"
+    >
+      <template #header>
+          <n-button secondary circle type="error" style="margin-right: 10px">
+              <n-icon name="delete-tracking-entry" size="18">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+              </n-icon>
+          </n-button>
+
+          <span>{{ selectedTask.title }}</span>
+      </template>
+
+      <n-space vertical>
+
+          <!-- Show some task labels -->
+          <!-- Show current task column -->
+
+          <p>{{ selectedTask.description || 'No description provided' }}</p>
+
+      </n-space>
+
+    </n-card>
+
+  </n-modal>
+  <!-- END | Task creation modal -->
+
 </template>
 
 
@@ -102,7 +143,8 @@ export default {
       loadingClickupCards: ref(false),
 
       deleteCallable: ref(() => null),
-      showTaskCreationDialog: ref(false),
+      showTaskCreationModal: ref(false),
+      showTaskDetailsModal: ref(false)
     };
   },
 
@@ -163,11 +205,11 @@ export default {
 
       // Workaround: Open modal when mouse is released
       // Register mouseup listener that deregisters itself
-      const openDialogWhenMouseReleased = () => {
-          this.showTaskCreationDialog = true;
-          document.removeEventListener('mouseup', openDialogWhenMouseReleased);
+      const openModalWhenMouseReleased = () => {
+          this.showTaskCreationModal = true;
+          document.removeEventListener('mouseup', openModalWhenMouseReleased);
       }
-      document.addEventListener('mouseup', openDialogWhenMouseReleased);
+      document.addEventListener('mouseup', openModalWhenMouseReleased);
       // End workaround
 
       this.selectedTask = event;
@@ -189,7 +231,7 @@ export default {
             console.info(`Created time tracking entry for: ${entry.task.name}`)
 
             this.selectedTask = eventFactory.updateFromRemote(this.selectedTask, entry)
-            this.closeCreationDialog()
+            this.closeCreationModal()
         })
         .catch(error => {
             alert(error) /* TODO: Show pretty toast */
@@ -198,13 +240,35 @@ export default {
     },
 
     cancelTaskCreation() {
-      this.closeCreationDialog();
+      this.closeCreationModal();
       this.deleteCallable();
     },
 
-    closeCreationDialog() {
-      this.showTaskCreationDialog = false;
+    closeCreationModal() {
+      this.showTaskCreationModal = false;
       this.selectedTask = {};
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | SELECTING A TASK & DISPLAY DETAIL MODAL
+    |--------------------------------------------------------------------------
+    */
+
+    onTaskSingleClick(event, e) {
+        this.selectedTask = event
+        e.stopPropagation()
+    },
+
+    onTaskDoubleClick(event, e) {
+        this.selectedTask = event
+
+        this.showTaskDetailsModal = true
+        e.stopPropagation()
+    },
+
+    closeDetailModal() {
+        this.showTaskDetailsModal = false
     },
 
     /*
