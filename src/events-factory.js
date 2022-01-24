@@ -18,5 +18,13 @@ export default {
       deletable: editable,
       class: !editable ? 'not-editable' : null
     }
+  },
+
+  updateFromRemote: (original, remote) => {
+      return Object.assign(original, {
+        entryId: remote.id,
+        taskId: remote.task.id,
+        title: remote.task.name,
+    })
   }
 }

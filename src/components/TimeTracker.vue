@@ -188,11 +188,7 @@ export default {
         .then(entry => {
             console.info(`Created time tracking entry for: ${entry.task.name}`)
 
-            this.selectedTask = Object.assign(this.selectedTask, {
-                entryId: entry.id,
-                taskId: entry.task.id,
-                title: entry.task.name,
-            })
+            this.selectedTask = eventFactory.updateFromRemote(this.selectedTask, entry)
             this.closeCreationDialog()
         })
         .catch(error => {
