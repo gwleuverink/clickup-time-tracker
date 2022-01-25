@@ -158,6 +158,7 @@ import {
   NButton,
   NInput,
   NSelect,
+  useNotification
 } from "naive-ui";
 
 export default {
@@ -174,6 +175,8 @@ export default {
   },
 
   setup() {
+    const notification = useNotification();
+
     return {
       events: ref([]),
       selectedTask: ref({}),
@@ -184,6 +187,13 @@ export default {
       deleteCallable: ref(() => null),
       showTaskCreationModal: ref(false),
       showTaskDetailsModal: ref(false),
+
+      error(options) {
+          notification.error({
+              duration: 5000,
+              ...options
+          })
+      }
     };
   },
 
@@ -209,7 +219,15 @@ export default {
         .then(entries => {
             this.events = entries.map((entry) => eventFactory.fromClickup(entry))
         })
-        .catch((error) => alert(error) /* TODO: Show pretty toast */);
+        .catch(error => {
+
+            this.error({
+                title: "Could not fetch time tracking entries",
+                content: "Check your console & internet connection and try again"
+            })
+
+            console.error(error)
+        });
     },
 
     /*
@@ -276,18 +294,18 @@ export default {
           this.closeCreationModal();
         })
         .catch((error) => {
-          alert(error); /* TODO: Show pretty toast */
           this.cancelTaskCreation();
+
+          this.error({
+            title: "Looks like something went wrong",
+            content: "There was a problem while pushing to Clickup. Check your console & internet connection and try again"
+          })
+
+          console.error(error);
         });
     },
 
     duplicateSelectedTask() {
-        // This works a bit flaky when pasting an item, selecting the pasted item and then pasting again
-
-        console.dir({
-            start: this.selectedTask.start,
-            end: this.selectedTask.end
-        })
 
         clickupService.createTimeTrackingEntry(
           this.selectedTask.taskId,
@@ -299,10 +317,15 @@ export default {
           this.events.push(eventFactory.fromClickup(entry));
 
           console.info(`Duplicate time tracking entry for: ${entry.task.name}`);
-          // TODO: Show toast
         })
         .catch((error) => {
-          alert(error); /* TODO: Show pretty toast */
+
+          this.error({
+            title: "Duplication failed",
+            content: "There was a problem while pushing to Clickup. Check your console & internet connection and try again"
+          })
+
+          console.error(error);
         });
 
     },
@@ -336,9 +359,14 @@ export default {
           this.showTaskDetailsModal = false;
           this.selectedTask = {};
         })
-        .catch((error) => {
+        .catch(error => {
+
+          this.error({
+            title: "Delete failed",
+            content: "There was a problem while calling Clickup. Check your console & internet connection and try again"
+          })
+
           console.error(error);
-          alert("Something went wrong deleting the tracking entry"); /* TODO: Show pretty toast */
         });
     },
 
@@ -388,8 +416,14 @@ export default {
           console.dir(`Updated time tracking entry for: ${entry.task.name}`)
         })
         .catch((error) => {
+
+          this.notification.error({
+            duration: 5000,
+            title: "Update failed",
+            content: "There was a problem while pushing to Clickup. Check your console & internet connection and refresh the app"
+          })
+
           console.error(error);
-          alert("Something went wrong updating the tracking entry. Please refresh"); /* TODO: Show pretty toast */
           // TODO: Reset event to what it was before failed update
         });
 
