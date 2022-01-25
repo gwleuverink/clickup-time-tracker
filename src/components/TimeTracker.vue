@@ -20,6 +20,8 @@
     @event-drop="updateEventTime"
     @event-duration-change="updateEventTime"
     @keydown.meta.delete.exact="deleteSelectedTask()"
+    @keydown.meta.v.exact="duplicateSelectedTask()"
+    @keydown.meta.d.exact="duplicateSelectedTask()"
     active-view="week"
     today-button
     ref="calendar"
@@ -279,6 +281,32 @@ export default {
         });
     },
 
+    duplicateSelectedTask() {
+        // This works a bit flaky when pasting an item, selecting the pasted item and then pasting again
+
+        console.dir({
+            start: this.selectedTask.start,
+            end: this.selectedTask.end
+        })
+
+        clickupService.createTimeTrackingEntry(
+          this.selectedTask.taskId,
+          this.selectedTask.description,
+          this.selectedTask.start,
+          this.selectedTask.end
+        )
+        .then(entry => {
+          this.events.push(eventFactory.fromClickup(entry));
+
+          console.info(`Duplicate time tracking entry for: ${entry.task.name}`);
+          // TODO: Show toast
+        })
+        .catch((error) => {
+          alert(error); /* TODO: Show pretty toast */
+        });
+
+    },
+
     cancelTaskCreation() {
       this.closeCreationModal();
       this.deleteCallable();
@@ -286,7 +314,6 @@ export default {
 
     closeCreationModal() {
       this.showTaskCreationModal = false;
-      this.selectedTask = {};
     },
 
     /*
@@ -351,9 +378,15 @@ export default {
           event.start,
           event.end
         )
-        .then((entry) =>
+        .then(entry => {
+          const eventIndex = this.events.findIndex(
+            e => e.entryId === event.entryId
+          );
+
+          // Update the modeled event so copy/paste/duplicate works properly
+          this.events.splice(eventIndex, 1, eventFactory.updateFromRemote(event, entry));
           console.dir(`Updated time tracking entry for: ${entry.task.name}`)
-        )
+        })
         .catch((error) => {
           console.error(error);
           alert("Something went wrong updating the tracking entry. Please refresh"); /* TODO: Show pretty toast */
@@ -388,12 +421,38 @@ export default {
   color: #666666de;
   text-align: left;
 
-  padding: 0 0.4em;
+  padding: 0 0.4em 0 .6em;
   border-top: 2px solid #fff;
-  border-radius: 8px;
+  border-radius: 0 6px 6px 0;
 
   background-color: rgba(173, 216, 230, 0.5);
   border-bottom: 0.5px solid rgba(173, 216, 230, 0.8);
+
+  transition: transform 0.4s;
+}
+
+.vuecal__event::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 6px;
+    height: 100%;
+    background-color: rgba(173, 216, 230, 0.8);
+}
+
+.vuecal__event.vuecal__event--focus {
+    box-shadow: 2px 2px 7px rgb(0 0 0 / 16%);
+    transform: scale(1.03);
+}
+
+.vuecal__event.not-editable {
+  background-color: rgba(240, 68, 29, .6);
+  color: white;
+}
+
+.vuecal__event.not-editable::before {
+    background-color: rgba(240, 68, 29, 1);
 }
 
 .vuecal__event-title {
@@ -401,11 +460,6 @@ export default {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.vuecal__event.not-editable {
-  background-color: #f0441d;
-  color: #fabeb0;
 }
 
 .vuecal__cell--selected {

@@ -37,6 +37,7 @@ npm run lint
 - [x] Double click event to show details
 - [x] In details modal add a button to delete the tracking entry
 - [x] Add select + backspace to delete support
+- [x] Add copy/paste support
 
 - [ ] Sort selectable tasks by latest log entry (with your user id)
 - [ ] After that sort selectable tasks by updated_at date
@@ -45,4 +46,3 @@ npm run lint
 - [ ] Button to refresh current view (and tracked entries in that view)
 - [ ] In details modal make an option to opdate tracking description/attached task
 - [ ] Filter Tasks API call to exclude Tasks with status 'Requested, Backlog, Closed' etc
-- [ ] Add copy/paste support
