@@ -36,7 +36,7 @@
   >
     <n-card
       :bordered="false"
-      style="max-width: 600px"
+      class="max-w-xl"
       title="Log a new task"
       size="huge"
       role="dialog"
@@ -45,7 +45,7 @@
       <template #header> Log a new task </template>
 
       <n-space vertical>
-        <div style="display: flex; align-items: center">
+        <div class="flex items-center space-x-1">
           <n-select
             filterable
             :options="clickupCards"
@@ -59,12 +59,10 @@
           />
 
           <n-button
-            strong
-            secondary
-            circle
+            strong secondary circle
             @click="refreshClickupCards()"
             :disabled="loadingClickupCards"
-            style="border: none; background: none"
+            class="bg-transparent color-gray-700"
           >
             <n-icon name="refresh" size="20" :class="{ rotate: loadingClickupCards }">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
@@ -80,8 +78,8 @@
       </n-space>
 
       <template #footer>
-        <div style="display: flex; justify-content: flex-end">
-          <n-button @click="cancelTaskCreation()" round>Cancel</n-button> &nbsp;
+        <div class="flex justify-end space-x-2">
+          <n-button @click="cancelTaskCreation()" round>Cancel</n-button>
           <n-button @click="createTask()" round type="primary">Create</n-button>
         </div>
       </template>
@@ -93,7 +91,7 @@
   <n-modal v-model:show="showTaskDetailsModal">
     <n-card
       :bordered="false"
-      style="max-width: 600px"
+      class="max-w-xl"
       title="Log a new task"
       size="huge"
       role="dialog"
@@ -101,7 +99,7 @@
     >
       <template #header>
 
-        <span style="display: flex; align-items: center">
+        <span class="flex items-center space-x-3">
 
           <n-popconfirm
             v-if="selectedTask.deletable"
@@ -111,7 +109,7 @@
             :show-icon="false"
           >
             <template #trigger>
-              <n-button secondary circle type="error" style="margin-right: 14px">
+              <n-button secondary circle type="error">
                 <n-icon name="delete-tracking-entry" size="18">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                 </n-icon>
@@ -463,7 +461,7 @@ export default {
   background-color: rgba(173, 216, 230, 0.5);
   border-bottom: 0.5px solid rgba(173, 216, 230, 0.8);
 
-  transition: transform 0.4s;
+  transition: transform 0.08s;
 }
 
 .vuecal__event::before {
@@ -478,7 +476,7 @@ export default {
 
 .vuecal__event.vuecal__event--focus {
     box-shadow: 2px 2px 7px rgb(0 0 0 / 16%);
-    transform: scale(1.03);
+    transform: scale(1.025);
 }
 
 .vuecal__event.not-editable {

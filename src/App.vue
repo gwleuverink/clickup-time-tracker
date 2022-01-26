@@ -11,6 +11,7 @@
 <script>
 import TimeTracker from './components/TimeTracker.vue'
 import { NConfigProvider, NNotificationProvider } from 'naive-ui'
+import './assets/tailwind.css'
 
 /**
  * Use this for type hints under js file
@@ -37,3 +38,12 @@ export default {
   }
 }
 </script>
+
+
+<style>
+    #app {
+        font-family: Avenir, Helvetica, Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+</style>
