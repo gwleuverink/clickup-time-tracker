@@ -13,15 +13,14 @@
     :time-cell-height="80"
     :time-from="7 * 60"
     :time-to="22 * 60"
-    :snap-to-time="10"
+    :snap-to-time="15"
     :events="events"
     @ready="fetchEvents"
     @view-change="fetchEvents"
     @event-drop="updateEventTime"
     @event-duration-change="updateEventTime"
     @keydown.meta.delete.exact="deleteSelectedTask()"
-    @keydown.meta.v.exact="duplicateSelectedTask()"
-    @keydown.meta.d.exact="duplicateSelectedTask()"
+
     active-view="week"
     today-button
     ref="calendar"
@@ -405,17 +404,19 @@ export default {
           event.end
         )
         .then(entry => {
-          const eventIndex = this.events.findIndex(
-            e => e.entryId === event.entryId
-          );
 
           // Update the modeled event so copy/paste/duplicate works properly
-          this.events.splice(eventIndex, 1, eventFactory.updateFromRemote(event, entry));
+          // const eventIndex = this.events.findIndex(
+          //   e => e.entryId === event.entryId
+          // );
+
+          // this.events.splice(eventIndex, 1, eventFactory.updateFromRemote(event, entry));
+
           console.dir(`Updated time tracking entry for: ${entry.task.name}`)
         })
-        .catch((error) => {
+        .catch(error => {
 
-          this.notification.error({
+          this.error({
             duration: 5000,
             title: "Update failed",
             content: "There was a problem while pushing to Clickup. Check your console & internet connection and refresh the app"
