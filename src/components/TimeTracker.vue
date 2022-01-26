@@ -187,10 +187,7 @@ export default {
       showTaskDetailsModal: ref(false),
 
       error(options) {
-          notification.error({
-              duration: 5000,
-              ...options
-          })
+        notification.error({ duration: 5000, ...options })
       }
     };
   },
