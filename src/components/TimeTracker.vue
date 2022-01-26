@@ -64,8 +64,8 @@
             :disabled="loadingClickupCards"
             class="bg-transparent color-gray-700"
           >
-            <n-icon name="refresh" size="20" :class="{ rotate: loadingClickupCards }">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+            <n-icon name="refresh" size="20">
+              <svg :class="{ 'animate-spin-ccw': loadingClickupCards }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
             </n-icon>
           </n-button>
         </div>
@@ -439,6 +439,32 @@ export default {
 
 <style lang="css">
 
+/* Make title bar draggable */
+.vuecal__title-bar {
+  -webkit-app-region: drag;
+}
+
+/* But exclude children that aren't the title (hacky workaroud) */
+.vuecal__title-bar>:not(.vuecal__flex .vuecal__title) {
+    -webkit-app-region: no-drag;
+}
+
+/* Order title bar controls */
+.vuecal__title-bar .vuecal__title {
+    order: 1;
+    font-size: .7em;
+    margin: 0 4px;
+
+    justify-content: flex-end;
+}
+
+.vuecal__title-bar .vuecal__arrow--prev { order: 2 }
+
+.vuecal__title-bar .vuecal__today-btn { order: 3 }
+
+.vuecal__title-bar .vuecal__arrow--next { order: 4 }
+
+/* Style the calendar itself */
 .vuecal__header {
   position: fixed;
   width: 100%;
@@ -454,6 +480,11 @@ export default {
   user-select: none;
 }
 
+.vuecal__cell--selected {
+  background-color: rgb(197, 236, 255, 0.2);
+}
+
+/* The events */
 .vuecal__event {
   color: #666666de;
   text-align: left;
@@ -499,41 +530,4 @@ export default {
   text-overflow: ellipsis;
 }
 
-.vuecal__title-bar .vuecal__title {
-    order: 1;
-    font-size: .7em;
-    margin: 0 4px;
-
-
-    justify-content: flex-end;
-}
-
-.vuecal__title-bar .vuecal__arrow--prev {
-    order: 2;
-}
-
-.vuecal__title-bar .vuecal__today-btn {
-    order: 3;
-}
-
-.vuecal__title-bar .vuecal__arrow--next {
-    order: 4;
-}
-
-.vuecal__cell--selected {
-  background-color: rgb(197, 236, 255, 0.2);
-}
-
-.rotate {
-  animation: rotation 1s infinite linear;
-}
-
-@keyframes rotation {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(-359deg);
-  }
-}
 </style>
