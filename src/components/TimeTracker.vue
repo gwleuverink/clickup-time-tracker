@@ -6,7 +6,7 @@
     :on-event-create="onTaskCreate"
     :on-event-click="onTaskSingleClick"
     :on-event-dblclick="onTaskDoubleClick"
-    :drag-to-create-threshold="30"
+    :drag-to-create-threshold="20"
     :click-to-navigate="false"
     :hide-view-selector="true"
     :watch-real-time="true"
@@ -20,7 +20,8 @@
     @event-drop="updateEventTime"
     @event-duration-change="updateEventTime"
     @keydown.meta.delete.exact="deleteSelectedTask()"
-
+    @keydown.meta.v.exact="duplicateSelectedTask()"
+    @keydown.meta.d.exact="duplicateSelectedTask()"
     active-view="week"
     today-button
     ref="calendar"
@@ -288,6 +289,8 @@ export default {
           console.info(`Created time tracking entry for: ${entry.task.name}`);
 
           this.selectedTask = eventFactory.updateFromRemote(this.selectedTask, entry);
+          this.events.push(this.selectedTask) // Explicitly push to model so time update works properly
+
           this.closeCreationModal();
         })
         .catch((error) => {
@@ -406,11 +409,14 @@ export default {
         .then(entry => {
 
           // Update the modeled event so copy/paste/duplicate works properly
-          // const eventIndex = this.events.findIndex(
-          //   e => e.entryId === event.entryId
-          // );
+          const eventIndex = this.events.findIndex(
+            e => e.entryId === event.entryId
+          );
 
-          // this.events.splice(eventIndex, 1, eventFactory.updateFromRemote(event, entry));
+          if(eventIndex === -1) return;
+
+          this.events[eventIndex] = {...this.events[eventIndex], ...eventFactory.fromClickup(entry)};
+
 
           console.dir(`Updated time tracking entry for: ${entry.task.name}`)
         })
