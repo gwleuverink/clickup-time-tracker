@@ -17,8 +17,8 @@
     :events="events"
     @ready="fetchEvents"
     @view-change="fetchEvents"
-    @event-drop="updateEventTime"
-    @event-duration-change="updateEventTime"
+    @event-drop="updateTimeTrackingEntry"
+    @event-duration-change="updateTimeTrackingEntry"
     @keydown.meta.delete.exact="deleteSelectedTask()"
     @keydown.meta.v.exact="duplicateSelectedTask()"
     @keydown.meta.d.exact="duplicateSelectedTask()"
@@ -398,7 +398,7 @@ export default {
     |--------------------------------------------------------------------------
     */
 
-    updateEventTime({ event, originalEvent }) {
+    updateTimeTrackingEntry({ event, originalEvent }) {
 
       clickupService.updateTimeTrackingEntry(
           event.entryId,
