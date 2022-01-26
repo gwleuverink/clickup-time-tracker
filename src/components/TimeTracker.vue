@@ -496,6 +496,26 @@ export default {
   text-overflow: ellipsis;
 }
 
+.vuecal__title-bar .vuecal__title {
+    order: 1;
+    font-size: .7em;
+
+
+    justify-content: flex-end;
+}
+
+.vuecal__title-bar .vuecal__arrow--prev {
+    order: 2;
+}
+
+.vuecal__title-bar .vuecal__today-btn {
+    order: 3;
+}
+
+.vuecal__title-bar .vuecal__arrow--next {
+    order: 4;
+}
+
 .vuecal__cell--selected {
   background-color: rgb(197, 236, 255, 0.2);
 }

@@ -39,6 +39,7 @@ npm run lint
 - [x] Add select + backspace to delete support
 - [x] Add copy/paste support
 - [x] Show proper toast alerts when things happen in the app
+- [x] Add full bleed title bar
 
 - [ ] Button to refresh current view (and tracked entries in that view)
 - [ ] Sort selectable tasks by latest log entry (might not be possible since tracked time is not added to tasks fetch payload)
