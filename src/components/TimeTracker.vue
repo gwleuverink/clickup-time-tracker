@@ -13,7 +13,7 @@
     :time-cell-height="80"
     :time-from="7 * 60"
     :time-to="22 * 60"
-    :snap-to-time="15"
+    :snap-to-time="10"
     :events="events"
     @ready="fetchEvents"
     @view-change="fetchEvents"
@@ -316,7 +316,7 @@ export default {
         .then(entry => {
           this.events.push(eventFactory.fromClickup(entry));
 
-          console.info(`Duplicate time tracking entry for: ${entry.task.name}`);
+          console.info(`Duplicated time tracking entry for: ${entry.task.name}`);
         })
         .catch((error) => {
 
@@ -436,6 +436,7 @@ export default {
 
 
 <style lang="css">
+
 .vuecal__header {
   position: fixed;
   width: 100%;
@@ -499,6 +500,7 @@ export default {
 .vuecal__title-bar .vuecal__title {
     order: 1;
     font-size: .7em;
+    margin: 0 4px;
 
 
     justify-content: flex-end;
