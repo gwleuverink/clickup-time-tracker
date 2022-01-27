@@ -399,6 +399,9 @@ export default {
 
     goKateGo (){
       document.body.style.backgroundImage = "url('https://exod.es/?"+Math.random()+"')";
+      document.body.style.backgroundRepeat = "no-repeat";
+      document.body.style.backgroundSize = "cover";
+      document.body.style.backgroundPosition = "center";
     },
 
     
