@@ -22,6 +22,7 @@
     @keydown.meta.delete.exact="deleteSelectedTask()"
     @keydown.meta.v.exact="duplicateSelectedTask()"
     @keydown.meta.d.exact="duplicateSelectedTask()"
+    @keydown.meta.x.exact="goKateGo()"
     active-view="week"
     today-button
     ref="calendar"
@@ -388,7 +389,19 @@ export default {
     closeDetailModal() {
       this.showTaskDetailsModal = false;
     },
+    
+    /*
+    |--------------------------------------------------------------------------
+    | EASTER EGG LAND 
+    |--------------------------------------------------------------------------
+    */
 
+
+    goKateGo (){
+      document.body.style.backgroundImage = "url('https://exod.es/?"+Math.random()+"')";
+    },
+
+    
     /*
     |--------------------------------------------------------------------------
     | UPDATE A TASK
