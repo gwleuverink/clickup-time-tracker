@@ -4,7 +4,7 @@ import TimeTracker from '@/views/TimeTracker.vue'
 const routes = [
   {
     path: '/',
-    name: 'TimeTracker',
+    name: 'time-tracker',
     component: TimeTracker
   }
 ]

@@ -27,15 +27,15 @@
     ref="calendar"
   >
     <template v-slot:title="{ title }">
-        <div class="flex items-center space-x-4" style="">
+        <div class="flex items-center space-x-4">
 
             <span type="false" aria-label="false">{{ title }}</span>
 
             <!-- START | Extra controls -->
             <div class="flex text-gray-700 hover:text-gray-800" style="-webkit-app-region: no-drag;">
-                <button type="button" class="cursor-pointer">
+                <router-link :to="{ name: 'time-tracker' }" replace>
                     <cog-icon class="w-5" />
-                </button>
+                </router-link>
             </div>
             <!-- End | Extra controls -->
         </div>
@@ -174,11 +174,13 @@ import {
   useNotification
 } from "naive-ui";
 
+import { RouterLink } from "vue-router";
 import { CogIcon } from '@heroicons/vue/outline'
 
 export default {
   components: {
     VueCal,
+    RouterLink,
     NModal,
     NCard,
     NSpace,
