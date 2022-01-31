@@ -13,6 +13,7 @@
     },
     "main": "background.js",
     "dependencies": {
+        "@heroicons/vue": "^1.0.5",
         "core-js": "^3.6.5",
         "naive-ui": "^2.23.2",
         "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.2.17",

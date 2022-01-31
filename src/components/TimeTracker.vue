@@ -25,7 +25,22 @@
     active-view="week"
     today-button
     ref="calendar"
-  />
+  >
+    <template v-slot:title="{ title }">
+        <div class="flex items-center space-x-2" style="">
+
+            <span type="false" aria-label="false">{{ title }}</span>
+
+            <!-- START | Extra controls -->
+            <div class="flex text-gray-700 hover:text-gray-800" style="-webkit-app-region: no-drag;">
+                <button type="button" class="cursor-pointer">
+                    <cog-icon class="w-5" />
+                </button>
+            </div>
+            <!-- End | Extra controls -->
+        </div>
+    </template>
+  </vue-cal>
   <!-- END | Calendar view -->
 
   <!-- START | Task creation modal -->
@@ -159,6 +174,8 @@ import {
   useNotification
 } from "naive-ui";
 
+import { CogIcon } from '@heroicons/vue/outline'
+
 export default {
   components: {
     VueCal,
@@ -170,6 +187,7 @@ export default {
     NButton,
     NInput,
     NSelect,
+    CogIcon,
   },
 
   setup() {
