@@ -27,7 +27,7 @@
     ref="calendar"
   >
     <template v-slot:title="{ title }">
-        <div class="flex items-center space-x-2" style="">
+        <div class="flex items-center space-x-4" style="">
 
             <span type="false" aria-label="false">{{ title }}</span>
 
