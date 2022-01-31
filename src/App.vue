@@ -1,15 +1,12 @@
 <template>
   <n-configProvider :theme-overrides="theme">
   <n-notification-provider>
-
-    <TimeTracker />
-
+    <router-view/>
   </n-notification-provider>
   </n-configProvider>
 </template>
 
 <script>
-import TimeTracker from './components/TimeTracker.vue'
 import { NConfigProvider, NNotificationProvider } from 'naive-ui'
 import './assets/tailwind.css'
 
@@ -27,7 +24,6 @@ const theme = {
 export default {
   name: 'App',
   components: {
-    TimeTracker,
     NConfigProvider,
     NNotificationProvider
   },
@@ -41,9 +37,9 @@ export default {
 
 
 <style>
-    #app {
-        font-family: Avenir, Helvetica, Arial, sans-serif;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-    }
+#app {
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 </style>
