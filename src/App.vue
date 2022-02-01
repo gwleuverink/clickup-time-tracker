@@ -1,9 +1,11 @@
 <template>
-  <n-configProvider :theme-overrides="theme">
+  <n-config-provider :theme-overrides="theme">
   <n-notification-provider>
+
     <router-view/>
+
   </n-notification-provider>
-  </n-configProvider>
+  </n-config-provider>
 </template>
 
 <script>
