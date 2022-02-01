@@ -32,12 +32,13 @@
             <span type="false" aria-label="false">{{ title }}</span>
 
             <!-- START | Extra controls -->
-            <div class="flex text-gray-700 hover:text-gray-800" style="-webkit-app-region: no-drag;">
-                <router-link :to="{ name: 'time-tracker' }" replace>
+            <div class="flex text-gray-700 hover:text-gray-800" style="-webkit-app-region: no-drag">
+                <router-link :to="{ name: 'settings' }" replace>
                     <cog-icon class="w-5" />
                 </router-link>
             </div>
             <!-- End | Extra controls -->
+
         </div>
     </template>
   </vue-cal>
