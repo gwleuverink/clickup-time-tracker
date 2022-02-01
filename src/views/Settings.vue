@@ -77,7 +77,10 @@ export default {
             persist() {
                 form.value.validate().then(() => {
                     store.set({ settings: model.value })
+
                     router.replace({ name: 'time-tracker' })
+                    // router.go()
+
                     notification.success({ title: 'Settings saved!', duration: 1500 })
                 }).catch(errors => console.error(errors))
             },

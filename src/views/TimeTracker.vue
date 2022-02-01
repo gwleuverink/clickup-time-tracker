@@ -159,9 +159,9 @@ import VueCal from "vue-cal";
 import "vue-cal/dist/drag-and-drop.js";
 import "vue-cal/dist/vuecal.css";
 
-import { isEmptyObject } from "../helpers";
-import clickupService from "../clickup-service";
-import eventFactory from "../events-factory";
+import { isEmptyObject } from "@/helpers";
+import clickupService from "@/clickup-service";
+import eventFactory from "@/events-factory";
 
 import { NModal, NCard, NSpace, NIcon, NPopconfirm, NButton, NInput, NSelect, useNotification } from "naive-ui";
 import { RouterLink } from "vue-router";

@@ -10,7 +10,7 @@
 
 <script>
 import { NConfigProvider, NNotificationProvider } from 'naive-ui'
-import './assets/tailwind.css'
+import '@/assets/tailwind.css'
 
 /**
  * Use this for type hints under js file

@@ -3,12 +3,12 @@
 import { app, protocol, ipcMain, BrowserWindow } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS3_DEVTOOLS } from 'electron-devtools-installer'
-import clickupService from './clickup-service'
+import clickupService from '@/clickup-service'
+
+import Store from 'electron-store';
+Store.initRenderer();
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
-
-const Store = require('electron-store');
-Store.initRenderer();
 
 // Register background ipc protocol listeners
 ipcMain.on('get-clickup-cards', event => {
