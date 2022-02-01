@@ -3,7 +3,10 @@
 import { app, protocol, ipcMain, BrowserWindow } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS3_DEVTOOLS } from 'electron-devtools-installer'
-import clickupService from './clickup-service'
+import clickupService from '@/clickup-service'
+
+import Store from 'electron-store';
+Store.initRenderer();
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
@@ -11,7 +14,6 @@ const isDevelopment = process.env.NODE_ENV !== 'production'
 ipcMain.on('get-clickup-cards', event => {
   clickupService.getTasks().then(tasks => event.reply('set-clickup-cards', tasks))
 })
-
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([

@@ -25,7 +25,23 @@
     active-view="week"
     today-button
     ref="calendar"
-  />
+  >
+    <template v-slot:title="{ title }">
+        <div class="flex items-center space-x-4">
+
+            <span type="false" aria-label="false">{{ title }}</span>
+
+            <!-- START | Extra controls -->
+            <div class="flex text-gray-700 hover:text-gray-800" style="-webkit-app-region: no-drag">
+                <router-link :to="{ name: 'settings' }" replace>
+                    <cog-icon class="w-5" />
+                </router-link>
+            </div>
+            <!-- End | Extra controls -->
+
+        </div>
+    </template>
+  </vue-cal>
   <!-- END | Calendar view -->
 
   <!-- START | Task creation modal -->
@@ -138,39 +154,21 @@
 <script>
 import { ref } from "vue";
 import { ipcRenderer } from "electron";
+
 import VueCal from "vue-cal";
-
-import { isEmptyObject } from "../helpers";
-import clickupService from "../clickup-service";
-import eventFactory from "../events-factory";
-
 import "vue-cal/dist/drag-and-drop.js";
 import "vue-cal/dist/vuecal.css";
 
-import {
-  NModal,
-  NCard,
-  NSpace,
-  NIcon,
-  NPopconfirm,
-  NButton,
-  NInput,
-  NSelect,
-  useNotification
-} from "naive-ui";
+import { isEmptyObject } from "@/helpers";
+import clickupService from "@/clickup-service";
+import eventFactory from "@/events-factory";
+
+import { NModal, NCard, NSpace, NIcon, NPopconfirm, NButton, NInput, NSelect, useNotification } from "naive-ui";
+import { RouterLink } from "vue-router";
+import { CogIcon } from '@heroicons/vue/outline'
 
 export default {
-  components: {
-    VueCal,
-    NModal,
-    NCard,
-    NSpace,
-    NIcon,
-    NPopconfirm,
-    NButton,
-    NInput,
-    NSelect,
-  },
+  components: { VueCal, RouterLink, NModal, NCard, NSpace, NIcon, NPopconfirm, NButton, NInput, NSelect, CogIcon },
 
   setup() {
     const notification = useNotification();
