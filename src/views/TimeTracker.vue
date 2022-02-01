@@ -154,44 +154,21 @@
 <script>
 import { ref } from "vue";
 import { ipcRenderer } from "electron";
+
 import VueCal from "vue-cal";
+import "vue-cal/dist/drag-and-drop.js";
+import "vue-cal/dist/vuecal.css";
 
 import { isEmptyObject } from "../helpers";
 import clickupService from "../clickup-service";
 import eventFactory from "../events-factory";
 
-import "vue-cal/dist/drag-and-drop.js";
-import "vue-cal/dist/vuecal.css";
-
-import {
-  NModal,
-  NCard,
-  NSpace,
-  NIcon,
-  NPopconfirm,
-  NButton,
-  NInput,
-  NSelect,
-  useNotification
-} from "naive-ui";
-
+import { NModal, NCard, NSpace, NIcon, NPopconfirm, NButton, NInput, NSelect, useNotification } from "naive-ui";
 import { RouterLink } from "vue-router";
 import { CogIcon } from '@heroicons/vue/outline'
 
 export default {
-  components: {
-    VueCal,
-    RouterLink,
-    NModal,
-    NCard,
-    NSpace,
-    NIcon,
-    NPopconfirm,
-    NButton,
-    NInput,
-    NSelect,
-    CogIcon,
-  },
+  components: { VueCal, RouterLink, NModal, NCard, NSpace, NIcon, NPopconfirm, NButton, NInput, NSelect, CogIcon },
 
   setup() {
     const notification = useNotification();
