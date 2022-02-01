@@ -1,8 +1,9 @@
-# ClickUp Time tracker
+# ClickUp Time tracking - the low friction way
 
-This is a work in progress..
+A tool for tracking time on Clickup tasks, but without the frustration
 
-Abracadabra.. please make my life easier! Shazam! Also, ClickUp Time tracking can eat a d**k
+Drag tracked events around on a calendar, drag resize & duplicate entries with ease. Changes are synced with clickup in real time!
+
 ## Project setup
 ```
 npm install
