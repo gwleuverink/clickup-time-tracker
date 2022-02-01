@@ -56,33 +56,24 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { NForm, NFormItem, NInput, NButton, useNotification } from 'naive-ui'
-const Store = require('electron-store');
+import store from '@/store'
 
 export default {
-    components: {
-        NForm,
-        NFormItem,
-        NInput,
-        NButton
-    },
+
+    components: { NForm, NFormItem, NInput,  NButton },
 
     setup() {
 
-        const store = new Store()
-
-        // store.set({'settings': {}})
-
         const form = ref(null)
-
         const router = useRouter()
-
         const notification = useNotification()
-
         const model = ref(store.get('settings') || {})
 
         return {
             form,
+
             model,
+
             persist() {
                 form.value.validate().then(() => {
                     store.set({ settings: model.value })
@@ -90,6 +81,7 @@ export default {
                     notification.success({ title: 'Settings saved!', duration: 1500 })
                 }).catch(errors => console.error(errors))
             },
+
             rules: {
                 clickup_access_token: [
                     {

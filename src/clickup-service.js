@@ -1,7 +1,8 @@
 import request from 'request';
+import store from '@/store';
 
-const TEAM_ID = process.env.VUE_APP_CLICKUP_TEAM_ID;
-const API_TOKEN = process.env.VUE_APP_CLICKUP_ACCESS_TOKEN;
+const TEAM_ID = store.get('settings.clickup_team_id')
+const API_TOKEN = store.get('settings.clickup_access_token')
 const BASE_URL = `https://api.clickup.com/api/v2/team/${TEAM_ID}`
 
 export default  {

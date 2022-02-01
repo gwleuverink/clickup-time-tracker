@@ -15,7 +15,6 @@ ipcMain.on('get-clickup-cards', event => {
   clickupService.getTasks().then(tasks => event.reply('set-clickup-cards', tasks))
 })
 
-
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { secure: true, standard: true } }
