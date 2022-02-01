@@ -26,25 +26,41 @@
         </n-form>
 
         <div class="p-3 space-y-4 shadow-inner bg-gray-50">
+
+            <h2 class="text-lg font-bold text-gray-700">Instructions</h2>
+            <p>
+                Click & drag in order to create a new tracking entry
+            </p>
+
+
+            <h2 class="text-lg font-bold text-gray-700">Keybindings</h2>
+
             <div class="flex">
                 <kbd class="inline-flex items-center px-2 mr-2 font-sans text-sm font-medium text-gray-400 border border-gray-300 rounded">⌘ + D</kbd>
                 Duplicate the selected entry
             </div>
 
             <div class="flex">
-                <kbd class="inline-flex items-center px-2 mr-2 font-sans text-sm font-medium text-gray-400 border border-gray-300 rounded">⌘ + V</kbd>
-                alias for
-                <kbd class="inline-flex items-center px-2 ml-2 font-sans text-sm font-medium text-gray-400 border border-gray-300 rounded">⌘ + D</kbd>
-            </div>
-
-            <div class="flex">
-                <kbd class="inline-flex items-center px-2 mr-2 font-sans text-sm font-medium text-gray-400 border border-gray-300 rounded">⌘ + backspace</kbd>
+                <kbd class="inline-flex items-center px-2 mr-2 font-sans text-sm font-medium text-gray-400 border border-gray-300 rounded">
+                    ⌘ + <backspace-icon class="w-4 ml-1" />
+                </kbd>
                 Delete the selected entry
             </div>
 
             <div class="flex">
                 <kbd class="inline-flex items-center px-2 mr-2 font-sans text-sm font-medium text-gray-400 border border-gray-300 rounded">⌘ + X</kbd>
                 Refresh background image cache
+            </div>
+
+            <div class="flex">
+                <kbd class="inline-flex items-center px-2 mr-2 font-sans text-sm font-medium text-gray-400 border border-gray-300 rounded">⌘ + R</kbd>
+                Refresh the current screen (for troubleshooting)
+            </div>
+
+            <div class="flex">
+                <kbd class="inline-flex items-center px-2 mr-2 font-sans text-sm font-medium text-gray-400 border border-gray-300 rounded">⌘ + V</kbd>
+                alias for
+                <kbd class="inline-flex items-center px-2 ml-2 font-sans text-sm font-medium text-gray-400 border border-gray-300 rounded">⌘ + D</kbd>
             </div>
         </div>
 
@@ -56,11 +72,12 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { NForm, NFormItem, NInput, NButton, useNotification } from 'naive-ui'
+import { BackspaceIcon } from '@heroicons/vue/outline'
 import store from '@/store'
 
 export default {
 
-    components: { NForm, NFormItem, NInput,  NButton },
+    components: { NForm, NFormItem, NInput,  NButton, BackspaceIcon },
 
     setup() {
 

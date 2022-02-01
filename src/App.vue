@@ -1,15 +1,18 @@
 <template>
   <n-config-provider :theme-overrides="theme">
   <n-notification-provider>
+  <online-status-provider>
 
-    <router-view/>
+    <router-view />
 
+  </online-status-provider>
   </n-notification-provider>
   </n-config-provider>
 </template>
 
 <script>
 import { NConfigProvider, NNotificationProvider } from 'naive-ui'
+import OnlineStatusProvider from '@/components/OnlineStatusProvider'
 import '@/assets/tailwind.css'
 
 /**
@@ -27,7 +30,8 @@ export default {
   name: 'App',
   components: {
     NConfigProvider,
-    NNotificationProvider
+    NNotificationProvider,
+    OnlineStatusProvider,
   },
   setup() {
     return {
@@ -48,5 +52,11 @@ export default {
 .n-notification__avatar {
     display: flex;
     align-items: center;
+    margin-top: -2px;
+}
+.n-notification-main__header {
+    font-weight: normal !important;
+    font-size: 1.1em !important;
+    opacity: .9;
 }
 </style>
