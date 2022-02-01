@@ -27,6 +27,8 @@ npm run lint
 ```
 
 ## Roadmap
+
+### Done
 - [x] Fetch & list tracking entries for active view
 - [x] Create a new entry by dragging on the calendar
 - [x] Search through all Clickup tasks in searchable select field when adding a new entry
@@ -41,10 +43,22 @@ npm run lint
 - [x] Show proper toast alerts when things happen in the app
 - [x] Add full bleed title bar
 - [x] Add a preferences screen where the user can set env variables
+- [x] Add online/offline state splash screen
 
+### Milestones
+- [ ] Auto updater using Github registry
+- [ ] Extract edit & create modals to separate components (consider this)
+- [ ] Optional settings for modifing start & end of day
+- [ ] Setting for toggling weekends
+- [ ] Add JSON Schema for setting store with default values for start/end of day & weekend toggle
+- [ ] Add caching with TTL on fetched task list
+### Quick wins
+- [ ] Show error message (and log) when fetching task list from background process fails
+- [ ] Add proper validation to create modal
 - [ ] Button to refresh current view (and tracked entries in that view)
 - [ ] Sort selectable tasks by latest log entry (might not be possible since tracked time is not added to tasks fetch payload)
 - [ ] After that sort selectable tasks by updated_at date
 - [ ] Reset a task when an API error occured while editing (resize/drag etc)
 - [ ] In details modal make an option to update tracking description/attached task
 - [ ] Filter Tasks API call to exclude Tasks with status 'Requested, Backlog, Closed' etc
+- [ ] Replace all inline svg's with svg components (heroicons included in project)
