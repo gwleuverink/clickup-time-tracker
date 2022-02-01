@@ -7,6 +7,9 @@ import clickupService from './clickup-service'
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
+const Store = require('electron-store');
+Store.initRenderer();
+
 // Register background ipc protocol listeners
 ipcMain.on('get-clickup-cards', event => {
   clickupService.getTasks().then(tasks => event.reply('set-clickup-cards', tasks))

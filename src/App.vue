@@ -42,4 +42,9 @@ export default {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+.n-notification__avatar {
+    display: flex;
+    align-items: center;
+}
 </style>

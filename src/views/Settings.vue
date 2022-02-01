@@ -54,7 +54,9 @@
 <script>
 
 import { ref } from 'vue'
-import { NForm, NFormItem, NInput, NButton } from 'naive-ui'
+import { useRouter } from 'vue-router'
+import { NForm, NFormItem, NInput, NButton, useNotification } from 'naive-ui'
+const Store = require('electron-store');
 
 export default {
     components: {
@@ -65,23 +67,28 @@ export default {
     },
 
     setup() {
+
+        const store = new Store()
+
+        // store.set({'settings': {}})
+
         const form = ref(null)
 
-        const model = ref({
-            clickup_access_token: '',
-            clickup_team_id: '',
-            background_image_url: ''
-        })
+        const router = useRouter()
+
+        const notification = useNotification()
+
+        const model = ref(store.get('settings') || {})
 
         return {
             form,
             model,
             persist() {
                 form.value.validate().then(() => {
-                    alert('valid')
-                }).catch(() => {
-                    alert('invalid')
-                })
+                    store.set({ settings: model.value })
+                    router.replace({ name: 'time-tracker' })
+                    notification.success({ title: 'Settings saved!', duration: 1500 })
+                }).catch(errors => console.error(errors))
             },
             rules: {
                 clickup_access_token: [
