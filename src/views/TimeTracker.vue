@@ -79,23 +79,13 @@
           </n-form-item>
 
           <!-- Refresh button -->
-          <n-button
-            strong
-            secondary
-            circle
+          <n-button strong secondary circle
             @click="refreshClickupCards()"
             :disabled="loadingClickupCards"
             class="mt-0.5 bg-transparent color-gray-600"
           >
-            <n-icon
-              name="refresh"
-              size="20"
-              class="flex items-center justify-center"
-            >
-              <div
-                v-if="loadingClickupCards"
-                class="w-2 h-2 bg-blue-800 rounded-full animate-ping"
-              ></div>
+            <n-icon name="refresh" size="20" class="flex items-center justify-center">
+              <div v-if="loadingClickupCards" class="w-2 h-2 bg-blue-800 rounded-full animate-ping"></div>
               <refresh-icon v-else />
             </n-icon>
           </n-button>
@@ -169,6 +159,7 @@
 
 <script>
 import { ref } from "vue";
+import { RouterLink } from "vue-router";
 import { ipcRenderer } from "electron";
 
 import VueCal from "vue-cal";
@@ -179,40 +170,11 @@ import { isEmptyObject } from "@/helpers";
 import clickupService from "@/clickup-service";
 import eventFactory from "@/events-factory";
 
-import {
-  NModal,
-  NCard,
-  NForm,
-  NFormItem,
-  NSpace,
-  NIcon,
-  NPopconfirm,
-  NButton,
-  NInput,
-  NSelect,
-  useNotification,
-} from "naive-ui";
-import { RouterLink } from "vue-router";
+import { NModal,  NCard,  NForm,  NFormItem,  NSpace,  NIcon,  NPopconfirm,  NButton,  NInput,  NSelect,  useNotification } from "naive-ui";
 import { CogIcon, RefreshIcon, TrashIcon } from "@heroicons/vue/outline";
 
 export default {
-  components: {
-    VueCal,
-    RouterLink,
-    NModal,
-    NCard,
-    NForm,
-    NFormItem,
-    NSpace,
-    NIcon,
-    NPopconfirm,
-    NButton,
-    NInput,
-    NSelect,
-    CogIcon,
-    RefreshIcon,
-    TrashIcon,
-  },
+  components: { VueCal, RouterLink, NModal, NCard, NForm, NFormItem, NSpace, NIcon, NPopconfirm, NButton, NInput, NSelect, CogIcon, RefreshIcon, TrashIcon },
 
   setup() {
     const notification = useNotification();
@@ -249,14 +211,13 @@ export default {
     | FETCH TIME TRACKING ENTRIES
     |--------------------------------------------------------------------------
     */
-
     async fetchEvents({ startDate, endDate }) {
       clickupService
         .getTimeTrackingRange(startDate, endDate)
-        .then((entries) => {
+        .then(entries => {
           this.events = entries.map((entry) => eventFactory.fromClickup(entry));
         })
-        .catch((error) => {
+        .catch(error => {
           this.error({
             title: "Could not fetch time tracking entries",
             content: "Check your console & internet connection and try again",
@@ -271,7 +232,6 @@ export default {
     | FETCH TIME CLICKUP CARDS FOR SELECT FIELD
     |--------------------------------------------------------------------------
     */
-
     // Instruct background process to refresh clickup cards
     refreshClickupCards() {
       this.loadingClickupCards = true;
@@ -323,7 +283,7 @@ export default {
           this.selectedTask.start,
           this.selectedTask.end
         )
-        .then((entry) => {
+        .then(entry => {
           console.info(`Created time tracking entry for: ${entry.task.name}`);
 
           this.selectedTask = eventFactory.updateFromRemote(
@@ -334,7 +294,7 @@ export default {
 
           this.closeCreationModal();
         })
-        .catch((error) => {
+        .catch(error => {
           this.cancelTaskCreation();
 
           this.error({

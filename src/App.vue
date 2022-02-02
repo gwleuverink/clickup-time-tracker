@@ -1,33 +1,33 @@
 <template>
   <n-config-provider :theme-overrides="theme">
-  <n-notification-provider>
-  <online-status-provider>
+    <n-notification-provider>
+      <online-status-provider>
 
-    <router-view />
+        <router-view />
 
-  </online-status-provider>
-  </n-notification-provider>
+      </online-status-provider>
+    </n-notification-provider>
   </n-config-provider>
 </template>
 
 <script>
-import { NConfigProvider, NNotificationProvider } from 'naive-ui'
-import OnlineStatusProvider from '@/components/OnlineStatusProvider'
-import '@/assets/tailwind.css'
+import { NConfigProvider, NNotificationProvider } from "naive-ui";
+import OnlineStatusProvider from "@/components/OnlineStatusProvider";
+import "@/assets/tailwind.css";
 
 /**
  * Use this for type hints under js file
  * @type import('naive-ui').GlobalThemeOverrides
  */
 const theme = {
-    common: {
-        primaryColor: '#0284C7',
-        primaryColorHover: '#38BDF8',
-    }
-}
+  common: {
+    primaryColor: "#0284C7",
+    primaryColorHover: "#38BDF8",
+  },
+};
 
 export default {
-  name: 'App',
+  name: "App",
   components: {
     NConfigProvider,
     NNotificationProvider,
@@ -35,10 +35,10 @@ export default {
   },
   setup() {
     return {
-      theme
-    }
-  }
-}
+      theme,
+    };
+  },
+};
 </script>
 
 
@@ -51,13 +51,13 @@ export default {
 }
 
 .n-notification__avatar {
-    display: flex;
-    align-items: center;
-    margin-top: -2px;
+  display: flex;
+  align-items: center;
+  margin-top: -2px;
 }
 .n-notification-main__header {
-    font-weight: normal !important;
-    font-size: 1.1em !important;
-    opacity: .9;
+  font-weight: normal !important;
+  font-size: 1.1em !important;
+  opacity: 0.9;
 }
 </style>

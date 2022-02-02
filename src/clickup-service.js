@@ -5,7 +5,7 @@ const TEAM_ID = store.get('settings.clickup_team_id')
 const API_TOKEN = store.get('settings.clickup_access_token')
 const BASE_URL = `https://api.clickup.com/api/v2/team/${TEAM_ID}`
 
-export default  {
+export default {
 
     /*
      * Get all time tracking entries within a given range
@@ -26,7 +26,7 @@ export default  {
                     'Content-Type': 'application/json'
                 }
             }, (error, response) => {
-                if(error) return reject(error)
+                if (error) return reject(error)
                 resolve(JSON.parse(response.body).data || [])
             });
         })
@@ -55,7 +55,7 @@ export default  {
                     'Content-Type': 'application/json'
                 }
             }, (error, response) => {
-                if(error) return reject(error)
+                if (error) return reject(error)
 
                 resolve(JSON.parse(response.body).tasks || [])
             });
@@ -103,7 +103,7 @@ export default  {
                     "duration": end.valueOf() - start.valueOf(),
                 })
             }, (error, response) => {
-                if(error) return reject(error)
+                if (error) return reject(error)
                 resolve(JSON.parse(response.body).data)
             })
         })
@@ -128,7 +128,7 @@ export default  {
                     "duration": end.valueOf() - start.valueOf(),
                 })
             }, (error, response) => {
-                if(error) return reject(error)
+                if (error) return reject(error)
                 resolve(JSON.parse(response.body).data[0])
             })
         })
@@ -148,7 +148,7 @@ export default  {
                     'Content-Type': 'application/json'
                 }
             }, (error, response) => {
-                if(error) return reject(error)
+                if (error) return reject(error)
                 resolve(JSON.parse(response.body).data[0])
             })
         })
