@@ -1,6 +1,12 @@
 {
-  "name": "time-tracker-v2",
-  "version": "0.1.0",
+  "version": "0.0.1",
+  "name": "clickup-time-tracker",
+  "description": "A tool for painlessly tracking time on Clickup tasks",
+  "author": {
+      "name": "Willem Leuverink",
+      "email": "willem@leuver.ink",
+      "url": "https://leuver.ink"
+  },
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
