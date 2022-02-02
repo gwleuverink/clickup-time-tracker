@@ -61,35 +61,37 @@
       <template #header> Log a new task </template>
 
       <n-space vertical>
-        <div class="flex items-center space-x-1">
-          <n-select
-            filterable
-            :options="clickupCards"
-            :disabled="loadingClickupCards"
-            v-model:value="selectedTask.taskId"
-            :placeholder="
-              loadingClickupCards
-                ? 'Refreshing Card list'
-                : 'Please Select card to start tracking'
-            "
-          />
 
-          <n-button
-            strong secondary circle
-            @click="refreshClickupCards()"
-            :disabled="loadingClickupCards"
-            class="bg-transparent color-gray-700"
-          >
-            <n-icon name="refresh" size="20">
-              <svg :class="{ 'animate-spin transform rotate-180 transform-gpu': loadingClickupCards }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-            </n-icon>
-          </n-button>
+        <div class="flex items-center space-x-1">
+            <n-select
+                filterable
+                :options="clickupCards"
+                :disabled="loadingClickupCards"
+                v-model:value="selectedTask.taskId"
+                :placeholder="
+                loadingClickupCards
+                    ? 'Refreshing Card list'
+                    : 'Please Select card to start tracking'
+                "
+            />
+
+            <n-button
+                strong secondary circle
+                @click="refreshClickupCards()"
+                :disabled="loadingClickupCards"
+                class="bg-transparent color-gray-700"
+            >
+                <n-icon name="refresh" size="20" class="flex items-center justify-center">
+                    <div v-if="loadingClickupCards" class="w-2 h-2 bg-blue-800 rounded-full animate-ping"></div>
+                    <refresh-icon v-else />
+                </n-icon>
+            </n-button>
         </div>
 
         <n-input
-          type="textarea"
-          v-model:value="selectedTask.description"
-          placeholder="Describe what you worked on"
+            type="textarea"
+            v-model:value="selectedTask.description"
+            placeholder="Describe what you worked on"
         />
       </n-space>
 
@@ -127,7 +129,7 @@
             <template #trigger>
               <n-button secondary circle type="error">
                 <n-icon name="delete-tracking-entry" size="18">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                  <trash-icon />
                 </n-icon>
               </n-button>
             </template>
@@ -165,10 +167,10 @@ import eventFactory from "@/events-factory";
 
 import { NModal, NCard, NSpace, NIcon, NPopconfirm, NButton, NInput, NSelect, useNotification } from "naive-ui";
 import { RouterLink } from "vue-router";
-import { CogIcon } from '@heroicons/vue/outline'
+import { CogIcon, RefreshIcon, TrashIcon } from '@heroicons/vue/outline'
 
 export default {
-  components: { VueCal, RouterLink, NModal, NCard, NSpace, NIcon, NPopconfirm, NButton, NInput, NSelect, CogIcon },
+  components: { VueCal, RouterLink, NModal, NCard, NSpace, NIcon, NPopconfirm, NButton, NInput, NSelect, CogIcon, RefreshIcon, TrashIcon },
 
   setup() {
     const notification = useNotification();
