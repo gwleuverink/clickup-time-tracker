@@ -46,7 +46,7 @@ npm run lint
 - [x] Add a preferences screen where the user can set env variables
 - [x] Add online/offline state splash screen
 - [x] Replace all inline svg's with svg components (heroicons included in project)
-- [ ] Add proper validation to create modal
+- [x] Add proper validation to create modal
 
 ### Milestones
 - [ ] Auto updater using Github registry

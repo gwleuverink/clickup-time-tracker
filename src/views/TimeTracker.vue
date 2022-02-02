@@ -61,10 +61,10 @@
     >
       <template #header> Log a new task </template>
 
-      <n-form size="large" ref="create-form">
+      <n-form :model="selectedTask" :rules="rules.task" ref="createForm" size="large">
         <div class="flex space-x-2">
           <!-- Searchable select -->
-          <n-form-item path="task_id" :show-label="false" class="flex-grow">
+          <n-form-item path="taskId" :show-label="false" class="flex-grow">
             <n-select
               filterable
               :options="clickupCards"
@@ -72,7 +72,7 @@
               v-model:value="selectedTask.taskId"
               :placeholder="
                 loadingClickupCards
-                  ? 'Refreshing Card list'
+                  ? 'Refreshing Card list...'
                   : 'Please Select card to start tracking'
               "
             />
@@ -180,6 +180,7 @@ export default {
     const notification = useNotification();
 
     return {
+
       events: ref([]),
       selectedTask: ref({}),
 
@@ -190,8 +191,27 @@ export default {
       showTaskCreationModal: ref(false),
       showTaskDetailsModal: ref(false),
 
+      rules: {
+          task: {
+              taskId: {
+                required: true,
+                message: "Please select a task to start tracking",
+              },
+              description: {
+                min: 6,
+                required: true,
+                trigger: ["blur"],
+                message: "Please provide a description",
+              }
+          }
+      },
+
       error(options) {
         notification.error({ duration: 5000, ...options });
+
+        if (options.error) {
+          console.error(options.error);
+        }
       },
     };
   },
@@ -217,14 +237,11 @@ export default {
         .then(entries => {
           this.events = entries.map((entry) => eventFactory.fromClickup(entry));
         })
-        .catch(error => {
-          this.error({
+        .catch(error => this.error({
+            error,
             title: "Could not fetch time tracking entries",
             content: "Check your console & internet connection and try again",
-          });
-
-          console.error(error);
-        });
+        }));
     },
 
     /*
@@ -276,8 +293,12 @@ export default {
     createTask() {
       if (isEmptyObject(this.selectedTask)) return;
 
-      clickupService
-        .createTimeTrackingEntry(
+      this.$refs.createForm.validate()
+        .then(() => pushToClickup())
+        .catch(errors => console.error(errors))
+
+      const pushToClickup = () => {
+        clickupService.createTimeTrackingEntry(
           this.selectedTask.taskId,
           this.selectedTask.description,
           this.selectedTask.start,
@@ -290,7 +311,8 @@ export default {
             this.selectedTask,
             entry
           );
-          this.events.push(this.selectedTask); // Explicitly push to model so time update works properly
+          // Explicitly push to model so time update works properly
+          this.events.push(this.selectedTask);
 
           this.closeCreationModal();
         })
@@ -298,13 +320,12 @@ export default {
           this.cancelTaskCreation();
 
           this.error({
+            error,
             title: "Looks like something went wrong",
-            content:
-              "There was a problem while pushing to Clickup. Check your console & internet connection and try again",
+            content: "There was a problem while pushing to Clickup. Check your console & internet connection and try again",
           });
-
-          console.error(error);
         });
+      }
     },
 
     duplicateSelectedTask() {
@@ -322,15 +343,11 @@ export default {
             `Duplicated time tracking entry for: ${entry.task.name}`
           );
         })
-        .catch((error) => {
-          this.error({
+        .catch(error => this.error({
+            error,
             title: "Duplication failed",
-            content:
-              "There was a problem while pushing to Clickup. Check your console & internet connection and try again",
-          });
-
-          console.error(error);
-        });
+            content: "There was a problem while pushing to Clickup. Check your console & internet connection and try again",
+        }));
     },
 
     cancelTaskCreation() {
@@ -362,15 +379,11 @@ export default {
           this.showTaskDetailsModal = false;
           this.selectedTask = {};
         })
-        .catch((error) => {
-          this.error({
+        .catch(error => this.error({
+            error,
             title: "Delete failed",
-            content:
-              "There was a problem while calling Clickup. Check your console & internet connection and try again",
-          });
-
-          console.error(error);
-        });
+            content: "There was a problem while calling Clickup. Check your console & internet connection and try again",
+        }));
     },
 
     /*
@@ -424,15 +437,13 @@ export default {
 
           console.dir(`Updated time tracking entry for: ${entry.task.name}`);
         })
-        .catch((error) => {
+        .catch(error => {
           this.error({
+            error,
             duration: 5000,
             title: "Update failed",
-            content:
-              "There was a problem while pushing to Clickup. Check your console & internet connection and refresh the app",
+            content: "There was a problem while pushing to Clickup. Check your console & internet connection and refresh the app",
           });
-
-          console.error(error);
           // TODO: Reset event to what it was before failed update
         });
 

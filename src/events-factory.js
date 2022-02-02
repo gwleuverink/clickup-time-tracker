@@ -2,6 +2,8 @@
 export default {
     fromClickup: entry => {
 
+        if(!entry.task) return false
+
         const editable = ['Closed', 'archived'].indexOf(entry.task.status.status) === -1
 
         return {
