@@ -27,19 +27,20 @@
     ref="calendar"
   >
     <template v-slot:title="{ title }">
-        <div class="flex items-center space-x-4">
+      <div class="flex items-center space-x-4">
+        <span type="false" aria-label="false">{{ title }}</span>
 
-            <span type="false" aria-label="false">{{ title }}</span>
-
-            <!-- START | Extra controls -->
-            <div class="flex text-gray-700 hover:text-gray-800" style="-webkit-app-region: no-drag">
-                <router-link :to="{ name: 'settings' }" replace>
-                    <cog-icon class="w-5" />
-                </router-link>
-            </div>
-            <!-- End | Extra controls -->
-
+        <!-- START | Extra controls -->
+        <div
+          class="flex text-gray-700 hover:text-gray-800"
+          style="-webkit-app-region: no-drag"
+        >
+          <router-link :to="{ name: 'settings' }" replace>
+            <cog-icon class="w-5" />
+          </router-link>
         </div>
+        <!-- End | Extra controls -->
+      </div>
     </template>
   </vue-cal>
   <!-- END | Calendar view -->
@@ -60,40 +61,55 @@
     >
       <template #header> Log a new task </template>
 
-      <n-space vertical>
-
-        <div class="flex items-center space-x-1">
+      <n-form size="large" ref="create-form">
+        <div class="flex space-x-2">
+          <!-- Searchable select -->
+          <n-form-item path="task_id" :show-label="false" class="flex-grow">
             <n-select
-                filterable
-                :options="clickupCards"
-                :disabled="loadingClickupCards"
-                v-model:value="selectedTask.taskId"
-                :placeholder="
+              filterable
+              :options="clickupCards"
+              :disabled="loadingClickupCards"
+              v-model:value="selectedTask.taskId"
+              :placeholder="
                 loadingClickupCards
-                    ? 'Refreshing Card list'
-                    : 'Please Select card to start tracking'
-                "
+                  ? 'Refreshing Card list'
+                  : 'Please Select card to start tracking'
+              "
             />
+          </n-form-item>
 
-            <n-button
-                strong secondary circle
-                @click="refreshClickupCards()"
-                :disabled="loadingClickupCards"
-                class="bg-transparent color-gray-700"
+          <!-- Refresh button -->
+          <n-button
+            strong
+            secondary
+            circle
+            @click="refreshClickupCards()"
+            :disabled="loadingClickupCards"
+            class="mt-0.5 bg-transparent color-gray-600"
+          >
+            <n-icon
+              name="refresh"
+              size="20"
+              class="flex items-center justify-center"
             >
-                <n-icon name="refresh" size="20" class="flex items-center justify-center">
-                    <div v-if="loadingClickupCards" class="w-2 h-2 bg-blue-800 rounded-full animate-ping"></div>
-                    <refresh-icon v-else />
-                </n-icon>
-            </n-button>
+              <div
+                v-if="loadingClickupCards"
+                class="w-2 h-2 bg-blue-800 rounded-full animate-ping"
+              ></div>
+              <refresh-icon v-else />
+            </n-icon>
+          </n-button>
         </div>
 
-        <n-input
+        <!-- Description textbox -->
+        <n-form-item path="description" :show-label="false">
+          <n-input
             type="textarea"
             v-model:value="selectedTask.description"
             placeholder="Describe what you worked on"
-        />
-      </n-space>
+          />
+        </n-form-item>
+      </n-form>
 
       <template #footer>
         <div class="flex justify-end space-x-2">
@@ -116,9 +132,7 @@
       aria-modal="true"
     >
       <template #header>
-
         <span class="flex items-center space-x-3">
-
           <n-popconfirm
             v-if="selectedTask.deletable"
             :negative-text="null"
@@ -165,12 +179,40 @@ import { isEmptyObject } from "@/helpers";
 import clickupService from "@/clickup-service";
 import eventFactory from "@/events-factory";
 
-import { NModal, NCard, NSpace, NIcon, NPopconfirm, NButton, NInput, NSelect, useNotification } from "naive-ui";
+import {
+  NModal,
+  NCard,
+  NForm,
+  NFormItem,
+  NSpace,
+  NIcon,
+  NPopconfirm,
+  NButton,
+  NInput,
+  NSelect,
+  useNotification,
+} from "naive-ui";
 import { RouterLink } from "vue-router";
-import { CogIcon, RefreshIcon, TrashIcon } from '@heroicons/vue/outline'
+import { CogIcon, RefreshIcon, TrashIcon } from "@heroicons/vue/outline";
 
 export default {
-  components: { VueCal, RouterLink, NModal, NCard, NSpace, NIcon, NPopconfirm, NButton, NInput, NSelect, CogIcon, RefreshIcon, TrashIcon },
+  components: {
+    VueCal,
+    RouterLink,
+    NModal,
+    NCard,
+    NForm,
+    NFormItem,
+    NSpace,
+    NIcon,
+    NPopconfirm,
+    NButton,
+    NInput,
+    NSelect,
+    CogIcon,
+    RefreshIcon,
+    TrashIcon,
+  },
 
   setup() {
     const notification = useNotification();
@@ -187,8 +229,8 @@ export default {
       showTaskDetailsModal: ref(false),
 
       error(options) {
-        notification.error({ duration: 5000, ...options })
-      }
+        notification.error({ duration: 5000, ...options });
+      },
     };
   },
 
@@ -209,19 +251,18 @@ export default {
     */
 
     async fetchEvents({ startDate, endDate }) {
-
-      clickupService.getTimeTrackingRange(startDate, endDate)
-        .then(entries => {
-            this.events = entries.map((entry) => eventFactory.fromClickup(entry))
+      clickupService
+        .getTimeTrackingRange(startDate, endDate)
+        .then((entries) => {
+          this.events = entries.map((entry) => eventFactory.fromClickup(entry));
         })
-        .catch(error => {
+        .catch((error) => {
+          this.error({
+            title: "Could not fetch time tracking entries",
+            content: "Check your console & internet connection and try again",
+          });
 
-            this.error({
-                title: "Could not fetch time tracking entries",
-                content: "Check your console & internet connection and try again"
-            })
-
-            console.error(error)
+          console.error(error);
         });
     },
 
@@ -273,10 +314,10 @@ export default {
     },
 
     createTask() {
-
       if (isEmptyObject(this.selectedTask)) return;
 
-      clickupService.createTimeTrackingEntry(
+      clickupService
+        .createTimeTrackingEntry(
           this.selectedTask.taskId,
           this.selectedTask.description,
           this.selectedTask.start,
@@ -285,8 +326,11 @@ export default {
         .then((entry) => {
           console.info(`Created time tracking entry for: ${entry.task.name}`);
 
-          this.selectedTask = eventFactory.updateFromRemote(this.selectedTask, entry);
-          this.events.push(this.selectedTask) // Explicitly push to model so time update works properly
+          this.selectedTask = eventFactory.updateFromRemote(
+            this.selectedTask,
+            entry
+          );
+          this.events.push(this.selectedTask); // Explicitly push to model so time update works properly
 
           this.closeCreationModal();
         })
@@ -295,36 +339,38 @@ export default {
 
           this.error({
             title: "Looks like something went wrong",
-            content: "There was a problem while pushing to Clickup. Check your console & internet connection and try again"
-          })
+            content:
+              "There was a problem while pushing to Clickup. Check your console & internet connection and try again",
+          });
 
           console.error(error);
         });
     },
 
     duplicateSelectedTask() {
-
-        clickupService.createTimeTrackingEntry(
+      clickupService
+        .createTimeTrackingEntry(
           this.selectedTask.taskId,
           this.selectedTask.description,
           this.selectedTask.start,
           this.selectedTask.end
         )
-        .then(entry => {
+        .then((entry) => {
           this.events.push(eventFactory.fromClickup(entry));
 
-          console.info(`Duplicated time tracking entry for: ${entry.task.name}`);
+          console.info(
+            `Duplicated time tracking entry for: ${entry.task.name}`
+          );
         })
         .catch((error) => {
-
           this.error({
             title: "Duplication failed",
-            content: "There was a problem while pushing to Clickup. Check your console & internet connection and try again"
-          })
+            content:
+              "There was a problem while pushing to Clickup. Check your console & internet connection and try again",
+          });
 
           console.error(error);
         });
-
     },
 
     cancelTaskCreation() {
@@ -345,23 +391,23 @@ export default {
     async deleteSelectedTask() {
       if (isEmptyObject(this.selectedTask)) return;
 
-      clickupService.deleteTimeTrackingEntry(this.selectedTask.entryId)
+      clickupService
+        .deleteTimeTrackingEntry(this.selectedTask.entryId)
         .then(() => {
-
           const taskIndex = this.events.findIndex(
-            event => event.entryId === this.selectedTask.entryId
+            (event) => event.entryId === this.selectedTask.entryId
           );
 
           this.events.splice(taskIndex, 1);
           this.showTaskDetailsModal = false;
           this.selectedTask = {};
         })
-        .catch(error => {
-
+        .catch((error) => {
           this.error({
             title: "Delete failed",
-            content: "There was a problem while calling Clickup. Check your console & internet connection and try again"
-          })
+            content:
+              "There was a problem while calling Clickup. Check your console & internet connection and try again",
+          });
 
           console.error(error);
         });
@@ -396,42 +442,42 @@ export default {
     */
 
     updateTimeTrackingEntry({ event, originalEvent }) {
-
-      clickupService.updateTimeTrackingEntry(
+      clickupService
+        .updateTimeTrackingEntry(
           event.entryId,
           event.description,
           event.start,
           event.end
         )
-        .then(entry => {
-
+        .then((entry) => {
           // Update the modeled event so copy/paste/duplicate works properly
           const eventIndex = this.events.findIndex(
-            e => e.entryId === event.entryId
+            (e) => e.entryId === event.entryId
           );
 
-          if(eventIndex === -1) return;
+          if (eventIndex === -1) return;
 
-          this.events[eventIndex] = {...this.events[eventIndex], ...eventFactory.fromClickup(entry)};
+          this.events[eventIndex] = {
+            ...this.events[eventIndex],
+            ...eventFactory.fromClickup(entry),
+          };
 
-
-          console.dir(`Updated time tracking entry for: ${entry.task.name}`)
+          console.dir(`Updated time tracking entry for: ${entry.task.name}`);
         })
-        .catch(error => {
-
+        .catch((error) => {
           this.error({
             duration: 5000,
             title: "Update failed",
-            content: "There was a problem while pushing to Clickup. Check your console & internet connection and refresh the app"
-          })
+            content:
+              "There was a problem while pushing to Clickup. Check your console & internet connection and refresh the app",
+          });
 
           console.error(error);
           // TODO: Reset event to what it was before failed update
         });
 
       originalEvent; /*  */
-    }
-
+    },
   },
 };
 </script>
@@ -444,24 +490,30 @@ export default {
 }
 
 /* But exclude children that aren't the title (hacky workaroud) */
-.vuecal__title-bar>:not(.vuecal__flex .vuecal__title) {
-    -webkit-app-region: no-drag;
+.vuecal__title-bar > :not(.vuecal__flex .vuecal__title) {
+  -webkit-app-region: no-drag;
 }
 
 /* Order title bar controls */
 .vuecal__title-bar .vuecal__title {
-    order: 1;
-    font-size: .7em;
-    margin: 0 4px;
+  order: 1;
+  font-size: 0.7em;
+  margin: 0 4px;
 
-    justify-content: flex-end;
+  justify-content: flex-end;
 }
 
-.vuecal__title-bar .vuecal__arrow--prev { order: 2 }
+.vuecal__title-bar .vuecal__arrow--prev {
+  order: 2;
+}
 
-.vuecal__title-bar .vuecal__today-btn { order: 3 }
+.vuecal__title-bar .vuecal__today-btn {
+  order: 3;
+}
 
-.vuecal__title-bar .vuecal__arrow--next { order: 4 }
+.vuecal__title-bar .vuecal__arrow--next {
+  order: 4;
+}
 
 /* Style the calendar itself */
 .vuecal__header {
@@ -469,7 +521,7 @@ export default {
   width: 100%;
   z-index: 9;
 
-  background: rgba(255, 255, 255, .2);
+  background: rgba(255, 255, 255, 0.2);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 }
@@ -491,7 +543,7 @@ export default {
   color: #666666de;
   text-align: left;
 
-  padding: 0 0.4em 0 .6em;
+  padding: 0 0.4em 0 0.6em;
   border-top: 2px solid #fff;
   border-radius: 0 6px 6px 0;
 
@@ -502,27 +554,27 @@ export default {
 }
 
 .vuecal__event::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 6px;
-    height: 100%;
-    background-color: rgba(173, 216, 230, 0.8);
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 100%;
+  background-color: rgba(173, 216, 230, 0.8);
 }
 
 .vuecal__event.vuecal__event--focus {
-    box-shadow: 2px 2px 7px rgb(0 0 0 / 16%);
-    transform: scale(1.025);
+  box-shadow: 2px 2px 7px rgb(0 0 0 / 16%);
+  transform: scale(1.025);
 }
 
 .vuecal__event.not-editable {
-  background-color: rgba(240, 68, 29, .6);
+  background-color: rgba(240, 68, 29, 0.6);
   color: white;
 }
 
 .vuecal__event.not-editable::before {
-    background-color: rgba(240, 68, 29, 1);
+  background-color: rgba(240, 68, 29, 1);
 }
 
 .vuecal__event-title {
@@ -531,5 +583,4 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 </style>
