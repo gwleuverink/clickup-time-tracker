@@ -23,10 +23,10 @@ npm run build:all
 ### Build & publish a new release
 ``` bash
 # Increment the version number first
-npm run build:osx
-npm run build:win
-npm run build:linux
-npm run build:all
+npm run publish:osx
+npm run publish:win
+npm run publish:linux
+npm run publish:all
 ```
 
 ### Lints and fixes files
