@@ -48,9 +48,9 @@ npm run lint
 - [x] Replace all inline svg's with svg components (heroicons included in project)
 - [x] Add proper validation to create modal
 - [x] Rewrite css overrides to scss
+- [x] Auto updater using Github registry
 
 ### Milestones
-- [ ] Auto updater using Github registry
 - [ ] Extract edit & create modals to separate components (consider this)
 - [ ] Optional settings for modifing start & end of day
 - [ ] Setting for toggling weekends
@@ -64,3 +64,4 @@ npm run lint
 - [ ] After that sort selectable tasks by updated_at date
 - [ ] Reset a task when an API error occured while editing (resize/drag etc)
 - [ ] Filter Tasks API call to exclude Tasks with status 'Requested, Backlog, Closed' etc
+- [ ] Customize app menu

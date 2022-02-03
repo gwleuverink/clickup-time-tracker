@@ -3,6 +3,7 @@
 import { app, protocol, ipcMain, BrowserWindow } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS3_DEVTOOLS } from 'electron-devtools-installer'
+import { autoUpdater } from 'electron-updater'
 import clickupService from '@/clickup-service'
 
 import Store from 'electron-store';
@@ -44,6 +45,8 @@ async function createWindow() {
         createProtocol('app')
         // Load the index.html when not in development
         win.loadURL('app://./index.html')
+
+        autoUpdater.checkForUpdatesAndNotify()
     }
 }
 
