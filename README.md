@@ -47,6 +47,7 @@ npm run lint
 - [x] Add online/offline state splash screen
 - [x] Replace all inline svg's with svg components (heroicons included in project)
 - [x] Add proper validation to create modal
+- [x] Rewrite css overrides to scss
 
 ### Milestones
 - [ ] Auto updater using Github registry
@@ -55,11 +56,11 @@ npm run lint
 - [ ] Setting for toggling weekends
 - [ ] Add JSON Schema for setting store with default values for start/end of day & weekend toggle
 - [ ] Add caching with TTL on fetched task list
+- [ ] In details modal make an option to update tracking description/attached task
 ### Quick wins
 - [ ] Show error message (and log) when fetching task list from background process fails
 - [ ] Button to refresh current view (and tracked entries in that view)
 - [ ] Sort selectable tasks by latest log entry (might not be possible since tracked time is not added to tasks fetch payload)
 - [ ] After that sort selectable tasks by updated_at date
 - [ ] Reset a task when an API error occured while editing (resize/drag etc)
-- [ ] In details modal make an option to update tracking description/attached task
 - [ ] Filter Tasks API call to exclude Tasks with status 'Requested, Backlog, Closed' etc

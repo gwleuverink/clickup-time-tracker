@@ -164,7 +164,8 @@ import { ipcRenderer } from "electron";
 
 import VueCal from "vue-cal";
 import "vue-cal/dist/drag-and-drop.js";
-import "vue-cal/dist/vuecal.css";
+// import "vue-cal/dist/vuecal.css";
+import "@/assets/vuecal.scss";
 
 import { isEmptyObject } from "@/helpers";
 import clickupService from "@/clickup-service";
@@ -452,106 +453,3 @@ export default {
   },
 };
 </script>
-
-
-<style lang="css">
-/* Make title bar draggable */
-.vuecal__title-bar {
-  -webkit-app-region: drag;
-}
-
-/* But exclude children that aren't the title (hacky workaroud) */
-.vuecal__title-bar > :not(.vuecal__flex .vuecal__title) {
-  -webkit-app-region: no-drag;
-}
-
-/* Order title bar controls */
-.vuecal__title-bar .vuecal__title {
-  order: 1;
-  font-size: 0.7em;
-  margin: 0 4px;
-
-  justify-content: flex-end;
-}
-
-.vuecal__title-bar .vuecal__arrow--prev {
-  order: 2;
-}
-
-.vuecal__title-bar .vuecal__today-btn {
-  order: 3;
-}
-
-.vuecal__title-bar .vuecal__arrow--next {
-  order: 4;
-}
-
-/* Style the calendar itself */
-.vuecal__header {
-  position: fixed;
-  width: 100%;
-  z-index: 9;
-
-  background: rgba(255, 255, 255, 0.2);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
-}
-
-.vuecal__body {
-  margin-top: 78px;
-}
-
-.vuecal__cell .vuecal__event * {
-  user-select: none;
-}
-
-.vuecal__cell--selected {
-  background-color: rgb(197, 236, 255, 0.2);
-}
-
-/* The events */
-.vuecal__event {
-  color: #666666de;
-  text-align: left;
-
-  padding: 0 0.4em 0 0.6em;
-  border-top: 2px solid #fff;
-  border-radius: 0 6px 6px 0;
-
-  background-color: rgba(173, 216, 230, 0.5);
-  border-bottom: 0.5px solid rgba(173, 216, 230, 0.8);
-
-  transition: transform 0.08s;
-}
-
-.vuecal__event::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 6px;
-  height: 100%;
-  background-color: rgba(173, 216, 230, 0.8);
-}
-
-.vuecal__event.vuecal__event--focus {
-  box-shadow: 2px 2px 7px rgb(0 0 0 / 16%);
-  transform: scale(1.025);
-}
-
-.vuecal__event.not-editable {
-  background-color: rgba(240, 68, 29, 0.6);
-  color: white;
-}
-
-.vuecal__event.not-editable::before {
-  background-color: rgba(240, 68, 29, 1);
-}
-
-.vuecal__event-title {
-  font-weight: bold;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-</style>
