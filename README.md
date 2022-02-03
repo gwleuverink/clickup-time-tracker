@@ -72,4 +72,5 @@ npm run lint
 - [ ] Reset a task when an API error occured while editing (resize/drag etc)
 - [ ] Filter Tasks API call to exclude Tasks with status 'Requested, Backlog, Closed' etc
 - [ ] Customize app menu
+- [ ] Add optional background image
 - [ ] Add error reporting (sentry)
