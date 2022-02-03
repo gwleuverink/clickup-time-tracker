@@ -5,25 +5,32 @@ A tool for tracking time on Clickup tasks, but without the frustration
 Drag tracked events around on a calendar, drag resize & duplicate entries with ease. Changes are synced with clickup in real time!
 
 ## Project setup
-```
+``` bash
 npm install
-cp .env.example .env
 ```
-
-Make sure you fill out the `.env` file. I might create a proper settings page later, but for the time being all secrets are stored in here.
-
 ### Compiles and hot-reloads for development
-```
+``` bash
 npm run electron:serve
 ```
-
 ### Build for production
+``` bash
+npm run build:osx
+npm run build:win
+npm run build:linux
+npm run build:all
 ```
-npm run electron:build
+
+### Build & publish a new release
+``` bash
+# Increment the version number first
+npm run build:osx
+npm run build:win
+npm run build:linux
+npm run build:all
 ```
 
 ### Lints and fixes files
-```
+``` bash
 npm run lint
 ```
 
