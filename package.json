@@ -1,6 +1,7 @@
 {
   "version": "0.0.1",
   "name": "clickup-time-tracker",
+  "productName": "Time Tracker",
   "description": "A tool for painlessly tracking time on Clickup tasks",
   "repository": {
     "type": "git",
