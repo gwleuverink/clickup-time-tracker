@@ -6,7 +6,14 @@ module.exports = {
         electronBuilder: {
             nodeIntegration: true,
             builderOptions: {
-                publish: ['github']
+                publish: ['github'],
+
+                mac: {
+                    hardenedRuntime: true,
+                },
+                linux: {
+                    target: ["AppImage"]
+                },
             }
         }
     },

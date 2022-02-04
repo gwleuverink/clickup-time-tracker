@@ -1,18 +1,18 @@
 {
+  "private": true,
   "version": "0.1.0",
   "name": "clickup-time-tracker",
   "productName": "Time Tracker",
   "description": "A tool for painlessly tracking time on Clickup tasks",
   "repository": {
     "type": "git",
-    "url": "https://github.com/gwleuverink/clickup-time-tracker-builds"
+    "url": "https://github.com/gwleuverink/clickup-time-tracker"
   },
   "author": {
     "name": "Willem Leuverink",
     "email": "willem@leuver.ink",
     "url": "https://leuver.ink"
   },
-  "private": true,
   "scripts": {
     "lint": "vue-cli-service lint",
     "build:osx": "npm run electron:build -p never",
@@ -33,6 +33,7 @@
     "@heroicons/vue": "^1.0.5",
     "core-js": "^3.6.5",
     "electron-store": "^8.0.1",
+    "electron-updater": "^4.6.1",
     "naive-ui": "^2.23.2",
     "sass": "^1.49.7",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.2.17",
