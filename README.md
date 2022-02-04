@@ -71,6 +71,7 @@ electron-icon-builder --input=src/assets/images/icon/icon.png --output=build/ico
 - [x] Rewrite css overrides to scss
 - [x] Auto updater using Github registry
 - [x] Add animated loading splash screen
+- [ ] Add optional background image
 
 ### Milestones
 - [ ] Extract edit & create modals to separate components (consider this)
@@ -87,5 +88,4 @@ electron-icon-builder --input=src/assets/images/icon/icon.png --output=build/ico
 - [ ] Reset a task when an API error occured while editing (resize/drag etc)
 - [ ] Filter Tasks API call to exclude Tasks with status 'Requested, Backlog, Closed' etc
 - [ ] Customize app menu
-- [ ] Add optional background image
 - [ ] Add error reporting (sentry)

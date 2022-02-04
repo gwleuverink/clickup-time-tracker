@@ -22,6 +22,7 @@
     @keydown.meta.delete.exact="deleteSelectedTask()"
     @keydown.meta.v.exact="duplicateSelectedTask()"
     @keydown.meta.d.exact="duplicateSelectedTask()"
+    @keydown.meta.x.exact="refreshBackgroundImage()"
     active-view="week"
     today-button
     ref="calendar"
@@ -164,15 +165,15 @@ import { ipcRenderer } from "electron";
 
 import VueCal from "vue-cal";
 import "vue-cal/dist/drag-and-drop.js";
-// import "vue-cal/dist/vuecal.css";
 import "@/assets/vuecal.scss";
 
+import store from "@/store";
 import { isEmptyObject } from "@/helpers";
-import clickupService from "@/clickup-service";
 import eventFactory from "@/events-factory";
+import clickupService from "@/clickup-service";
 
-import { NModal,  NCard,  NForm,  NFormItem,  NSpace,  NIcon,  NPopconfirm,  NButton,  NInput,  NSelect,  useNotification } from "naive-ui";
 import { CogIcon, RefreshIcon, TrashIcon } from "@heroicons/vue/outline";
+import { NModal,  NCard,  NForm,  NFormItem,  NSpace,  NIcon,  NPopconfirm,  NButton,  NInput,  NSelect,  useNotification } from "naive-ui";
 
 export default {
   components: { VueCal, RouterLink, NModal, NCard, NForm, NFormItem, NSpace, NIcon, NPopconfirm, NButton, NInput, NSelect, CogIcon, RefreshIcon, TrashIcon },
@@ -224,6 +225,9 @@ export default {
     );
 
     this.refreshClickupCards();
+
+    // Load background image if set
+    this.refreshBackgroundImage();
   },
 
   methods: {
@@ -416,8 +420,7 @@ export default {
     */
 
     updateTimeTrackingEntry({ event, originalEvent }) {
-      clickupService
-        .updateTimeTrackingEntry(
+      clickupService.updateTimeTrackingEntry(
           event.entryId,
           event.description,
           event.start,
@@ -450,6 +453,23 @@ export default {
 
       originalEvent; /*  */
     },
+
+    /*
+    |--------------------------------------------------------------------------
+    | MISC & EASTER EGG LAND
+    |--------------------------------------------------------------------------
+    */
+    refreshBackgroundImage: function() {
+
+      const bg = document.getElementsByClassName('vuecal')[0];
+      const url = store.get("settings.background_image_url")
+      if(!url) return
+
+      bg.style.backgroundImage = `url('${url}?${Math.random()}')`;
+      bg.style.backgroundRepeat = "no-repeat";
+      bg.style.backgroundPosition = "center";
+      bg.style.backgroundSize = "cover";
+    }
   },
 };
 </script>
