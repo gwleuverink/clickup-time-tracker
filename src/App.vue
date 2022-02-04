@@ -3,6 +3,7 @@
     <n-notification-provider>
       <online-status-provider>
 
+        <splash-screen />
         <router-view />
 
       </online-status-provider>
@@ -13,6 +14,7 @@
 <script>
 import { NConfigProvider, NNotificationProvider } from "naive-ui";
 import OnlineStatusProvider from "@/components/OnlineStatusProvider";
+import SplashScreen from "@/components/SplashScreen";
 import "@/assets/tailwind.css";
 
 /**
@@ -32,6 +34,7 @@ export default {
     NConfigProvider,
     NNotificationProvider,
     OnlineStatusProvider,
+    SplashScreen
   },
   setup() {
     return {

@@ -70,6 +70,7 @@ electron-icon-builder --input=src/assets/images/icon/icon.png --output=build/ico
 - [x] Add proper validation to create modal
 - [x] Rewrite css overrides to scss
 - [x] Auto updater using Github registry
+- [x] Add animated loading splash screen
 
 ### Milestones
 - [ ] Extract edit & create modals to separate components (consider this)
