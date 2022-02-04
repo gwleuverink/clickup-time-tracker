@@ -3,11 +3,13 @@
 import { app, protocol, ipcMain, BrowserWindow } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS3_DEVTOOLS } from 'electron-devtools-installer'
-import { autoUpdater } from 'electron-updater'
 import clickupService from '@/clickup-service'
+import { createMenu } from '@/app-menu'
+import updater from '@/app-updater'
 
 import Store from 'electron-store';
 Store.initRenderer();
+
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
@@ -46,9 +48,10 @@ async function createWindow() {
         // Load the index.html when not in development
         win.loadURL('app://./index.html')
 
-        autoUpdater.checkForUpdatesAndNotify()
+        updater.checkForUpdatesAndNotify()
     }
 }
+
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
@@ -78,6 +81,7 @@ app.on('ready', async () => {
         }
     }
     createWindow()
+    createMenu()
 })
 
 // Exit cleanly on request from parent process in development mode.
