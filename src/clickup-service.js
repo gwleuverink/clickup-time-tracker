@@ -1,9 +1,9 @@
 import request from 'request';
 import store from '@/store';
 
-const TEAM_ID = store.get('settings.clickup_team_id')
-const API_TOKEN = store.get('settings.clickup_access_token')
-const BASE_URL = `https://api.clickup.com/api/v2/team/${TEAM_ID}`
+function baseUrl() {
+    return `https://api.clickup.com/api/v2/team/${store.get('settings.clickup_team_id')}`
+}
 
 export default {
 
@@ -16,13 +16,13 @@ export default {
             request({
                 method: 'GET',
                 mode: 'no-cors',
-                url: `${BASE_URL}/time_entries?` + new URLSearchParams({
+                url: `${baseUrl()}/time_entries?` + new URLSearchParams({
                     start_date: start.valueOf(),
                     end_date: end.valueOf(),
                 }),
 
                 headers: {
-                    'Authorization': API_TOKEN,
+                    'Authorization': store.get('settings.clickup_access_token'),
                     'Content-Type': 'application/json'
                 }
             }, (error, response) => {
@@ -44,14 +44,14 @@ export default {
             request({
                 method: 'GET',
                 mode: 'no-cors',
-                url: `${BASE_URL}/task?` + new URLSearchParams({
+                url: `${baseUrl()}/task?` + new URLSearchParams({
                     page: page,
                     archived: false,
                     include_closed: false,
                 }),
 
                 headers: {
-                    'Authorization': API_TOKEN,
+                    'Authorization': store.get('settings.clickup_access_token'),
                     'Content-Type': 'application/json'
                 }
             }, (error, response) => {
@@ -91,9 +91,9 @@ export default {
 
             request({
                 method: 'POST',
-                url: `${BASE_URL}/time_entries`,
+                url: `${baseUrl()}/time_entries`,
                 headers: {
-                    'Authorization': API_TOKEN,
+                    'Authorization': store.get('settings.clickup_access_token'),
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
@@ -117,9 +117,9 @@ export default {
 
             request({
                 method: 'PUT',
-                url: `${BASE_URL}/time_entries/${entryId}`,
+                url: `${baseUrl()}/time_entries/${entryId}`,
                 headers: {
-                    'Authorization': API_TOKEN,
+                    'Authorization': store.get('settings.clickup_access_token'),
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
@@ -142,9 +142,9 @@ export default {
 
             request({
                 method: 'DELETE',
-                url: `${BASE_URL}/time_entries/${entryId}`,
+                url: `${baseUrl()}/time_entries/${entryId}`,
                 headers: {
-                    'Authorization': API_TOKEN,
+                    'Authorization': store.get('settings.clickup_access_token'),
                     'Content-Type': 'application/json'
                 }
             }, (error, response) => {
