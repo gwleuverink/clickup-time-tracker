@@ -1,6 +1,6 @@
 {
   "private": true,
-  "version": "0.1.5",
+  "version": "0.1.6",
   "name": "clickup-time-tracker",
   "productName": "Time Tracker",
   "description": "A tool for painlessly tracking time on Clickup tasks",

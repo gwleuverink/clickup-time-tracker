@@ -3,7 +3,7 @@ import { autoUpdater } from 'electron-updater'
 
 
 let updater
-autoUpdater.autoDownload = false;
+autoUpdater.autoDownload = true;
 
 autoUpdater.on('error', (error) => {
     dialog.showErrorBox('Error: ', error == null ? "unknown" : (error.stack || error).toString())
@@ -19,10 +19,11 @@ autoUpdater.on('update-available', () => {
 
         if (buttonIndex === 0) {
             autoUpdater.downloadUpdate()
+            updater.enabled = false
         }
         else {
             updater.enabled = true
-            updater = null
+            updater = false
         }
     })
 })

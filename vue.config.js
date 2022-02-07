@@ -9,8 +9,11 @@ module.exports = {
                 publish: ['github'],
 
                 mac: {
-                    hardenedRuntime: true,
+                    hardenedRuntime: false,
+                    "category": "public.app-category.productivity",
+                    "target": [ "zip", "dmg" ],
                 },
+
                 linux: {
                     target: ["AppImage"]
                 },
