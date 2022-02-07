@@ -10,8 +10,8 @@ module.exports = {
 
                 mac: {
                     hardenedRuntime: false,
-                    "category": "public.app-category.productivity",
-                    "target": [ "zip", "dmg" ],
+                    category: "public.app-category.productivity",
+                    target: [ "zip", "dmg" ],
                 },
 
                 linux: {
