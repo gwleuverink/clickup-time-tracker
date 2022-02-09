@@ -71,7 +71,7 @@ electron-icon-builder --input=src/assets/images/icon/icon.png --output=build/ico
 - [x] Rewrite css overrides to scss
 - [x] Auto updater using Github registry
 - [x] Add animated loading splash screen
-- [ ] Add optional background image
+- [x] Add optional background image
 
 ### Milestones
 - [ ] Extract edit & create modals to separate components (consider this)
