@@ -7,11 +7,14 @@ module.exports = {
             nodeIntegration: true,
             builderOptions: {
                 publish: ['github'],
+                afterSign: './after-sign-hook.js',
+                appId: 'ink.leuver.clickup-time-tracker',
 
                 mac: {
-                    hardenedRuntime: false,
-                    category: "public.app-category.productivity",
+                    hardenedRuntime: true,
                     target: [ "zip", "dmg" ],
+                    category: "public.app-category.productivity",
+                    entitlements: "./build/entitlements.mac.inherit.plist",
                 },
 
                 linux: {
