@@ -1,56 +1,18 @@
-# ClickUp Time tracking - the low friction way
+<p align="center"><a href="https://github.com/gwleuverink/clickup-time-tracker/releases" target="_blank"><img src="./build/icons/256x256.png" width="120"></a></p>
 
-A tool for tracking time on Clickup tasks, but without the frustration
+<p align="center">A tool for tracking time on Clickup tasks</p>
 
-Drag tracked events around on a calendar, drag resize & duplicate entries with ease. Changes are synced with clickup in real time!
+<p align="center">Easily drag & resize events around on a calendar. Changes are synced with ClickUp in real time!</p>
 
-## Project setup
-``` bash
-npm install
-```
-### Compiles and hot-reloads for development
-``` bash
-npm run electron:serve
-```
-### Build for production
-``` bash
-npm run build:osx
-npm run build:win
-npm run build:linux
-npm run build:all
-```
+<hr />
 
-### Build & publish a new release
-``` bash
-# Increment the version number in package.json first
-# Note that the version tag needs to start with `v` in order for CI to trigger a new build
+You can download the latest release for your platform of choice from the [releases page](https://github.com/gwleuverink/clickup-time-tracker/releases)
 
-git commit -am "<VERSION_NUMBER>"
-git tag <VERSION_NUMBER>
-git push
-git push --tags
+If you'd like to contribute please check out the getting started doc [over here](./docs/development.md)
 
-# Github will trigger a build. A draft release will be created for review
-```
-
-### Lints and fixes files
-``` bash
-npm run lint
-```
-
-### Generating a new app icon
-1. Install [electron-icon-builder](https://www.npmjs.com/package/electron-icon-builder) globally
-2. Replace the icon in `./src/assets/images/icon/icon.png` (must be at least 1024x1024)
-3. Generate icon variants via the command line:
-
-```
-electron-icon-builder --input=src/assets/images/icon/icon.png --output=build/icons --flatten
-```
-4. The new icon will be used once a new build is triggered
 
 ## Roadmap
 
-### Done
 - [x] Fetch & list tracking entries for active view
 - [x] Create a new entry by dragging on the calendar
 - [x] Search through all Clickup tasks in searchable select field when adding a new entry
@@ -72,6 +34,9 @@ electron-icon-builder --input=src/assets/images/icon/icon.png --output=build/ico
 - [x] Auto updater using Github registry
 - [x] Add animated loading splash screen
 - [x] Add optional background image
+- [x] Show error message (and log) when fetching task list from background process fails
+- [x] Customize app menu
+- [ ] Refactor to composition API
 
 ### Milestones
 - [ ] Extract edit & create modals to separate components (consider this)
@@ -81,11 +46,9 @@ electron-icon-builder --input=src/assets/images/icon/icon.png --output=build/ico
 - [ ] Add caching with TTL on fetched task list
 - [ ] In details modal make an option to update tracking description/attached task
 ### Quick wins
-- [ ] Show error message (and log) when fetching task list from background process fails
 - [ ] Button to refresh current view (and tracked entries in that view)
 - [ ] Sort selectable tasks by latest log entry (might not be possible since tracked time is not added to tasks fetch payload)
 - [ ] After that sort selectable tasks by updated_at date
 - [ ] Reset a task when an API error occured while editing (resize/drag etc)
 - [ ] Filter Tasks API call to exclude Tasks with status 'Requested, Backlog, Closed' etc
-- [ ] Customize app menu
 - [ ] Add error reporting (sentry)
