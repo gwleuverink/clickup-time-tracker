@@ -200,7 +200,7 @@ export default {
                 message: "Please select a task to start tracking",
               },
               description: {
-                min: 6,
+                min: 3,
                 required: true,
                 trigger: ["blur"],
                 message: "Please provide a description",
@@ -222,6 +222,14 @@ export default {
     // Register background process listeners
     ipcRenderer.on("set-clickup-cards", (event, cards) =>
       this.onClickupCardsRefreshed(cards)
+    );
+
+    ipcRenderer.on("fetch-clickup-cards-error", (event, error) =>
+      this.error({
+          error,
+          title: "Failed to fetch Clickup tasks in the background",
+          content: "You can try again later by pressing the refresh button when searching for a task",
+      })
     );
 
     this.refreshClickupCards();

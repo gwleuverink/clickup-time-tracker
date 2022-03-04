@@ -15,7 +15,9 @@ const isDevelopment = process.env.NODE_ENV !== 'production'
 
 // Register background ipc protocol listeners
 ipcMain.on('get-clickup-cards', event => {
-    clickupService.getTasks().then(tasks => event.reply('set-clickup-cards', tasks))
+    clickupService.getTasks()
+        .then(tasks => event.reply('set-clickup-cards', tasks))
+        .catch(err => event.reply('fetch-clickup-cards-error', err))
 })
 
 // Scheme must be registered before the app is ready
