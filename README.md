@@ -10,6 +10,9 @@ You can download the latest release for your platform of choice from the [releas
 
 If you'd like to contribute please check out the getting started doc [over here](./docs/development.md)
 
+**Disclaimer:** This project is fully functional but still has some quirks & is not quite feature-complete just yet. Feedback and contributions are highly appreciated.
+
+<p align="center"><img src="./docs/img/screenshot.png" width="620"></p>
 
 ## Roadmap
 
