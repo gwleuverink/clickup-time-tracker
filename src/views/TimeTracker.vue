@@ -300,9 +300,10 @@ export default {
 
     // Fired when background process sends us the refreshed cards
     onClickupCardsRefreshed(cards) {
+
       this.clickupCards = cards.map((card) => ({
         value: card.id,
-        label: card.name,
+        label: `${card.name} (${card.folder.name})`,
       }));
 
       this.loadingClickupCards = false;
