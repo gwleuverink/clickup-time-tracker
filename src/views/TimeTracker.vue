@@ -10,7 +10,7 @@
     :click-to-navigate="false"
     :hide-view-selector="true"
     :watch-real-time="true"
-    :time-cell-height="80"
+    :time-cell-height="90"
     :time-from="7 * 60"
     :time-to="22 * 60"
     :snap-to-time="15"
@@ -43,6 +43,31 @@
         <!-- End | Extra controls -->
       </div>
     </template>
+
+    <template v-slot:event="{ event }">
+
+        <n-popover trigger="hover" :delay="300" :duration="200" width="260">
+
+            <template #trigger>
+                <div class="vuecal__event-title" v-html="event.title" />
+            </template>
+
+            <template #header>
+                <span class="font-semibold text-gray-700" v-text="event.title"></span>
+            </template>
+
+            <span v-text="event.description"></span>
+
+            <hr class="my-2" />
+
+            <button @click="shell.openExternal(event.taskUrl)" target="_blank" class="flex items-center py-1 space-x-1 italic text-gray-500 hover:text-gray-700">
+                <img class="mt-1 w-7" src="@/assets/images/white-rounded-logo.svg" alt="Open task in ClickUp">
+                <span>Open in ClickUp</span>
+            </button>
+
+        </n-popover>
+    </template>
+
   </vue-cal>
   <!-- END | Calendar view -->
 
@@ -112,7 +137,7 @@
   </n-modal>
   <!-- END | Task creation modal -->
 
-  <!-- START | Task creation modal -->
+  <!-- START | Task detail modal -->
   <n-modal v-model:show="showTaskDetailsModal">
     <n-card
       :bordered="false"
@@ -151,10 +176,11 @@
         <!-- TODO: Show current task column -->
 
         <p>{{ selectedTask.description || "No description provided" }}</p>
+
       </n-space>
     </n-card>
   </n-modal>
-  <!-- END | Task creation modal -->
+  <!-- END | Task detail modal -->
 </template>
 
 
@@ -162,6 +188,7 @@
 import { ref } from "vue";
 import { RouterLink } from "vue-router";
 import { ipcRenderer } from "electron";
+const shell = require('electron').shell;
 
 import VueCal from "vue-cal";
 import "vue-cal/dist/drag-and-drop.js";
@@ -173,15 +200,16 @@ import eventFactory from "@/events-factory";
 import clickupService from "@/clickup-service";
 
 import { CogIcon, RefreshIcon, TrashIcon } from "@heroicons/vue/outline";
-import { NModal,  NCard,  NForm,  NFormItem,  NSpace,  NIcon,  NPopconfirm,  NButton,  NInput,  NSelect,  useNotification } from "naive-ui";
+import { NModal,  NCard,  NForm,  NFormItem,  NSpace,  NIcon,  NPopconfirm, NPopover,  NButton,  NInput,  NSelect,  useNotification } from "naive-ui";
 
 export default {
-  components: { VueCal, RouterLink, NModal, NCard, NForm, NFormItem, NSpace, NIcon, NPopconfirm, NButton, NInput, NSelect, CogIcon, RefreshIcon, TrashIcon },
+  components: { VueCal, RouterLink, NModal, NCard, NForm, NFormItem, NSpace, NIcon, NPopconfirm, NPopover, NButton, NInput, NSelect, CogIcon, RefreshIcon, TrashIcon },
 
   setup() {
     const notification = useNotification();
 
     return {
+      shell,
 
       events: ref([]),
       selectedTask: ref({}),
