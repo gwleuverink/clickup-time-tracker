@@ -46,7 +46,7 @@
 
     <template v-slot:event="{ event }">
 
-        <n-popover trigger="hover" :delay="300" :duration="200" width="260">
+        <n-popover trigger="hover" :delay="500" :duration="60" width="260">
 
             <template #trigger>
                 <div class="vuecal__event-title" v-html="event.title" />
