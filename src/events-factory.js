@@ -5,7 +5,7 @@ export default {
         if(!entry.task) return false
 
         const editable = ['Closed', 'archived'].indexOf(entry.task.status.status) === -1
-        console.dir(entry);
+
         return {
             entryId: entry.id,
             taskId: entry.task.id,
