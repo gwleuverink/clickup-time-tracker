@@ -13,11 +13,32 @@
         <n-input v-model:value="model.clickup_team_id" clearable />
       </n-form-item>
 
-      <n-form-item
-        label="Background image url (optional)"
-        path="background_image_url"
-      >
+      <div class="flex space-x-4">
+        <n-form-item label="Day starts at" path="day_start" class="flex-grow">
+            <n-time-picker
+                v-model:value="model.day_start"
+                default-formatted-value="8:00"
+                format="H:00"
+                :actions="['confirm']" class="w-full"
+            />
+        </n-form-item>
+
+        <n-form-item label="Day ends at" path="day_end" class="flex-grow">
+            <n-time-picker
+                v-model:value="model.day_end"
+                default-formatted-value="18:00"
+                format="H:00"
+                :actions="['confirm']" class="w-full"
+            />
+        </n-form-item>
+      </div>
+
+      <n-form-item label="Background image url (optional)" path="background_image_url">
         <n-input v-model:value="model.background_image_url" clearable />
+      </n-form-item>
+
+      <n-form-item label="Show weekends" path="show_weekend">
+        <n-switch v-model:value="model.show_weekend" :default-value="true" />
       </n-form-item>
 
       <div class="flex justify-end">
@@ -75,12 +96,12 @@
 <script>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { NForm, NFormItem, NInput, NButton, useNotification } from "naive-ui";
+import { NForm, NFormItem, NInput, NTimePicker, NSwitch, NButton, useNotification } from "naive-ui";
 import { BackspaceIcon } from "@heroicons/vue/outline";
 import store from "@/store";
 
 export default {
-  components: { NForm, NFormItem, NInput, NButton, BackspaceIcon },
+  components: { NForm, NFormItem, NInput, NTimePicker, NSwitch, NButton, BackspaceIcon },
 
   setup() {
     const form = ref(null);
@@ -126,6 +147,30 @@ export default {
           },
           // TODO: Add async validity checker
         ],
+        day_start: [
+          {
+            required: true,
+            validator(rule, value) {
+                if (Number(value) >= Number(model.value.day_end)) {
+                    return new Error("Must be less than the end of day");
+                }
+                return true;
+            },
+            trigger: ["input", "blur"],
+          },
+        ],
+        day_end: [
+          {
+            required: true,
+            validator(rule, value) {
+                if (Number(value) <= Number(model.value.day_start)) {
+                    return new Error("Must be more than the start of day");
+                }
+                return true;
+            },
+            trigger: ["input", "blur"],
+          },
+        ]
       },
     };
   },

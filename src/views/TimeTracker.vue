@@ -6,13 +6,14 @@
     :on-event-create="onTaskCreate"
     :on-event-click="onTaskSingleClick"
     :on-event-dblclick="onTaskDoubleClick"
+    :hide-weekends="!store.get('settings.show_weekend')"
     :drag-to-create-threshold="20"
     :click-to-navigate="false"
     :hide-view-selector="true"
     :watch-real-time="true"
     :time-cell-height="90"
-    :time-from="7 * 60"
-    :time-to="22 * 60"
+    :time-from="dayStart"
+    :time-to="dayEnd"
     :snap-to-time="15"
     :events="events"
     @ready="fetchEvents"
@@ -210,6 +211,7 @@ export default {
 
     return {
       shell,
+      store,
 
       events: ref([]),
       selectedTask: ref({}),
@@ -508,5 +510,23 @@ export default {
       bg.style.backgroundSize = "cover";
     }
   },
+
+  computed: {
+      dayStart() {
+          if(! store.get('settings.day_start')) return 7 * 60
+
+          const dateTime = new Date(store.get('settings.day_start'))
+
+          return dateTime.getHours() * 60;
+      },
+
+      dayEnd() {
+          if(! store.get('settings.day_end')) return 7 * 60
+
+          const dateTime = new Date(store.get('settings.day_end'))
+
+          return dateTime.getHours() * 60;
+      }
+  }
 };
 </script>
