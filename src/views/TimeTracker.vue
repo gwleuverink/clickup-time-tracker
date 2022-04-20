@@ -59,11 +59,16 @@
 
             <span v-text="event.description"></span>
 
-            <hr class="my-2" />
+            <hr class="my-2 -mx-3.5" />
 
             <button @click="shell.openExternal(event.taskUrl)" class="flex items-center py-1 space-x-1 italic text-gray-500 hover:text-gray-700">
                 <img class="mt-1 w-7" src="@/assets/images/white-rounded-logo.svg" alt="Open task in ClickUp">
                 <span>Open in ClickUp</span>
+            </button>
+
+            <button @click="onTaskDoubleClick(event)" class="flex items-center py-1 space-x-1 italic text-gray-500 hover:text-gray-700">
+                <pencil-icon class="w-4 mx-1.5" />
+                <span>Open details</span>
             </button>
 
         </n-popover>
@@ -200,11 +205,11 @@ import { isEmptyObject } from "@/helpers";
 import eventFactory from "@/events-factory";
 import clickupService from "@/clickup-service";
 
-import { CogIcon, RefreshIcon, TrashIcon } from "@heroicons/vue/outline";
+import { CogIcon, RefreshIcon, TrashIcon, PencilIcon } from "@heroicons/vue/outline";
 import { NModal,  NCard,  NForm,  NFormItem,  NSpace,  NIcon,  NPopconfirm, NPopover,  NButton,  NInput,  NSelect,  useNotification } from "naive-ui";
 
 export default {
-  components: { VueCal, RouterLink, NModal, NCard, NForm, NFormItem, NSpace, NIcon, NPopconfirm, NPopover, NButton, NInput, NSelect, CogIcon, RefreshIcon, TrashIcon },
+  components: { VueCal, RouterLink, NModal, NCard, NForm, NFormItem, NSpace, NIcon, NPopconfirm, NPopover, NButton, NInput, NSelect, CogIcon, RefreshIcon, TrashIcon, PencilIcon },
 
   setup() {
     const notification = useNotification();
