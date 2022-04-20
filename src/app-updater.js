@@ -6,7 +6,9 @@ let updater
 autoUpdater.autoDownload = true;
 
 autoUpdater.on('error', (error) => {
-    dialog.showErrorBox('Error: ', error == null ? "unknown" : (error.stack || error).toString())
+    dialog.showErrorBox('Something went wrong whilst updating the app', 'If all fails you can always download the latest version straight from GitHub. https://github.com/gwleuverink/clickup-time-tracker/releases/latest')
+
+    console.error(error)
 })
 
 autoUpdater.on('update-available', () => {
