@@ -5,17 +5,22 @@ module.exports = {
     pluginOptions: {
         electronBuilder: {
             nodeIntegration: true,
+            productName: 'Time Tracker',
+            artifactName: 'time-tracker-${version}-${os}-${arch}.${ext}',
             builderOptions: {
-                publish: ['github'],
+                publish: [
+                    { provider: 'github', private: false, releaseType: 'release' },
+                ],
 
                 mac: {
-                    hardenedRuntime: false,
+                    hardenedRuntime: true,
                     category: "public.app-category.productivity",
-                    target: [ "zip", "dmg" ],
+                    target: [ "dmg" ],
                 },
 
                 linux: {
-                    target: ["AppImage"]
+                    target: ["AppImage"],
+                    executableName: 'Time Tracker',
                 },
             }
         }
