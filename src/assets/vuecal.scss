@@ -67,6 +67,9 @@
     |--------------------------------------------------------------------------
     */
     &__event {
+
+        $element: &;
+
         color: #666666de;
         text-align: left;
 
@@ -86,7 +89,20 @@
             text-overflow: ellipsis;
         }
 
-        ::before {
+        &-resize-handle {
+            height: .5em;
+            background-color: hsla(0deg, 0%, 100%, 0.6);
+        }
+
+        &-task-info-popover {
+            opacity: 0;
+
+            transition-property: opacity;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 150ms;
+        }
+
+        &::before {
             content: "";
             position: absolute;
             top: 0;
@@ -94,6 +110,12 @@
             width: 6px;
             height: 100%;
             background-color: rgba(173, 216, 230, 0.8);
+        }
+
+        &:hover {
+            #{$element}-task-info-popover {
+                opacity: 1;
+            }
         }
 
         &--focus {

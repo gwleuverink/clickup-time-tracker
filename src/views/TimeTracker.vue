@@ -2,11 +2,11 @@
   <!-- START | Calendar view -->
   <vue-cal
     :editable-events="{ drag: true, resize: true, create: true }"
-    :disable-views="['years', 'year', 'month', 'day']"
-    :on-event-create="onTaskCreate"
-    :on-event-click="onTaskSingleClick"
-    :on-event-dblclick="onTaskDoubleClick"
     :hide-weekends="!store.get('settings.show_weekend')"
+    :disable-views="['years', 'year', 'month', 'day']"
+    :on-event-dblclick="onTaskDoubleClick"
+    :on-event-click="onTaskSingleClick"
+    :on-event-create="onTaskCreate"
     :drag-to-create-threshold="20"
     :click-to-navigate="false"
     :hide-view-selector="true"
@@ -45,33 +45,41 @@
       </div>
     </template>
 
-    <template v-slot:event="{ event }">
+    <template v-slot:event="{ event }" >
 
-        <n-popover trigger="hover" :delay="500" :duration="60" width="260">
+        <div class="vuecal__event-title">
+            <span v-text="event.title" />
 
-            <template #trigger>
-                <div class="vuecal__event-title" v-html="event.title" />
-            </template>
+            <n-popover trigger="hover" :delay="500" :duration="60" width="260">
 
-            <template #header>
-                <span class="font-semibold text-gray-700" v-text="event.title"></span>
-            </template>
+                <template #trigger>
+                    <span class="vuecal__event-task-info-popover absolute top-0 right-0 py-0.5 px-1 cursor-pointer">
+                        <information-circle-icon class="w-4 text-blue-400"/>
+                    </span>
+                </template>
 
-            <span v-text="event.description"></span>
+                <template #header>
+                    <span class="font-semibold text-gray-700" v-text="event.title"></span>
+                </template>
 
-            <hr class="my-2 -mx-3.5" />
+                <span v-text="event.description" class="whitespace-pre-wrap"></span>
 
-            <button @click="shell.openExternal(event.taskUrl)" class="flex items-center py-1 space-x-1 italic text-gray-500 hover:text-gray-700">
-                <img class="mt-1 w-7" src="@/assets/images/white-rounded-logo.svg" alt="Open task in ClickUp">
-                <span>Open in ClickUp</span>
-            </button>
+                <hr class="my-2 -mx-3.5" />
 
-            <button @click="onTaskDoubleClick(event)" class="flex items-center py-1 space-x-1 italic text-gray-500 hover:text-gray-700">
-                <pencil-icon class="w-4 mx-1.5" />
-                <span>Open details</span>
-            </button>
+                <button @click="shell.openExternal(event.taskUrl)" class="flex items-center py-1 space-x-1 italic text-gray-500 hover:text-gray-700">
+                    <img class="mt-1 w-7" src="@/assets/images/white-rounded-logo.svg" alt="Open task in ClickUp">
+                    <span>Open in ClickUp</span>
+                </button>
 
-        </n-popover>
+                <button @click="onTaskDoubleClick(event)" class="flex items-center py-1 space-x-1 italic text-gray-500 hover:text-gray-700">
+                    <pencil-icon class="w-4 mx-1.5" />
+                    <span>Open details</span>
+                </button>
+
+            </n-popover>
+
+        </div>
+
     </template>
 
   </vue-cal>
@@ -205,11 +213,12 @@ import { isEmptyObject } from "@/helpers";
 import eventFactory from "@/events-factory";
 import clickupService from "@/clickup-service";
 
+import { InformationCircleIcon } from "@heroicons/vue/solid";
 import { CogIcon, RefreshIcon, TrashIcon, PencilIcon } from "@heroicons/vue/outline";
 import { NModal,  NCard,  NForm,  NFormItem,  NSpace,  NIcon,  NPopconfirm, NPopover,  NButton,  NInput,  NSelect,  useNotification } from "naive-ui";
 
 export default {
-  components: { VueCal, RouterLink, NModal, NCard, NForm, NFormItem, NSpace, NIcon, NPopconfirm, NPopover, NButton, NInput, NSelect, CogIcon, RefreshIcon, TrashIcon, PencilIcon },
+  components: { VueCal, RouterLink, NModal, NCard, NForm, NFormItem, NSpace, NIcon, NPopconfirm, NPopover, NButton, NInput, NSelect, CogIcon, RefreshIcon, TrashIcon, PencilIcon, InformationCircleIcon },
 
   setup() {
     const notification = useNotification();
@@ -235,7 +244,6 @@ export default {
                 message: "Please select a task to start tracking",
               },
               description: {
-                min: 3,
                 required: true,
                 trigger: ["blur"],
                 message: "Please provide a description",
@@ -310,7 +318,7 @@ export default {
 
       this.clickupCards = cards.map((card) => ({
         value: card.id,
-        label: `${card.name} (${card.folder.name})`,
+        label: `${card.name}`,
       }));
 
       this.loadingClickupCards = false;
