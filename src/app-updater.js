@@ -1,4 +1,4 @@
-import { dialog } from 'electron'
+import { dialog, shell } from 'electron'
 import { autoUpdater } from 'electron-updater'
 
 
@@ -6,28 +6,46 @@ let updater
 autoUpdater.autoDownload = true;
 
 autoUpdater.on('error', (error) => {
-    dialog.showErrorBox('Something went wrong whilst updating the app', 'If all fails you can always download the latest version straight from GitHub. https://github.com/gwleuverink/clickup-time-tracker/releases/latest')
+    dialog.showMessageBox({
+        type: 'error',
+        title: 'Something went wrong whilst updating the app',
+        message: 'Unable to check for updates',
+        buttons: ['Download manually', 'Cancel']
+    }).then(result => {
+        if(result.response === 0) {
+            shell.openExternal('https://github.com/gwleuverink/clickup-time-tracker/releases/latest')
+        }
+    });
 
     console.error(error)
 })
 
 autoUpdater.on('update-available', () => {
+
     dialog.showMessageBox({
         type: 'info',
-        title: 'Found Updates',
-        message: 'Found updates, do you want update now?',
-        buttons: ['Sure', 'No']
-    }).then((buttonIndex) => {
+        title: 'Update available',
+        message: `
+        Looks like there is an update available
 
-        if (buttonIndex === 0) {
-            autoUpdater.downloadUpdate()
-            updater.enabled = false
-        }
-        else {
-            updater.enabled = true
-            updater = false
-        }
-    })
+        Click below to head over to the downloads page
+
+        Thanks for using Time Tracker! ♥
+
+        If you like this app and want to support future development I would greatly appreciate it if you'd consider sponsoring this project
+        `,
+        buttons: ['Download update', 'Sponsor the project', 'Cancel']
+    }).then(result => {
+        updater.enabled = true
+        switch(result.response) {
+            case 0:
+                shell.openExternal('https://github.com/gwleuverink/clickup-time-tracker/releases/latest')
+                break;
+            case 1:
+                shell.openExternal('https://github.com/sponsors/gwleuverink')
+                break;
+          }
+    });
 })
 
 autoUpdater.on('update-not-available', () => {
@@ -38,16 +56,6 @@ autoUpdater.on('update-not-available', () => {
     updater.enabled = true
     updater = null
 })
-
-autoUpdater.on('update-downloaded', () => {
-    dialog.showMessageBox({
-        title: 'Install Updates',
-        message: 'Updates downloaded, application will be quit for update...'
-    }).then(() => {
-        setImmediate(() => autoUpdater.quitAndInstall())
-    })
-})
-
 
 // export this to MenuItem click callback
 function checkForUpdates(menuItem) {

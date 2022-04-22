@@ -34,17 +34,19 @@ If you'd like to contribute please check out the getting started doc [over here]
 - [x] Replace all inline svg's with svg components (heroicons included in project)
 - [x] Add proper validation to create modal
 - [x] Rewrite css overrides to scss
-- [x] Auto updater using Github registry
+- [x] Auto update notifications using Github registry
 - [x] Add animated loading splash screen
 - [x] Add optional background image
 - [x] Show error message (and log) when fetching task list from background process fails
 - [x] Customize app menu
+- [x] Optional settings for modifing start & end of day
+- [x] Setting for toggling weekends
+- [x] Tracking entry popover on hover with extra info & actions (title, desc, open details, link to clickup)
+- [x] Add error reporting (sentry)
 - [ ] Refactor to composition API
 
 ### Milestones
 - [ ] Extract edit & create modals to separate components (consider this)
-- [ ] Optional settings for modifing start & end of day
-- [ ] Setting for toggling weekends
 - [ ] Add JSON Schema for setting store with default values for start/end of day & weekend toggle
 - [ ] Add caching with TTL on fetched task list
 - [ ] In details modal make an option to update tracking description/attached task
@@ -54,4 +56,3 @@ If you'd like to contribute please check out the getting started doc [over here]
 - [ ] After that sort selectable tasks by updated_at date
 - [ ] Reset a task when an API error occured while editing (resize/drag etc)
 - [ ] Filter Tasks API call to exclude Tasks with status 'Requested, Backlog, Closed' etc
-- [ ] Add error reporting (sentry)
