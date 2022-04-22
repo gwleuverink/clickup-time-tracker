@@ -24,9 +24,12 @@ export default {
     },
 
     updateFromRemote: (original, remote) => {
+        console.dir(original)
+        console.dir(remote)
         return Object.assign(original, {
             entryId: remote.id,
             taskId: remote.task.id,
+            taskUrl: `https://app.clickup.com/t/${remote.task.id}`,
             title: remote.task.name,
             start: new Date(Number(remote.start)),
             end: new Date(Number(remote.start) + Number(remote.duration)),
