@@ -1,19 +1,19 @@
 'use strict'
 
+const { init } = require('@sentry/electron/main');
+
+init({
+    dsn: process.env.VUE_APP_SENTRY_DSN
+});
+
+
 import { app, protocol, ipcMain, BrowserWindow } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS3_DEVTOOLS } from 'electron-devtools-installer'
 import clickupService from '@/clickup-service'
 import { createMenu } from '@/app-menu'
 import updater from '@/app-updater'
-
-import * as Sentry from "@sentry/electron";
-Sentry.init({ dsn: "https://95612b221173413ab6802b1eed844b76@o1134386.ingest.sentry.io/6181815" });
-
-import Store from 'electron-store';
-
-Store.initRenderer();
-
+import path from 'path';
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
@@ -39,7 +39,10 @@ async function createWindow() {
             // Use pluginOptions.nodeIntegration, leave this alone
             // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
             nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
-            contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION
+            contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
+
+            // Inject preload script for Sentry support
+            preload: path.join(__dirname, 'preload.js')
         }
     })
 

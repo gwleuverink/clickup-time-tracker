@@ -5,6 +5,7 @@ module.exports = {
     pluginOptions: {
         electronBuilder: {
             nodeIntegration: true,
+            preload: 'src/preload.js',
             productName: 'Time Tracker',
             artifactName: 'time-tracker-${version}-${os}-${arch}.${ext}',
             builderOptions: {
