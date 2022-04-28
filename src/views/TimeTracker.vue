@@ -54,7 +54,7 @@
 
                 <template #trigger>
                     <span class="vuecal__event-task-info-popover absolute top-0 right-0 py-0.5 px-1 cursor-pointer">
-                        <information-circle-icon class="w-4 text-sky-400"/>
+                        <information-circle-icon class="w-4 text-blue-300 transition-all transform hover:scale-125"/>
                     </span>
                 </template>
 
