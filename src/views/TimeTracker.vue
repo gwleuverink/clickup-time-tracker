@@ -534,7 +534,7 @@ export default {
       },
 
       dayEnd() {
-          if(! store.get('settings.day_end')) return 7 * 60
+          if(! store.get('settings.day_end')) return 22 * 60
 
           const dateTime = new Date(store.get('settings.day_end'))
 
