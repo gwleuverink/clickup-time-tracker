@@ -281,6 +281,24 @@ export default {
     this.refreshBackgroundImage();
   },
 
+  computed: {
+      dayStart() {
+          if(! store.get('settings.day_start')) return 7 * 60
+
+          const dateTime = new Date(store.get('settings.day_start'))
+
+          return dateTime.getHours() * 60;
+      },
+
+      dayEnd() {
+          if(! store.get('settings.day_end')) return 22 * 60
+
+          const dateTime = new Date(store.get('settings.day_end'))
+
+          return dateTime.getHours() * 60;
+      }
+  },
+
   methods: {
     /*
     |--------------------------------------------------------------------------
@@ -522,24 +540,6 @@ export default {
       bg.style.backgroundPosition = "center";
       bg.style.backgroundSize = "cover";
     }
-  },
-
-  computed: {
-      dayStart() {
-          if(! store.get('settings.day_start')) return 7 * 60
-
-          const dateTime = new Date(store.get('settings.day_start'))
-
-          return dateTime.getHours() * 60;
-      },
-
-      dayEnd() {
-          if(! store.get('settings.day_end')) return 22 * 60
-
-          const dateTime = new Date(store.get('settings.day_end'))
-
-          return dateTime.getHours() * 60;
-      }
   }
 };
 </script>
