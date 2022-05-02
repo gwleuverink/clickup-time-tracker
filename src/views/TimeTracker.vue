@@ -50,6 +50,7 @@
         <div class="vuecal__event-title">
             <span v-text="event.title" />
 
+            <!-- START | Task context popover -->
             <n-popover trigger="hover" :delay="500" :duration="60" width="260">
 
                 <template #trigger>
@@ -77,6 +78,7 @@
                 </button>
 
             </n-popover>
+            <!-- END | Task context popover -->
 
         </div>
 
@@ -189,7 +191,7 @@
         <!-- TODO: Show some task labels -->
         <!-- TODO: Show current task column -->
 
-        <p>{{ selectedTask.description || "No description provided" }}</p>
+        <p class="whitespace-pre-wrap">{{ selectedTask.description || "No description provided" }}</p>
 
       </n-space>
     </n-card>
