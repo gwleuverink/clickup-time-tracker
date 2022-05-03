@@ -248,7 +248,6 @@ export default {
               description: {
                 required: false,
                 trigger: ["blur"],
-                message: "Please provide a description",
               }
           }
       },
