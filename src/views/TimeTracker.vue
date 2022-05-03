@@ -246,7 +246,7 @@ export default {
                 message: "Please select a task to start tracking",
               },
               description: {
-                required: true,
+                required: false,
                 trigger: ["blur"],
                 message: "Please provide a description",
               }
