@@ -3,6 +3,7 @@
 const { init } = require('@sentry/electron/main');
 
 init({
+    debug: true,
     dsn: process.env.VUE_APP_SENTRY_DSN
 });
 
