@@ -5,11 +5,11 @@
 
   <div class="grid grid-cols-1 gap-4 p-4 md:grid-cols-2">
     <n-form :model="model" :rules="rules" size="large" ref="form">
-      <n-form-item label="Clickup Access token" path="clickup_access_token">
+      <n-form-item label="ClickUp Access token" path="clickup_access_token">
         <n-input v-model:value="model.clickup_access_token" clearable />
       </n-form-item>
 
-      <n-form-item label="Clickup Team ID" path="clickup_team_id">
+      <n-form-item label="ClickUp Team ID" path="clickup_team_id">
         <n-input v-model:value="model.clickup_team_id" clearable />
       </n-form-item>
 
@@ -133,7 +133,7 @@ export default {
           {
             required: true,
             min: 43,
-            message: "Please input your Clickup Access Token",
+            message: "Please input your ClickUp Access Token",
             trigger: ["input", "blur"],
           },
           // TODO: Add async validity checker
@@ -142,7 +142,7 @@ export default {
           {
             required: true,
             min: 1,
-            message: "Please input your Clickup Team ID",
+            message: "Please input your ClickUp Team ID",
             trigger: ["input", "blur"],
           },
           // TODO: Add async validity checker
