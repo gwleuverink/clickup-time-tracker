@@ -4,55 +4,42 @@
 
 <p align="center">Easily drag & resize events around on a calendar. Changes are synced with ClickUp in real time!</p>
 
+<br />
+
+<p align="center">
+<a href="https://github.com/gwleuverink/clickup-time-tracker/actions/workflows/build.yml"><img src="https://github.com/gwleuverink/clickup-time-tracker/actions/workflows/build.yml/badge.svg" alt="Build workflow"></a>
+<a href="https://github.com/gwleuverink/clickup-time-tracker/releases/latest"><img alt="GitHub all releases" src="https://img.shields.io/github/downloads/gwleuverink/clickup-time-tracker/total"></a>
+<a href="https://github.com/sponsors/gwleuverink"><img alt="GitHub Sponsors" src="https://img.shields.io/github/sponsors/gwleuverink"></a>
+</p>
+
 <hr />
 
-You can download the latest release for your platform of choice from the [releases page](https://github.com/gwleuverink/clickup-time-tracker/releases)
+## What does it do
 
-If you'd like to contribute please check out the getting started doc [over here](./docs/development.md)
-
-**Disclaimer:** This project is fully functional but still has some quirks & is not quite feature-complete just yet. Feedback and contributions are highly appreciated.
+* Orderly Week calendar view (easily spot gaps)
+* Changes synced with ClickUp in real-time
+* Intuitive drag & drop UI
+* Convenient keyboard shortcuts
+* Lower your cortisol levels at the end of the workday by 30% (results may vary)
 
 <p align="center"><img src="./docs/img/screenshot.png" width="620"></p>
 
-## Roadmap
+## Installation
+You can download the latest release for your platform of choice from the [releases page](https://github.com/gwleuverink/clickup-time-tracker/releases)
 
-- [x] Fetch & list tracking entries for active view
-- [x] Create a new entry by dragging on the calendar
-- [x] Search through all Clickup tasks in searchable select field when adding a new entry
-- [x] Refresh cached Clickup tasks asynchronously in the background process with convenient UI control
-- [x] Update a time entry when resizing/moving the event
-- [x] Disable editing (resize/drag/delete) when the associated task is closed
-- [x] Add proper accesibility support & hooks to create & detail modals
-- [x] Double click event to show details
-- [x] In details modal add a button to delete the tracking entry
-- [x] Add select + backspace to delete support
-- [x] Add copy/paste support
-- [x] Show proper toast alerts when things happen in the app
-- [x] Add full bleed title bar
-- [x] Add a preferences screen where the user can set env variables
-- [x] Add online/offline state splash screen
-- [x] Replace all inline svg's with svg components (heroicons included in project)
-- [x] Add proper validation to create modal
-- [x] Rewrite css overrides to scss
-- [x] Auto update notifications using Github registry
-- [x] Add animated loading splash screen
-- [x] Add optional background image
-- [x] Show error message (and log) when fetching task list from background process fails
-- [x] Customize app menu
-- [x] Optional settings for modifing start & end of day
-- [x] Setting for toggling weekends
-- [x] Tracking entry popover on hover with extra info & actions (title, desc, open details, link to clickup)
-- [x] Add error reporting (sentry)
-- [ ] Refactor to composition API
+This app is not signed & notarized for MacOS. This means you will get a notification that you can't open untrusted apps.
 
-### Milestones
-- [ ] Extract edit & create modals to separate components (consider this)
-- [ ] Add JSON Schema for setting store with default values for start/end of day & weekend toggle
-- [ ] Add caching with TTL on fetched task list
-- [ ] In details modal make an option to update tracking description/attached task
-### Quick wins
-- [ ] Button to refresh current view (and tracked entries in that view)
-- [ ] Sort selectable tasks by latest log entry (might not be possible since tracked time is not added to tasks fetch payload)
-- [ ] After that sort selectable tasks by updated_at date
-- [ ] Reset a task when an API error occured while editing (resize/drag etc)
-- [ ] Filter Tasks API call to exclude Tasks with status 'Requested, Backlog, Closed' etc
+You can circumvent this by holding `option` and right click the app, then click `open`. After doing this once you can open the app normally.
+
+### Setup credentials
+When starting the app for the first time you are asked to fill in some credentials. You'll need these two:
+
+#### ClickUp Access token
+Log in to ClickUp & click on your profile pic in the bottom left. Then click `Apps`.
+
+In the next screen you'll see a button to generate a API token. Do that and paste the output in the Time Tracker app's preferences.
+
+#### ClickUp Team ID
+You can find your team's ID in the url after you log in to your ClickUp dashboard. It's the first part after the domain. For example if you see `app.clickup.com/1234567`, then your team ID is `1234567`
+## Contributions
+If you'd like to contribute please check out the getting started doc [over here](./docs/development.md)
