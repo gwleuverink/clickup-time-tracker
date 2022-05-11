@@ -82,6 +82,14 @@
 
         </div>
 
+        <!-- START | Time from/to -->
+        <div class="vuecal__event-time">
+            {{ event.start.formatTime('hh:mm') }}
+            <span class="mx-1">-</span>
+            {{ event.end.formatTime('hh:mm') }}
+        </div>
+        <!-- END | Time from/to -->
+
     </template>
 
   </vue-cal>
