@@ -16,10 +16,12 @@
 
 ## What does it do
 
-* Orderly Week calendar view (easily spot gaps)
-* Changes synced with ClickUp in real-time
+* Minimal context switching
 * Intuitive drag & drop UI
+* Orderly Week calendar view
+* Great overview of gaps in your tracked hours
 * Convenient keyboard shortcuts
+* Changes synced with ClickUp in real-time
 * Lower your cortisol levels at the end of the workday by 30% (results may vary)
 
 <p align="center"><img src="./docs/img/screenshot.png" width="620"></p>
