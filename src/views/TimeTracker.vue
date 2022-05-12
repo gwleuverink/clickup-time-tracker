@@ -246,8 +246,9 @@ export default {
                 message: "Please select a task to start tracking",
               },
               description: {
-                required: false,
+                required: store.get('settings.require_description'),
                 trigger: ["blur"],
+                message: "Please provide a description",
               }
           }
       },
