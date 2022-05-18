@@ -37,9 +37,15 @@
         <n-input v-model:value="model.background_image_url" clearable />
       </n-form-item>
 
-      <n-form-item label="Show weekends" path="show_weekend">
-        <n-switch v-model:value="model.show_weekend" :default-value="true" />
-      </n-form-item>
+      <div class="flex space-x-4">
+        <n-form-item label="Show weekends" path="show_weekend">
+          <n-switch v-model:value="model.show_weekend" :default-value="true" />
+        </n-form-item>
+
+        <n-form-item label="Require description" path="require_description">
+          <n-switch v-model:value="model.require_description" :default-value="false" />
+        </n-form-item>
+      </div>
 
       <div class="flex justify-end">
         <n-button @click="persist" type="primary" round>Save</n-button>
