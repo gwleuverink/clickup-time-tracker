@@ -1,6 +1,4 @@
 
 module.exports = {
-    purge: {
-        content: ["./src/**/*.{html,js,vue}"]
-    }
+    content: ["./src/**/*.{html,js,vue}"]
 }

@@ -1,6 +1,6 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import TimeTracker from '@/views/TimeTracker.vue'
-import Settings from '@/views/Settings.vue'
+import UserSettings from '@/views/UserSettings.vue'
 
 const Store = require('electron-store')
 const store = new Store
@@ -22,7 +22,7 @@ const routes = [
   {
     path: '/settings',
     name: 'settings',
-    component: Settings
+    component: UserSettings
   }
 ]
 

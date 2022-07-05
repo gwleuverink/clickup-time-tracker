@@ -24,7 +24,8 @@ import "@/assets/tailwind.css";
 const theme = {
   common: {
     primaryColor: "#0284C7",
-    primaryColorHover: "#38BDF8",
+    primaryColorHover: "#1A9DDE",
+    primaryColorPressed: "#0076B1"
   },
 };
 
@@ -62,5 +63,9 @@ export default {
   font-weight: normal !important;
   font-size: 1.1em !important;
   opacity: 0.9;
+}
+
+.n-button {
+    background-color: var(--n-color);
 }
 </style>
