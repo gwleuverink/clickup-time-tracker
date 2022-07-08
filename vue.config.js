@@ -6,7 +6,6 @@ module.exports = {
         electronBuilder: {
             nodeIntegration: true,
             preload: 'src/preload.js',
-            productFilename: 'Time Tracker',
             productName: 'ClickUp Time Tracker',
             artifactName: 'time-tracker-${version}-${os}-${arch}.${ext}',
             builderOptions: {
