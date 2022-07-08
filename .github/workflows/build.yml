@@ -5,6 +5,8 @@ on:
     tags:
       - 'v*'
 env:
+  APPLE_ID: ${{ secrets.apple_id }}
+  APPLE_ID_PASSWORD: ${{ secrets.apple_id_password }}
   VUE_APP_SENTRY_DSN: ${{ secrets.sentry_dsn }}
 
 jobs:
