@@ -1,6 +1,6 @@
 {
   "private": true,
-  "version": "0.2.0",
+  "version": "1.0.0",
   "name": "clickup-time-tracker",
   "productName": "Time Tracker",
   "description": "A tool for painlessly tracking time on Clickup tasks",
@@ -24,6 +24,7 @@
     "postinstall": "electron-builder install-app-deps",
     "postuninstall": "electron-builder install-app-deps"
   },
+  "main": "background.js",
   "dependencies": {
     "@heroicons/vue": "^1.0.5",
     "@sentry/electron": "^3.0.7",
@@ -45,8 +46,10 @@
     "@vue/compiler-sfc": "^3.0.0",
     "autoprefixer": "^10.4.7",
     "babel-eslint": "^10.1.0",
+    "dotenv": "^16.0.1",
     "electron": "^18.0.0",
     "electron-devtools-installer": "^3.2.0",
+    "electron-notarize": "^1.2.1",
     "eslint": "^7.5.0",
     "eslint-plugin-vue": "^9.1.1",
     "postcss": "^8.4.14",
