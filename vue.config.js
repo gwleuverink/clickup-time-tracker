@@ -6,7 +6,8 @@ module.exports = {
         electronBuilder: {
             nodeIntegration: true,
             preload: 'src/preload.js',
-            productName: 'Time Tracker',
+            productFilename: 'Time Tracker',
+            productName: 'ClickUp Time Tracker',
             artifactName: 'time-tracker-${version}-${os}-${arch}.${ext}',
             builderOptions: {
                 publish: [
@@ -14,15 +15,20 @@ module.exports = {
                 ],
 
                 mac: {
+                    target: [ "dmg" ],
                     hardenedRuntime: true,
                     category: "public.app-category.productivity",
-                    target: [ "dmg" ],
+                    entitlements: "./build/entitlements.mac.inherit.plist",
+                    entitlementsInherit: "./build/entitlements.mac.inherit.plist",
                 },
 
                 linux: {
                     target: ["AppImage"],
                     executableName: 'Time Tracker',
                 },
+
+                appId: 'nl.gwleuverink.clickup-time-tracker',
+                afterSign: './notarize.js'
             }
         }
     },
