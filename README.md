@@ -29,10 +29,6 @@
 ## Installation
 You can download the latest release for your platform of choice from the [releases page](https://github.com/gwleuverink/clickup-time-tracker/releases)
 
-This app is not signed & notarized for MacOS. This means you will get a notification that you can't open untrusted apps.
-
-You can circumvent this by holding `option` and right click the app, then click `open`. After doing this once you can open the app normally.
-
 ### Setup credentials
 When starting the app for the first time you are asked to fill in some credentials. You'll need these two:
 
