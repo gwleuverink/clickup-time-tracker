@@ -137,11 +137,13 @@ We may use third-party Service Providers to provide better improvement of our Se
 *   **ClickUp**
     
     The Service is nothing but a UI layer on top of ClickUp API's. This means any time tracking entries you create or edit are synced with ClickUp directly. 
+    
     Their Privacy Policy can be viewed at [https://clickup.com/privacy](https://clickup.com/privacy)
     
 *   **Sentry**
     
-    We collect data about application errors & crash reports with Sentry
+    We collect data about application errors & crash reports with Sentry.
+    
     Their Privacy Policy can be viewed at [https://www.sentry.com/privacy-policy](https://www.sentry.com/privacy-policy)
     
 
