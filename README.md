@@ -1,6 +1,6 @@
 <p align="center"><a href="https://github.com/gwleuverink/clickup-time-tracker/releases" target="_blank"><img src="./build/icons/256x256.png" width="120" style="filter: drop-shadow(0px 6px 6px #e2e2e2)"></a></p>
 
-<p align="center">A tool for tracking time on Clickup tasks</p>
+<p align="center">A tool for tracking time on ClickUp tasks</p>
 
 <p align="center">Easily drag & resize events around on a calendar. Changes are synced with ClickUp in real time!</p>
 
