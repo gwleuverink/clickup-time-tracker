@@ -14,6 +14,8 @@
 
 <hr />
 
+<img src="./docs/img/cover render 1440x900.jpeg">
+
 ## What does it do
 
 * Minimal context switching
@@ -23,8 +25,6 @@
 * Convenient keyboard shortcuts
 * Changes synced with ClickUp in real-time
 * Lower your cortisol levels at the end of the workday by 30% (results may vary)
-
-<p align="center"><img src="./docs/img/screenshot.png" width="620"></p>
 
 ## Installation
 You can download the latest release for your platform of choice from the [releases page](https://github.com/gwleuverink/clickup-time-tracker/releases)
