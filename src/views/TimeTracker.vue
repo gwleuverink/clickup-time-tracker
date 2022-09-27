@@ -215,7 +215,6 @@ import { ipcRenderer } from "electron";
 const shell = require('electron').shell;
 
 import VueCal from "vue-cal";
-import "vue-cal/dist/drag-and-drop.js";
 import "@/assets/vuecal.scss";
 
 import store from "@/store";
