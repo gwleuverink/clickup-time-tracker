@@ -215,7 +215,6 @@ import { ipcRenderer } from "electron";
 const shell = require('electron').shell;
 
 import VueCal from "vue-cal";
-import "vue-cal/dist/drag-and-drop.js";
 import "@/assets/vuecal.scss";
 
 import store from "@/store";
@@ -285,7 +284,7 @@ export default {
       })
     );
 
-    this.refreshClickupCards();
+    this.getClickupCards();
 
     // Load background image if set
     this.refreshBackgroundImage();
@@ -333,12 +332,19 @@ export default {
     | FETCH TIME CLICKUP CARDS FOR SELECT FIELD
     |--------------------------------------------------------------------------
     */
-    // Instruct background process to refresh clickup cards
-    refreshClickupCards() {
+    // Instruct background process to get cached clickup cards
+    getClickupCards() {
       this.loadingClickupCards = true;
       ipcRenderer.send("get-clickup-cards");
 
-      console.info("Refreshing Clickup cards...");
+      console.info("Fetching Clickup cards (from cache when available)...");
+    },
+
+    refreshClickupCards() {
+        this.loadingClickupCards = true;
+        ipcRenderer.send("refresh-clickup-cards");
+
+        console.info("Refreshing Clickup cards...");
     },
 
     // Fired when background process sends us the refreshed cards

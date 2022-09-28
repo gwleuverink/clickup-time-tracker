@@ -1,5 +1,8 @@
 import request from 'request';
 import store from '@/store';
+import cache from '@/cache';
+
+const TASKS_CACHE_KEY = 'tasks';
 
 function baseUrl() {
     return `https://api.clickup.com/api/v2/team/${store.get('settings.clickup_team_id')}`
@@ -75,12 +78,31 @@ export default {
             try {
                 results = await results.concat(await this.getTasksPage(page))
                 page++
-            } catch {
-                console.warning(`Error retrieving tasks page ${page}. Retrying...`)
+            } catch(e) {
+                console.log(`Error retrieving tasks page ${page}. Retrying...`, e)
             }
         } while (results.length / page === 100)
 
         return results
+    },
+
+    async getCachedTasks() {
+
+        const cached = cache.get(TASKS_CACHE_KEY)
+
+        if (cached) {
+            return cached
+        }
+
+        return cache.put(
+            TASKS_CACHE_KEY,
+            await this.getTasks(),
+            Date.now() + 3600 * 6 // plus 6 hours
+        )
+    },
+
+    async clearCachedTasks() {
+        cache.clear(TASKS_CACHE_KEY)
     },
 
     /*
