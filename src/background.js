@@ -25,7 +25,7 @@ ipcMain.on('get-clickup-cards', event => {
         .catch(err => event.reply('fetch-clickup-cards-error', err))
 })
 
-// Refresh ClickUp tasks cache & return fresh
+// Clear ClickUp tasks cache & fetch fresh list
 ipcMain.on('refresh-clickup-cards', event => {
     clickupService.clearCachedTasks()
     clickupService.getCachedTasks()
