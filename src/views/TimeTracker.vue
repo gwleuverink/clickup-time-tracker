@@ -120,6 +120,8 @@
               :options="clickupCards"
               :disabled="loadingClickupCards"
               v-model:value="selectedTask.taskId"
+              :render-label="renderTaskOptionLabel"
+              :render-tag="({ option, handleClose }) => option.name"
               :placeholder="
                 loadingClickupCards
                   ? 'Refreshing Card list...'
@@ -209,7 +211,7 @@
 
 
 <script>
-import { ref } from "vue";
+import { ref, h } from "vue";
 import { RouterLink } from "vue-router";
 import { ipcRenderer } from "electron";
 const shell = require('electron').shell;
@@ -352,8 +354,9 @@ export default {
 
       this.clickupCards = cards.map((card) => ({
         value: card.id,
-        label: `${card.name}`,
-        folder: `${card.folder.name}`
+        name: `${card.name}`,
+        folder: `${card.folder}`,
+        label: `${card.name} ${card.folder}` // Native UI uses this for fuzzy searching
       }));
 
       this.loadingClickupCards = false;
@@ -449,6 +452,13 @@ export default {
 
     closeCreationModal() {
       this.showTaskCreationModal = false;
+    },
+
+    renderTaskOptionLabel(option) {
+        return h('div', { class: 'my-1' }, [
+            h('div', option.name),
+            h('div', { class: 'text-xs text-gray-500' }, option.folder)
+        ])
     },
 
     /*
