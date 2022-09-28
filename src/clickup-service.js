@@ -94,9 +94,17 @@ export default {
             return cached
         }
 
+        let tasks = await this.getTasks()
+
+        tasks = tasks.map(task => ({
+            id: task.id,
+            name: `${task.name}`,
+            folder: `${task.folder.name}`
+        }))
+
         return cache.put(
             TASKS_CACHE_KEY,
-            await this.getTasks(),
+            tasks,
             Date.now() + 3600 * 6 // plus 6 hours
         )
     },

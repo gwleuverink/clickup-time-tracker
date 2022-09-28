@@ -104,7 +104,7 @@
     <n-card
       :bordered="false"
       class="max-w-xl"
-      title="Log a new task"
+      title="Register new time entry"
       size="huge"
       role="dialog"
       aria-modal="true"
@@ -353,6 +353,7 @@ export default {
       this.clickupCards = cards.map((card) => ({
         value: card.id,
         label: `${card.name}`,
+        folder: `${card.folder.name}`
       }));
 
       this.loadingClickupCards = false;
