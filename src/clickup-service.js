@@ -2,24 +2,54 @@ import request from 'request';
 import store from '@/store';
 import cache from '@/cache';
 
+const BASE_URL = 'https://api.clickup.com/api/v2';
 const TASKS_CACHE_KEY = 'tasks';
 
-function baseUrl() {
-    return `https://api.clickup.com/api/v2/team/${store.get('settings.clickup_team_id')}`
+function teamRootUrl() {
+    return `${BASE_URL}/team/${store.get('settings.clickup_team_id')}`
 }
 
 export default {
 
     /*
-     * Get all time tracking entries within a given range
+     * Retrieves a page of tasks from the ClickUp API
      */
-    async getTimeTrackingRange(start, end) {
+     tokenValid(token) {
 
-        return await new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
+
             request({
                 method: 'GET',
                 mode: 'no-cors',
-                url: `${baseUrl()}/time_entries?` + new URLSearchParams({
+                url: BASE_URL + '/user',
+                headers: {
+                    'Authorization': token,
+                    'Content-Type': 'application/json'
+                }
+            }, (error, response) => {
+                if (error) return reject(error)
+
+                const user = JSON.parse(response.body).user
+
+                if (! user) reject('Invalid response')
+
+                resolve(true)
+            });
+        })
+    },
+
+
+
+    /*
+     * Get all time tracking entries within a given range
+     */
+    getTimeTrackingRange(start, end) {
+
+        return new Promise((resolve, reject) => {
+            request({
+                method: 'GET',
+                mode: 'no-cors',
+                url: `${teamRootUrl()}/time_entries?` + new URLSearchParams({
                     start_date: start.valueOf(),
                     end_date: end.valueOf(),
                 }),
@@ -38,16 +68,16 @@ export default {
     /*
      * Retrieves a page of tasks from the ClickUp API
      */
-    async getTasksPage(page) {
+    getTasksPage(page) {
 
         page = page || 0
 
-        return await new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
 
             request({
                 method: 'GET',
                 mode: 'no-cors',
-                url: `${baseUrl()}/task?` + new URLSearchParams({
+                url: `${teamRootUrl()}/task?` + new URLSearchParams({
                     page: page,
                     archived: false,
                     include_closed: false,
@@ -109,19 +139,19 @@ export default {
         )
     },
 
-    async clearCachedTasks() {
+    clearCachedTasks() {
         cache.clear(TASKS_CACHE_KEY)
     },
 
     /*
      * Create a new time tracking entry
      */
-    async createTimeTrackingEntry(taskId, description, start, end) {
-        return await new Promise((resolve, reject) => {
+    createTimeTrackingEntry(taskId, description, start, end) {
+        return new Promise((resolve, reject) => {
 
             request({
                 method: 'POST',
-                url: `${baseUrl()}/time_entries`,
+                url: `${teamRootUrl()}/time_entries`,
                 headers: {
                     'Authorization': store.get('settings.clickup_access_token'),
                     'Content-Type': 'application/json'
@@ -142,12 +172,12 @@ export default {
     /*
      * Update an exisiting time tracking entry
      */
-    async updateTimeTrackingEntry(entryId, description, start, end) {
-        return await new Promise((resolve, reject) => {
+    updateTimeTrackingEntry(entryId, description, start, end) {
+        return new Promise((resolve, reject) => {
 
             request({
                 method: 'PUT',
-                url: `${baseUrl()}/time_entries/${entryId}`,
+                url: `${teamRootUrl()}/time_entries/${entryId}`,
                 headers: {
                     'Authorization': store.get('settings.clickup_access_token'),
                     'Content-Type': 'application/json'
@@ -167,12 +197,12 @@ export default {
     /*
      * Deleta a time tracking entry
      */
-    async deleteTimeTrackingEntry(entryId) {
-        return await new Promise((resolve, reject) => {
+    deleteTimeTrackingEntry(entryId) {
+        return new Promise((resolve, reject) => {
 
             request({
                 method: 'DELETE',
-                url: `${baseUrl()}/time_entries/${entryId}`,
+                url: `${teamRootUrl()}/time_entries/${entryId}`,
                 headers: {
                     'Authorization': store.get('settings.clickup_access_token'),
                     'Content-Type': 'application/json'
