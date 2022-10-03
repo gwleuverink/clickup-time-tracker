@@ -1,6 +1,10 @@
 <template>
 
-  <member-selector :open="memberSelectorOpen" />
+
+  <member-selector
+    v-if="store.get('settings.admin_features_enabled')"
+    :open="memberSelectorOpen"
+  />
 
   <!-- START | Calendar view -->
   <vue-cal
@@ -44,7 +48,10 @@
             <cog-icon class="w-5" />
           </router-link>
 
-          <button @click="memberSelectorOpen = !memberSelectorOpen">
+          <button
+            v-if="store.get('settings.admin_features_enabled')"
+            @click="memberSelectorOpen = !memberSelectorOpen"
+          >
             <users-icon class="w-5" />
           </button>
         </div>

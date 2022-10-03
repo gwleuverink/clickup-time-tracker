@@ -23,7 +23,15 @@ const routes = [
   {
     path: '/team/:userId',
     name: 'team',
-    component: TeamMembers
+    component: TeamMembers,
+    beforeEnter: (to, from, next) => {
+        // Redirect to settings view if required settings are not set
+        if(store.get('settings.admin_features_enabled')) {
+            return next()
+        }
+
+        next({ name: 'time-tracker' })
+    }
   },
   {
     path: '/settings',

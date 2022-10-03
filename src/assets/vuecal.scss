@@ -11,6 +11,7 @@
 
     /* Make title bar draggable */
     &__title-bar {
+        z-index: 9999999;
         -webkit-app-region: drag;
 
         /* But exclude children that aren't the title (hacky workaround) */

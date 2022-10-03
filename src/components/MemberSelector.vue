@@ -1,6 +1,6 @@
 <template>
   <Transition name="member-selector">
-    <div v-show="open" class="flex fixed top-0 inset-x-0 z-10 bg-white shadow-inner drop-shadow-xl h-[80px]">
+    <div v-show="open" class="member-selector select-none flex fixed top-0 inset-x-0 z-10 bg-white shadow-inner drop-shadow-xl h-[80px]">
 
         <!-- START: Loading state -->
         <div v-if="loading" class="self-center w-full text-center">
@@ -13,7 +13,7 @@
         </div>
 
         <!-- START: Avatars -->
-        <div v-if="!loading && users.length" class="flex items-end justify-center w-full h-full pb-1 overflow-x-scroll avatars-container">
+        <div v-if="!loading && users.length" class="flex items-end h-full px-2 pb-1 mx-auto overflow-x-scroll avatars-container">
 
             <n-tooltip v-for="user in users" :key="user.id" trigger="hover">
                 <template #trigger>
@@ -107,6 +107,13 @@ export default {
 </script>
 
 <style>
+.member-selector {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    -webkit-app-region: drag
+}
+
 /* Member selection transition */
 .member-selector-enter-active {
     transition: all 0.2s ease;

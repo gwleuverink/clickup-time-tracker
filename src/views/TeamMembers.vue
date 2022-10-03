@@ -36,7 +36,7 @@
           </router-link>
 
           <router-link :to="{ name: 'time-tracker' }" replace>
-            <clock-icon class="w-5" />
+            <user-icon class="w-5" />
           </router-link>
         </div>
         <!-- End | Extra controls -->
@@ -127,12 +127,12 @@ import eventFactory from "@/events-factory";
 import clickupService from "@/clickup-service";
 
 import { InformationCircleIcon } from "@heroicons/vue/solid";
-import { CogIcon, ClockIcon, PencilIcon } from "@heroicons/vue/outline";
+import { CogIcon, UserIcon, PencilIcon } from "@heroicons/vue/outline";
 import { NModal,  NCard,  NSpace, NPopover,  useNotification } from "naive-ui";
 import MemberSelector from '@/components/MemberSelector'
 
 export default {
-  components: { MemberSelector, VueCal, RouterLink, NModal, NCard, NSpace, NPopover, CogIcon, ClockIcon, PencilIcon, InformationCircleIcon },
+  components: { MemberSelector, VueCal, RouterLink, NModal, NCard, NSpace, NPopover, CogIcon, UserIcon, PencilIcon, InformationCircleIcon },
 
   setup() {
     const notification = useNotification();

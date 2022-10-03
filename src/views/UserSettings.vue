@@ -45,6 +45,10 @@
         <n-form-item label="Require description" path="require_description">
           <n-switch v-model:value="model.require_description" :default-value="false" />
         </n-form-item>
+
+        <n-form-item label="Enable admin features" path="admin_features_enabled">
+          <n-switch v-model:value="model.admin_features_enabled" :default-value="false" />
+        </n-form-item>
       </div>
 
       <div class="flex justify-end">
