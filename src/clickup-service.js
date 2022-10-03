@@ -43,16 +43,24 @@ export default {
     /*
      * Get all time tracking entries within a given range
      */
-    getTimeTrackingRange(start, end) {
+    getTimeTrackingRange(start, end, userId) {
 
         return new Promise((resolve, reject) => {
+
+            const params = {
+                start_date: start.valueOf(),
+                end_date: end.valueOf(),
+            }
+
+            // Only set assignee when argument was given
+            if(userId) {
+                params.assignee = userId
+            }
+
             request({
                 method: 'GET',
                 mode: 'no-cors',
-                url: `${teamRootUrl()}/time_entries?` + new URLSearchParams({
-                    start_date: start.valueOf(),
-                    end_date: end.valueOf(),
-                }),
+                url: `${teamRootUrl()}/time_entries?` + new URLSearchParams(params),
 
                 headers: {
                     'Authorization': store.get('settings.clickup_access_token'),
@@ -60,7 +68,12 @@ export default {
                 }
             }, (error, response) => {
                 if (error) return reject(error)
-                resolve(JSON.parse(response.body).data || [])
+                const body = JSON.parse(response.body)
+
+                if(body.err) { // This friggin api... return a decent response code for fuck sake
+                    reject(body.err)
+                }
+                resolve(body.data || [])
             });
         })
     },
@@ -210,6 +223,41 @@ export default {
             }, (error, response) => {
                 if (error) return reject(error)
                 resolve(JSON.parse(response.body).data[0])
+            })
+        })
+    },
+
+    /*
+     * Fetch all members from all teams you have access to
+     */
+    getUsers() {
+        return new Promise((resolve, reject) => {
+
+            request({
+                method: 'GET',
+                url: `${BASE_URL}/team/`,
+                headers: {
+                    'Authorization': store.get('settings.clickup_access_token'),
+                    'Content-Type': 'application/json'
+                }
+            }, (error, response) => {
+                if (error) return reject(error)
+
+                const teams = JSON.parse(response.body).teams
+                const users = teams
+                    .flatMap(team => team.members)
+                    .map(member => member.user)
+                    .filter(user => user.role !== 4) // Remove guests
+                    .filter((user, index, self) => self.indexOf(user) === index) // only unique id's
+                    .sort(function (a, b) { // sort alphabetically by name
+                        if (a.username === b.username) return 0
+
+                        return a.username < b.username
+                            ? -1
+                            : 1
+                      })
+
+                resolve(users)
             })
         })
     }

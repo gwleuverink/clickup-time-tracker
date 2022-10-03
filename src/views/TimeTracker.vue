@@ -1,4 +1,7 @@
 <template>
+
+  <member-selector :open="memberSelectorOpen" />
+
   <!-- START | Calendar view -->
   <vue-cal
     :editable-events="{ drag: true, resize: true, create: true }"
@@ -34,12 +37,16 @@
 
         <!-- START | Extra controls -->
         <div
-          class="flex text-gray-700 hover:text-gray-800"
+          class="flex space-x-1 text-gray-700 hover:text-gray-800"
           style="-webkit-app-region: no-drag"
         >
           <router-link :to="{ name: 'settings' }" replace>
             <cog-icon class="w-5" />
           </router-link>
+
+          <button @click="memberSelectorOpen = !memberSelectorOpen">
+            <users-icon class="w-5" />
+          </button>
         </div>
         <!-- End | Extra controls -->
       </div>
@@ -224,12 +231,13 @@ import { isEmptyObject } from "@/helpers";
 import eventFactory from "@/events-factory";
 import clickupService from "@/clickup-service";
 
+import MemberSelector from '@/components/MemberSelector'
 import { InformationCircleIcon } from "@heroicons/vue/solid";
-import { CogIcon, RefreshIcon, TrashIcon, PencilIcon } from "@heroicons/vue/outline";
+import { CogIcon, UsersIcon, RefreshIcon, TrashIcon, PencilIcon } from "@heroicons/vue/outline";
 import { NModal,  NCard,  NForm,  NFormItem,  NSpace,  NIcon,  NPopconfirm, NPopover,  NButton,  NInput,  NSelect,  useNotification } from "naive-ui";
 
 export default {
-  components: { VueCal, RouterLink, NModal, NCard, NForm, NFormItem, NSpace, NIcon, NPopconfirm, NPopover, NButton, NInput, NSelect, CogIcon, RefreshIcon, TrashIcon, PencilIcon, InformationCircleIcon },
+  components: { VueCal, MemberSelector, RouterLink, NModal, NCard, NForm, NFormItem, NSpace, NIcon, NPopconfirm, NPopover, NButton, NInput, NSelect, CogIcon, UsersIcon, RefreshIcon, TrashIcon, PencilIcon, InformationCircleIcon },
 
   setup() {
     const notification = useNotification();
@@ -247,6 +255,7 @@ export default {
       deleteCallable: ref(() => null),
       showTaskCreationModal: ref(false),
       showTaskDetailsModal: ref(false),
+      memberSelectorOpen: ref(false),
 
       rules: {
           task: {
