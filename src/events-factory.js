@@ -29,6 +29,7 @@ export default {
             taskId: remote.task.id,
             taskUrl: `https://app.clickup.com/t/${remote.task.id}`,
             title: remote.task.name,
+            description: remote.description,
             start: new Date(Number(remote.start)),
             end: new Date(Number(remote.start) + Number(remote.duration)),
         })
