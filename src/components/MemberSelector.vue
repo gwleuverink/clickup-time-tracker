@@ -76,7 +76,7 @@ export default {
         loading.value = true
 
         clickupService
-            .getUsers()
+            .getCachedUsers()
             .then(result => {
                 users.value = result
                 loading.value = false
