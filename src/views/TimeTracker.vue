@@ -31,6 +31,7 @@
     @keydown.meta.v.exact="duplicateSelectedTask()"
     @keydown.meta.d.exact="duplicateSelectedTask()"
     @keydown.meta.x.exact="refreshBackgroundImage()"
+    @mousedown="memberSelectorOpen = false"
     active-view="week"
     today-button
     ref="calendar"
@@ -41,16 +42,17 @@
 
         <!-- START | Extra controls -->
         <div
-          class="flex space-x-1 text-gray-700 hover:text-gray-800"
+          class="flex space-x-1 text-gray-600"
           style="-webkit-app-region: no-drag"
         >
-          <router-link :to="{ name: 'settings' }" replace>
+          <router-link :to="{ name: 'settings' }" replace class="hover:text-gray-800">
             <cog-icon class="w-5" />
           </router-link>
 
           <button
             v-if="store.get('settings.admin_features_enabled')"
             @click="memberSelectorOpen = !memberSelectorOpen"
+            class="hover:text-gray-800"
           >
             <users-icon class="w-5" />
           </button>
@@ -152,7 +154,7 @@
           >
             <n-icon name="refresh" size="20" class="flex items-center justify-center">
               <div v-if="loadingClickupCards" class="w-2 h-2 bg-blue-800 rounded-full animate-ping"></div>
-              <refresh-icon v-else />
+              <arrow-path-icon v-else />
             </n-icon>
           </n-button>
         </div>
@@ -239,12 +241,12 @@ import eventFactory from "@/events-factory";
 import clickupService from "@/clickup-service";
 
 import MemberSelector from '@/components/MemberSelector'
-import { InformationCircleIcon } from "@heroicons/vue/solid";
-import { CogIcon, UsersIcon, RefreshIcon, TrashIcon, PencilIcon } from "@heroicons/vue/outline";
+import { CogIcon, UsersIcon, InformationCircleIcon, ArrowPathIcon } from "@heroicons/vue/20/solid";
+import { TrashIcon, PencilIcon } from "@heroicons/vue/24/outline";
 import { NModal,  NCard,  NForm,  NFormItem,  NSpace,  NIcon,  NPopconfirm, NPopover,  NButton,  NInput,  NSelect,  useNotification } from "naive-ui";
 
 export default {
-  components: { VueCal, MemberSelector, RouterLink, NModal, NCard, NForm, NFormItem, NSpace, NIcon, NPopconfirm, NPopover, NButton, NInput, NSelect, CogIcon, UsersIcon, RefreshIcon, TrashIcon, PencilIcon, InformationCircleIcon },
+  components: { VueCal, MemberSelector, RouterLink, NModal, NCard, NForm, NFormItem, NSpace, NIcon, NPopconfirm, NPopover, NButton, NInput, NSelect, ArrowPathIcon, CogIcon, UsersIcon, TrashIcon, PencilIcon, InformationCircleIcon },
 
   setup() {
     const notification = useNotification();

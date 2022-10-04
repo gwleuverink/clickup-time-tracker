@@ -107,7 +107,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { NForm, NFormItem, NInput, NTimePicker, NSwitch, NButton, useNotification } from "naive-ui";
-import { BackspaceIcon } from "@heroicons/vue/outline";
+import { BackspaceIcon } from "@heroicons/vue/24/outline";
 import clickupService from '@/clickup-service';
 import store from "@/store";
 

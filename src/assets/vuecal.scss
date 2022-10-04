@@ -29,6 +29,10 @@
             justify-content: flex-end;
         }
 
+        & .vuecal__arrow {
+            @apply text-gray-600
+        }
+
         & .vuecal__arrow--prev { order: 2 }
         & .vuecal__today-btn { order: 3 }
         & .vuecal__arrow--next { order: 4 }

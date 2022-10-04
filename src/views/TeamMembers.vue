@@ -28,14 +28,14 @@
 
         <!-- START | Extra controls -->
         <div
-          class="flex space-x-1 text-gray-700 hover:text-gray-800"
+          class="flex space-x-1 text-gray-600"
           style="-webkit-app-region: no-drag"
         >
-          <router-link :to="{ name: 'settings' }" replace>
+          <router-link :to="{ name: 'settings' }" replace class="hover:text-gray-800">
             <cog-icon class="w-5" />
           </router-link>
 
-          <router-link :to="{ name: 'time-tracker' }" replace>
+          <router-link :to="{ name: 'time-tracker' }" replace class="hover:text-gray-800">
             <user-icon class="w-5" />
           </router-link>
         </div>
@@ -126,8 +126,8 @@ import store from "@/store";
 import eventFactory from "@/events-factory";
 import clickupService from "@/clickup-service";
 
-import { InformationCircleIcon } from "@heroicons/vue/solid";
-import { CogIcon, UserIcon, PencilIcon } from "@heroicons/vue/outline";
+import { InformationCircleIcon, CogIcon, UserIcon } from "@heroicons/vue/20/solid";
+import { PencilIcon } from "@heroicons/vue/24/outline";
 import { NModal,  NCard,  NSpace, NPopover,  useNotification } from "naive-ui";
 import MemberSelector from '@/components/MemberSelector'
 

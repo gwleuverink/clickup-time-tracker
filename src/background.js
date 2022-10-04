@@ -61,7 +61,7 @@ async function createWindow() {
 
         try {
             await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL).then(() => {
-                // if (!process.env.IS_TEST) win.webContents.openDevTools({ mode: 'bottom' })
+                if (!process.env.IS_TEST) win.webContents.openDevTools({ mode: 'bottom' })
             })
         } catch (e) {
             console.error('Vue Devtools failed to install:', e.toString())
