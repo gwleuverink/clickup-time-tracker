@@ -1,7 +1,7 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import TimeTracker from '@/views/TimeTracker.vue'
 import UserSettings from '@/views/UserSettings.vue'
-import TeamMembers from '@/views/TeamMembers.vue'
+import TeamMemberEntries from '@/views/TeamMemberEntries.vue'
 
 const Store = require('electron-store')
 const store = new Store
@@ -23,7 +23,7 @@ const routes = [
   {
     path: '/team/:userId',
     name: 'team',
-    component: TeamMembers,
+    component: TeamMemberEntries,
     beforeEnter: (to, from, next) => {
         // Redirect to settings view if required settings are not set
         if(store.get('settings.admin_features_enabled')) {
