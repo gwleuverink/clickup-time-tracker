@@ -1,8 +1,9 @@
 
 export default {
-    fromClickup: entry => {
+    fromClickup: function(entry) {
 
         if(!entry.task) return false
+        if(entry.task === '0') return this.entryWithoutTask(entry);
 
         const editable = ['Closed', 'archived'].indexOf(entry.task.status.status) === -1
 
@@ -22,6 +23,22 @@ export default {
             class: !editable ? 'not-editable' : null
         }
     },
+
+    entryWithoutTask: entry => ({
+        entryId: entry.id,
+        taskId: null,
+        title: 'No access to task details',
+        taskUrl: false,
+        description: entry.description,
+        start: new Date(Number(entry.start)),
+        end: new Date(Number(entry.start) + Number(entry.duration)),
+
+        // No task is attached. Disable mutations
+        draggable: false,
+        resizable: false,
+        deletable: false,
+        class: 'not-editable'
+    }),
 
     updateFromRemote: (original, remote) => {
         return Object.assign(original, {

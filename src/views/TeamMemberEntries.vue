@@ -65,7 +65,7 @@
 
                 <hr class="my-2 -mx-3.5" />
 
-                <button @click="shell.openExternal(event.taskUrl)" class="flex items-center py-1 space-x-1 italic text-gray-500 hover:text-gray-700">
+                <button v-if="event.taskUrl" @click="shell.openExternal(event.taskUrl)" class="flex items-center py-1 space-x-1 italic text-gray-500 hover:text-gray-700">
                     <img class="mt-1 w-7" src="@/assets/images/white-rounded-logo.svg" alt="Open task in ClickUp">
                     <span>Open in ClickUp</span>
                 </button>
