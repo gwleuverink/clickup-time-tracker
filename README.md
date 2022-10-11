@@ -1,6 +1,6 @@
 <p align="center"><a href="https://github.com/gwleuverink/clickup-time-tracker/releases" target="_blank"><img src="./build/icons/256x256.png" width="120" style="filter: drop-shadow(0px 6px 6px #e2e2e2)"></a></p>
 
-<p align="center">A tool for tracking time on Clickup tasks</p>
+<p align="center">A tool for tracking time on ClickUp tasks</p>
 
 <p align="center">Easily drag & resize events around on a calendar. Changes are synced with ClickUp in real time!</p>
 
@@ -14,6 +14,8 @@
 
 <hr />
 
+<img src="./docs/img/cover render 1440x900.jpeg">
+
 ## What does it do
 
 * Minimal context switching
@@ -24,14 +26,8 @@
 * Changes synced with ClickUp in real-time
 * Lower your cortisol levels at the end of the workday by 30% (results may vary)
 
-<p align="center"><img src="./docs/img/screenshot.png" width="620"></p>
-
 ## Installation
 You can download the latest release for your platform of choice from the [releases page](https://github.com/gwleuverink/clickup-time-tracker/releases)
-
-This app is not signed & notarized for MacOS. This means you will get a notification that you can't open untrusted apps.
-
-You can circumvent this by holding `option` and right click the app, then click `open`. After doing this once you can open the app normally.
 
 ### Setup credentials
 When starting the app for the first time you are asked to fill in some credentials. You'll need these two:
@@ -43,5 +39,9 @@ In the next screen you'll see a button to generate a API token. Do that and past
 
 #### ClickUp Team ID
 You can find your team's ID in the url after you log in to your ClickUp dashboard. It's the first part after the domain. For example if you see `app.clickup.com/1234567`, then your team ID is `1234567`
+
 ## Contributions
 If you'd like to contribute please check out the getting started doc [over here](./docs/development.md)
+
+## Disclaimer
+The [Time Tracker for ClickUp](https://github.com/gwleuverink/clickup-time-tracker) app is **unofficial** and therefore not endorsed or affiliated with ClickUp or it's subsidiaries.
