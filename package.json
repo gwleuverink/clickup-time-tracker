@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "name": "clickup-time-tracker",
   "productName": "Time Tracker",
-  "description": "A tool for painlessly tracking time on Clickup tasks",
+  "description": "A tool for painlessly tracking time on ClickUp tasks",
   "repository": {
     "type": "git",
     "url": "https://github.com/gwleuverink/clickup-time-tracker"
@@ -15,10 +15,11 @@
   },
   "scripts": {
     "lint": "vue-cli-service lint",
-    "build:osx": "npm run electron:build -p never",
-    "build:win": "npm run electron:build -p never -- --win --x64",
-    "build:linux": "npm run electron:build -p never -- --linux",
     "build:all": "npm run build:osx && npm run build:win && npm run build:linux",
+    "build:linux": "npm run electron:build -p never -- --linux",
+    "build:osx": "npm run electron:build -p never -- --mac=dmg",
+    "build:win": "npm run electron:build -p never -- --win --x64",
+    "build:mas": "npm run electron:build -p never -- --mac=mas",
     "electron:build": "vue-cli-service electron:build",
     "electron:serve": "vue-cli-service electron:serve",
     "postinstall": "electron-builder install-app-deps",
