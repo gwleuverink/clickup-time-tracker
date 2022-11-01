@@ -24,8 +24,6 @@ export default {
     },
 
     updateFromRemote: (original, remote) => {
-        console.dir(original)
-        console.dir(remote)
         return Object.assign(original, {
             entryId: remote.id,
             taskId: remote.task.id,

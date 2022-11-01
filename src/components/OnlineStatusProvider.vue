@@ -8,7 +8,7 @@
       <!-- END | Drag handle -->
 
       <div class="fixed inset-0 flex flex-col items-center justify-center">
-        <status-offline-icon class="h-6 mb-2 text-red-700 -mt-14 w- animate-ping" />
+        <wifi-icon class="h-6 mb-2 text-red-700 -mt-14 w- animate-ping" />
 
         <h1 class="my-3 font-mono text-3xl italic text-gray-700">
           You are offline
@@ -28,12 +28,12 @@
 <script>
 import { ref } from "vue";
 import { VOffline } from "v-offline";
-import { StatusOfflineIcon } from "@heroicons/vue/solid";
+import { WifiIcon } from "@heroicons/vue/24/solid";
 
 export default {
   components: {
     VOffline,
-    StatusOfflineIcon,
+    WifiIcon,
   },
 
   setup() {

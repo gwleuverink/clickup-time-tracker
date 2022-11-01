@@ -1,4 +1,11 @@
 <template>
+
+
+  <member-selector
+    v-if="store.get('settings.admin_features_enabled')"
+    :open="memberSelectorOpen"
+  />
+
   <!-- START | Calendar view -->
   <vue-cal
     :editable-events="{ drag: true, resize: true, create: true }"
@@ -24,6 +31,7 @@
     @keydown.meta.v.exact="duplicateSelectedTask()"
     @keydown.meta.d.exact="duplicateSelectedTask()"
     @keydown.meta.x.exact="refreshBackgroundImage()"
+    @mousedown="memberSelectorOpen = false"
     active-view="week"
     today-button
     ref="calendar"
@@ -34,12 +42,20 @@
 
         <!-- START | Extra controls -->
         <div
-          class="flex text-gray-700 hover:text-gray-800"
+          class="flex space-x-1 text-gray-600"
           style="-webkit-app-region: no-drag"
         >
-          <router-link :to="{ name: 'settings' }" replace>
+          <router-link :to="{ name: 'settings' }" replace class="hover:text-gray-800">
             <cog-icon class="w-5" />
           </router-link>
+
+          <button
+            v-if="store.get('settings.admin_features_enabled')"
+            @click="memberSelectorOpen = !memberSelectorOpen"
+            class="hover:text-gray-800"
+          >
+            <users-icon class="w-5" />
+          </button>
         </div>
         <!-- End | Extra controls -->
       </div>
@@ -104,7 +120,7 @@
     <n-card
       :bordered="false"
       class="max-w-xl"
-      title="Log a new task"
+      title="Register new time entry"
       size="huge"
       role="dialog"
       aria-modal="true"
@@ -120,6 +136,8 @@
               :options="clickupCards"
               :disabled="loadingClickupCards"
               v-model:value="selectedTask.taskId"
+              :render-label="renderTaskOptionLabel"
+              :render-tag="({ option, handleClose }) => option.name"
               :placeholder="
                 loadingClickupCards
                   ? 'Refreshing Card list...'
@@ -136,7 +154,7 @@
           >
             <n-icon name="refresh" size="20" class="flex items-center justify-center">
               <div v-if="loadingClickupCards" class="w-2 h-2 bg-blue-800 rounded-full animate-ping"></div>
-              <refresh-icon v-else />
+              <arrow-path-icon v-else />
             </n-icon>
           </n-button>
         </div>
@@ -209,7 +227,7 @@
 
 
 <script>
-import { ref } from "vue";
+import { ref, h } from "vue";
 import { RouterLink } from "vue-router";
 import { ipcRenderer } from "electron";
 const shell = require('electron').shell;
@@ -222,12 +240,13 @@ import { isEmptyObject } from "@/helpers";
 import eventFactory from "@/events-factory";
 import clickupService from "@/clickup-service";
 
-import { InformationCircleIcon } from "@heroicons/vue/solid";
-import { CogIcon, RefreshIcon, TrashIcon, PencilIcon } from "@heroicons/vue/outline";
+import MemberSelector from '@/components/MemberSelector'
+import { CogIcon, UsersIcon, InformationCircleIcon, ArrowPathIcon } from "@heroicons/vue/20/solid";
+import { TrashIcon, PencilIcon } from "@heroicons/vue/24/outline";
 import { NModal,  NCard,  NForm,  NFormItem,  NSpace,  NIcon,  NPopconfirm, NPopover,  NButton,  NInput,  NSelect,  useNotification } from "naive-ui";
 
 export default {
-  components: { VueCal, RouterLink, NModal, NCard, NForm, NFormItem, NSpace, NIcon, NPopconfirm, NPopover, NButton, NInput, NSelect, CogIcon, RefreshIcon, TrashIcon, PencilIcon, InformationCircleIcon },
+  components: { VueCal, MemberSelector, RouterLink, NModal, NCard, NForm, NFormItem, NSpace, NIcon, NPopconfirm, NPopover, NButton, NInput, NSelect, ArrowPathIcon, CogIcon, UsersIcon, TrashIcon, PencilIcon, InformationCircleIcon },
 
   setup() {
     const notification = useNotification();
@@ -245,6 +264,7 @@ export default {
       deleteCallable: ref(() => null),
       showTaskCreationModal: ref(false),
       showTaskDetailsModal: ref(false),
+      memberSelectorOpen: ref(false),
 
       rules: {
           task: {
@@ -284,7 +304,7 @@ export default {
       })
     );
 
-    this.refreshClickupCards();
+    this.getClickupCards();
 
     // Load background image if set
     this.refreshBackgroundImage();
@@ -332,12 +352,19 @@ export default {
     | FETCH TIME CLICKUP CARDS FOR SELECT FIELD
     |--------------------------------------------------------------------------
     */
-    // Instruct background process to refresh clickup cards
-    refreshClickupCards() {
+    // Instruct background process to get cached clickup cards
+    getClickupCards() {
       this.loadingClickupCards = true;
       ipcRenderer.send("get-clickup-cards");
 
-      console.info("Refreshing Clickup cards...");
+      console.info("Fetching Clickup cards (from cache when available)...");
+    },
+
+    refreshClickupCards() {
+        this.loadingClickupCards = true;
+        ipcRenderer.send("refresh-clickup-cards");
+
+        console.info("Refreshing Clickup cards...");
     },
 
     // Fired when background process sends us the refreshed cards
@@ -345,7 +372,9 @@ export default {
 
       this.clickupCards = cards.map((card) => ({
         value: card.id,
-        label: `${card.name}`,
+        name: `${card.name}`,
+        folder: `${card.folder}`,
+        label: `${card.name} ${card.folder}` // Native UI uses this for fuzzy searching
       }));
 
       this.loadingClickupCards = false;
@@ -441,6 +470,13 @@ export default {
 
     closeCreationModal() {
       this.showTaskCreationModal = false;
+    },
+
+    renderTaskOptionLabel(option) {
+        return h('div', { class: 'my-1' }, [
+            h('div', option.name),
+            h('div', { class: 'text-xs text-gray-500' }, option.folder)
+        ])
     },
 
     /*
