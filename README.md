@@ -39,5 +39,9 @@ In the next screen you'll see a button to generate a API token. Do that and past
 
 #### ClickUp Team ID
 You can find your team's ID in the url after you log in to your ClickUp dashboard. It's the first part after the domain. For example if you see `app.clickup.com/1234567`, then your team ID is `1234567`
+
 ## Contributions
 If you'd like to contribute please check out the getting started doc [over here](./docs/development.md)
+
+## Disclaimer
+The [Time Tracker for ClickUp](https://github.com/gwleuverink/clickup-time-tracker) app is **unofficial** and therefore not endorsed or affiliated with ClickUp or it's subsidiaries.
