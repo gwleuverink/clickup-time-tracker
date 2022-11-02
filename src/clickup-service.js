@@ -4,6 +4,7 @@ import cache from '@/cache';
 
 const BASE_URL = 'https://api.clickup.com/api/v2';
 const TASKS_CACHE_KEY = 'tasks';
+const USERS_CACHE_KEY = 'users';
 
 function teamRootUrl() {
     return `${BASE_URL}/team/${store.get('settings.clickup_team_id')}`
@@ -262,5 +263,22 @@ export default {
                 resolve(users)
             })
         })
+    },
+
+    /*
+     * Fetch users from cache
+     */
+    async getCachedUsers() {
+        const cached = cache.get(USERS_CACHE_KEY)
+
+        if (cached) {
+            return cached
+        }
+
+        return cache.put(
+            USERS_CACHE_KEY,
+            await this.getUsers(),
+            Date.now() + 3600 * 6 // plus 6 hours
+        )
     }
 }
