@@ -137,8 +137,10 @@ export default {
             return cached
         }
 
+        // Fetch a fresh tasklist
         let tasks = await this.getTasks()
 
+        // Only keep the data we care about
         tasks = tasks.map(task => ({
             id: task.id,
             name: `${task.name}`,
