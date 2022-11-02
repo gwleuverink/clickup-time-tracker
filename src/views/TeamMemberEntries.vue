@@ -43,6 +43,17 @@
       </div>
     </template>
 
+    <!-- START | Custom Day heading -->
+    <template v-slot:weekday-heading="{ heading, view }">
+        <span class="full">{{ heading.label }}</span>
+        <span class="small">{{ heading.date.toLocaleDateString('en-US', { weekday: 'short' }) }}</span>
+        <span class="xsmall">{{ heading.label[0] }}</span>
+        <span>&nbsp;{{ heading.date.toLocaleDateString('en-US', { day: 'numeric' }) }}</span>
+
+        <span v-html="formatTotalHoursOnDate(heading.date, view.events)"></span>
+    </template>
+    <!-- END | Custom Day heading -->
+
     <template v-slot:event="{ event }" >
 
         <div class="vuecal__event-title">
@@ -231,6 +242,25 @@ export default {
     | MISC & EASTER EGG LAND
     |--------------------------------------------------------------------------
     */
+    formatTotalHoursOnDate(date, events) {
+        let totalMinutes = events
+            .filter(event => event.start.getDate() == date.getDate())
+            .reduce((carry, event) => carry + (event.endTimeMinutes - event.startTimeMinutes), 0)
+
+        let hours = Math.floor(totalMinutes / 60)
+        let minutes = totalMinutes % 60
+
+        if (totalMinutes === 0) {
+            return
+        }
+
+        if(minutes < 10) {
+            minutes = minutes + '0'
+        }
+
+        return '&nbsp;-&nbsp;' + hours + ':' + minutes
+    },
+
     refreshBackgroundImage: function() {
 
       const bg = document.getElementsByClassName('vuecal')[0];
