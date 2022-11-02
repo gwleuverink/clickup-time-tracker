@@ -9,7 +9,7 @@ module.exports = {
             productName: 'ClickUp Time Tracker',
             artifactName: 'time-tracker-${version}-${os}-${arch}.${ext}',
             builderOptions: {
-                buildVersion: 4,
+                buildVersion: 1,
                 publish: [
                     { provider: 'github', private: false, releaseType: 'release' },
                 ],
