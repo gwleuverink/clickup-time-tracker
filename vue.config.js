@@ -9,16 +9,30 @@ module.exports = {
             productName: 'ClickUp Time Tracker',
             artifactName: 'time-tracker-${version}-${os}-${arch}.${ext}',
             builderOptions: {
+                buildVersion: 4,
                 publish: [
                     { provider: 'github', private: false, releaseType: 'release' },
                 ],
 
                 mac: {
+                    // target: [ "dmg", "mas" ],
                     target: [ "dmg" ],
                     hardenedRuntime: true,
+                    electronLanguages: ["en"],
                     category: "public.app-category.productivity",
                     entitlements: "./build/entitlements.mac.inherit.plist",
                     entitlementsInherit: "./build/entitlements.mac.inherit.plist",
+                },
+
+                mas: {
+                    // asarUnpack: [],
+                    // asarUnpack: ['**/*.node'],
+                    type: "distribution",
+                    hardenedRuntime: false,
+                    gatekeeperAssess: false,
+                    provisioningProfile: "./build/embedded.provisionprofile",
+                    entitlements: "./build/entitlements.mas.plist",
+                    entitlementsInherit: "./build/entitlements.mas.inherit.plist",
                 },
 
                 linux: {
