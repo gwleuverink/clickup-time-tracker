@@ -5,7 +5,7 @@
 
   <div class="grid grid-cols-1 gap-4 p-4 md:grid-cols-2">
     <n-form :model="model" :rules="rules" size="large" ref="form">
-      <n-form-item label="ClickUp Access token" path="clickup_access_token">
+      <n-form-item label="ClickUp Access token" path="clickup_access_token" placeholder="pk_">
         <n-input v-model:value="model.clickup_access_token" clearable />
       </n-form-item>
 
@@ -44,6 +44,10 @@
 
         <n-form-item label="Require description" path="require_description">
           <n-switch v-model:value="model.require_description" :default-value="false" />
+        </n-form-item>
+
+        <n-form-item label="Enable admin features" path="admin_features_enabled">
+          <n-switch v-model:value="model.admin_features_enabled" :default-value="false" />
         </n-form-item>
       </div>
 
@@ -103,7 +107,8 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { NForm, NFormItem, NInput, NTimePicker, NSwitch, NButton, useNotification } from "naive-ui";
-import { BackspaceIcon } from "@heroicons/vue/outline";
+import { BackspaceIcon } from "@heroicons/vue/24/outline";
+import clickupService from '@/clickup-service';
 import store from "@/store";
 
 export default {
@@ -127,7 +132,6 @@ export default {
             store.set({ settings: model.value });
 
             router.replace({ name: "time-tracker" });
-            // router.go()
 
             notification.success({ title: "Settings saved!", duration: 1500 });
           })
@@ -142,7 +146,12 @@ export default {
             message: "Please input your ClickUp Access Token",
             trigger: ["input", "blur"],
           },
-          // TODO: Add async validity checker
+          {
+            required: true,
+            validator: (rule, value) => clickupService.tokenValid(value),
+            message: "This token couldn't be validated with ClickUp. Please verify.",
+            trigger: ['blur']
+          }
         ],
         clickup_team_id: [
           {

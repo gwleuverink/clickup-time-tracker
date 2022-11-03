@@ -1,4 +1,11 @@
 <template>
+
+
+  <member-selector
+    v-if="store.get('settings.admin_features_enabled')"
+    :open="memberSelectorOpen"
+  />
+
   <!-- START | Calendar view -->
   <vue-cal
     :editable-events="{ drag: true, resize: true, create: true }"
@@ -24,6 +31,7 @@
     @keydown.meta.v.exact="duplicateSelectedTask()"
     @keydown.meta.d.exact="duplicateSelectedTask()"
     @keydown.meta.x.exact="refreshBackgroundImage()"
+    @mousedown="memberSelectorOpen = false"
     active-view="week"
     today-button
     ref="calendar"
@@ -34,17 +42,49 @@
 
         <!-- START | Extra controls -->
         <div
-          class="flex text-gray-700 hover:text-gray-800"
+          class="flex space-x-1 text-gray-600"
           style="-webkit-app-region: no-drag"
         >
-          <router-link :to="{ name: 'settings' }" replace>
+          <router-link :to="{ name: 'settings' }" replace class="hover:text-gray-800">
             <cog-icon class="w-5" />
           </router-link>
+
+          <button
+            v-if="store.get('settings.admin_features_enabled')"
+            @click="memberSelectorOpen = !memberSelectorOpen"
+            class="hover:text-gray-800"
+          >
+            <users-icon class="w-5" />
+          </button>
         </div>
         <!-- End | Extra controls -->
       </div>
     </template>
 
+    <!-- START | Custom Day heading -->
+    <template v-slot:weekday-heading="{ heading, view }">
+        <div class="flex flex-col justify-center sm:flex-row">
+
+            <div>
+                <span class="full">{{ heading.label }}</span>
+                <span class="small">{{ heading.date.toLocaleDateString('en-US', { weekday: 'short' }) }}</span>
+                <span class="xsmall">{{ heading.label[0] }}</span>
+                <span>&nbsp;{{ heading.date.toLocaleDateString('en-US', { day: 'numeric' }) }}</span>
+            </div>
+
+            <div
+                v-if="hasTimeTrackedOn(heading.date, view.events)"
+                class="inline-flex items-center ml-2 text-xs text-gray-600 space-x-[2px]"
+            >
+                <clock-icon class="w-3 -mt-0.5" />
+                <span class="italic">{{ totalHoursOnDate(heading.date, view.events) }}</span>
+            </div>
+
+        </div>
+    </template>
+    <!-- END | Custom Day heading -->
+
+    <!-- START | Custom Event template -->
     <template v-slot:event="{ event }" >
 
         <div class="vuecal__event-title">
@@ -91,6 +131,7 @@
         <!-- END | Time from/to -->
 
     </template>
+    <!-- END | Custom Event template -->
 
   </vue-cal>
   <!-- END | Calendar view -->
@@ -104,7 +145,7 @@
     <n-card
       :bordered="false"
       class="max-w-xl"
-      title="Log a new task"
+      title="Register new time entry"
       size="huge"
       role="dialog"
       aria-modal="true"
@@ -120,6 +161,8 @@
               :options="clickupCards"
               :disabled="loadingClickupCards"
               v-model:value="selectedTask.taskId"
+              :render-label="renderTaskOptionLabel"
+              :render-tag="({ option, handleClose }) => option.name"
               :placeholder="
                 loadingClickupCards
                   ? 'Refreshing Card list...'
@@ -136,18 +179,20 @@
           >
             <n-icon name="refresh" size="20" class="flex items-center justify-center">
               <div v-if="loadingClickupCards" class="w-2 h-2 bg-blue-800 rounded-full animate-ping"></div>
-              <refresh-icon v-else />
+              <arrow-path-icon v-else />
             </n-icon>
           </n-button>
         </div>
 
         <!-- Description textbox -->
         <n-form-item path="description" :show-label="false">
-          <n-input
-            type="textarea"
-            v-model:value="selectedTask.description"
-            placeholder="Describe what you worked on"
-          />
+          <n-mention
+                type="textarea"
+                v-model:value="selectedTask.description"
+                :options="mentionable"
+                :render-label="renderMentionLabel"
+                placeholder="Describe what you worked on"
+            />
         </n-form-item>
       </n-form>
 
@@ -199,9 +244,27 @@
         <!-- TODO: Show some task labels -->
         <!-- TODO: Show current task column -->
 
-        <p class="whitespace-pre-wrap">{{ selectedTask.description || "No description provided" }}</p>
+        <n-form :model="selectedTask" :rules="rules.task" ref="editForm" size="large">
+            <n-form-item path="description" :show-label="false">
+                <n-mention
+                    type="textarea"
+                    v-model:value="selectedTask.description"
+                    :options="mentionable"
+                    :render-label="renderMentionLabel"
+                    placeholder="Describe what you worked on"
+                />
+            </n-form-item>
+        </n-form>
 
       </n-space>
+
+      <template #footer>
+        <div class="flex justify-end space-x-2">
+          <n-button @click="closeDetailModal()" round>Cancel</n-button>
+          <n-button @click="updateTimeTrackingEntry({ event: selectedTask })" round type="primary">Update</n-button>
+        </div>
+      </template>
+
     </n-card>
   </n-modal>
   <!-- END | Task detail modal -->
@@ -209,13 +272,12 @@
 
 
 <script>
-import { ref } from "vue";
+import { ref, h } from "vue";
 import { RouterLink } from "vue-router";
 import { ipcRenderer } from "electron";
 const shell = require('electron').shell;
 
 import VueCal from "vue-cal";
-import "vue-cal/dist/drag-and-drop.js";
 import "@/assets/vuecal.scss";
 
 import store from "@/store";
@@ -223,12 +285,13 @@ import { isEmptyObject } from "@/helpers";
 import eventFactory from "@/events-factory";
 import clickupService from "@/clickup-service";
 
-import { InformationCircleIcon } from "@heroicons/vue/solid";
-import { CogIcon, RefreshIcon, TrashIcon, PencilIcon } from "@heroicons/vue/outline";
-import { NModal,  NCard,  NForm,  NFormItem,  NSpace,  NIcon,  NPopconfirm, NPopover,  NButton,  NInput,  NSelect,  useNotification } from "naive-ui";
+import MemberSelector from '@/components/MemberSelector'
+import { CogIcon, UsersIcon, InformationCircleIcon, ArrowPathIcon } from "@heroicons/vue/20/solid";
+import { ClockIcon, TrashIcon, PencilIcon } from "@heroicons/vue/24/outline";
+import { NMention, NModal,  NCard,  NForm,  NFormItem,  NSpace,  NIcon,  NPopconfirm, NPopover,  NButton,  NSelect, NAvatar, useNotification } from "naive-ui";
 
 export default {
-  components: { VueCal, RouterLink, NModal, NCard, NForm, NFormItem, NSpace, NIcon, NPopconfirm, NPopover, NButton, NInput, NSelect, CogIcon, RefreshIcon, TrashIcon, PencilIcon, InformationCircleIcon },
+  components: { VueCal, MemberSelector, RouterLink, NMention, NModal, NCard, NForm, NFormItem, NSpace, NIcon, NPopconfirm, NPopover, NButton, NSelect, ArrowPathIcon, ClockIcon, CogIcon, UsersIcon, TrashIcon, PencilIcon, InformationCircleIcon },
 
   setup() {
     const notification = useNotification();
@@ -239,6 +302,7 @@ export default {
 
       events: ref([]),
       selectedTask: ref({}),
+      mentionable: ref([]),
 
       clickupCards: ref([]),
       loadingClickupCards: ref(false),
@@ -246,6 +310,7 @@ export default {
       deleteCallable: ref(() => null),
       showTaskCreationModal: ref(false),
       showTaskDetailsModal: ref(false),
+      memberSelectorOpen: ref(false),
 
       rules: {
           task: {
@@ -285,7 +350,9 @@ export default {
       })
     );
 
-    this.refreshClickupCards();
+    this.getClickupCards();
+
+    this.fetchMentionableUsers();
 
     // Load background image if set
     this.refreshBackgroundImage();
@@ -306,7 +373,7 @@ export default {
           const dateTime = new Date(store.get('settings.day_end'))
 
           return dateTime.getHours() * 60;
-      }
+      },
   },
 
   methods: {
@@ -333,12 +400,19 @@ export default {
     | FETCH TIME CLICKUP CARDS FOR SELECT FIELD
     |--------------------------------------------------------------------------
     */
-    // Instruct background process to refresh clickup cards
-    refreshClickupCards() {
+    // Instruct background process to get cached clickup cards
+    getClickupCards() {
       this.loadingClickupCards = true;
       ipcRenderer.send("get-clickup-cards");
 
-      console.info("Refreshing Clickup cards...");
+      console.info("Fetching Clickup cards (from cache when available)...");
+    },
+
+    refreshClickupCards() {
+        this.loadingClickupCards = true;
+        ipcRenderer.send("refresh-clickup-cards");
+
+        console.info("Refreshing Clickup cards...");
     },
 
     // Fired when background process sends us the refreshed cards
@@ -346,7 +420,9 @@ export default {
 
       this.clickupCards = cards.map((card) => ({
         value: card.id,
-        label: `${card.name}`,
+        name: `${card.name}`,
+        folder: `${card.folder}`,
+        label: `${card.name} ${card.folder}` // Native UI uses this for fuzzy searching
       }));
 
       this.loadingClickupCards = false;
@@ -444,6 +520,13 @@ export default {
       this.showTaskCreationModal = false;
     },
 
+    renderTaskOptionLabel(option) {
+        return h('div', { class: 'my-1' }, [
+            h('div', option.name),
+            h('div', { class: 'text-xs text-gray-500' }, option.folder)
+        ])
+    },
+
     /*
     |--------------------------------------------------------------------------
     | DELETE A TASK
@@ -514,10 +597,19 @@ export default {
 
           if (eventIndex === -1) return;
 
+
+          console.dir({
+            before: this.events[eventIndex],
+            after: entry,
+            index: eventIndex
+          })
+
           this.events[eventIndex] = eventFactory.updateFromRemote(
               this.events[eventIndex],
               entry
           );
+
+          this.closeDetailModal()
 
           console.dir(`Updated time tracking entry for: ${entry.task.name}`);
         })
@@ -539,6 +631,50 @@ export default {
     | MISC & EASTER EGG LAND
     |--------------------------------------------------------------------------
     */
+    totalHoursOnDate(date, events) {
+        let totalMinutes = events
+            .filter(event => event.start.getDate() == date.getDate())
+            .reduce((carry, event) => carry + (event.endTimeMinutes - event.startTimeMinutes), 0)
+
+        let hours = Math.floor(totalMinutes / 60)
+        let minutes = totalMinutes % 60
+
+        if (totalMinutes === 0) {
+            return
+        }
+
+        return hours + ':' + String(minutes).padStart(2, '0')
+    },
+
+    hasTimeTrackedOn(date, events) {
+        return Boolean(
+            events.find(event => event.start.getDate() == date.getDate())
+        )
+    },
+
+    fetchMentionableUsers() {
+        clickupService.getCachedUsers().then(users => {
+            this.mentionable = users.map(user => ({
+                label: user.username.toLowerCase(),
+                value: user.username.toLowerCase(),
+                avatar: user.profilePicture,
+                initials: user.initials
+            }))
+        })
+    },
+
+    renderMentionLabel(option) {
+        return h('div', { style: 'display: flex; align-items: center;' }, [
+          h(NAvatar, {
+            style: 'margin-right: 8px;',
+            size: 24,
+            round: true,
+            src: option.avatar
+          }, option.avatar ? '' : option.initials,),
+          option.value
+        ])
+    },
+
     refreshBackgroundImage: function() {
 
       const bg = document.getElementsByClassName('vuecal')[0];
