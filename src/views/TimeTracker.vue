@@ -186,11 +186,13 @@
 
         <!-- Description textbox -->
         <n-form-item path="description" :show-label="false">
-          <n-input
-            type="textarea"
-            v-model:value="selectedTask.description"
-            placeholder="Describe what you worked on"
-          />
+          <n-mention
+                type="textarea"
+                v-model:value="selectedTask.description"
+                :options="mentionable"
+                :render-label="renderMentionLabel"
+                placeholder="Describe what you worked on"
+            />
         </n-form-item>
       </n-form>
 
@@ -242,9 +244,27 @@
         <!-- TODO: Show some task labels -->
         <!-- TODO: Show current task column -->
 
-        <p class="whitespace-pre-wrap">{{ selectedTask.description || "No description provided" }}</p>
+        <n-form :model="selectedTask" :rules="rules.task" ref="editForm" size="large">
+            <n-form-item path="description" :show-label="false">
+                <n-mention
+                    type="textarea"
+                    v-model:value="selectedTask.description"
+                    :options="mentionable"
+                    :render-label="renderMentionLabel"
+                    placeholder="Describe what you worked on"
+                />
+            </n-form-item>
+        </n-form>
 
       </n-space>
+
+      <template #footer>
+        <div class="flex justify-end space-x-2">
+          <n-button @click="closeDetailModal()" round>Cancel</n-button>
+          <n-button @click="updateTimeTrackingEntry({ event: selectedTask })" round type="primary">Update</n-button>
+        </div>
+      </template>
+
     </n-card>
   </n-modal>
   <!-- END | Task detail modal -->
@@ -268,10 +288,10 @@ import clickupService from "@/clickup-service";
 import MemberSelector from '@/components/MemberSelector'
 import { CogIcon, UsersIcon, InformationCircleIcon, ArrowPathIcon } from "@heroicons/vue/20/solid";
 import { ClockIcon, TrashIcon, PencilIcon } from "@heroicons/vue/24/outline";
-import { NModal,  NCard,  NForm,  NFormItem,  NSpace,  NIcon,  NPopconfirm, NPopover,  NButton,  NInput,  NSelect,  useNotification } from "naive-ui";
+import { NMention, NModal,  NCard,  NForm,  NFormItem,  NSpace,  NIcon,  NPopconfirm, NPopover,  NButton,  NSelect, NAvatar, useNotification } from "naive-ui";
 
 export default {
-  components: { VueCal, MemberSelector, RouterLink, NModal, NCard, NForm, NFormItem, NSpace, NIcon, NPopconfirm, NPopover, NButton, NInput, NSelect, ArrowPathIcon, ClockIcon, CogIcon, UsersIcon, TrashIcon, PencilIcon, InformationCircleIcon },
+  components: { VueCal, MemberSelector, RouterLink, NMention, NModal, NCard, NForm, NFormItem, NSpace, NIcon, NPopconfirm, NPopover, NButton, NSelect, ArrowPathIcon, ClockIcon, CogIcon, UsersIcon, TrashIcon, PencilIcon, InformationCircleIcon },
 
   setup() {
     const notification = useNotification();
@@ -282,6 +302,7 @@ export default {
 
       events: ref([]),
       selectedTask: ref({}),
+      mentionable: ref([]),
 
       clickupCards: ref([]),
       loadingClickupCards: ref(false),
@@ -331,6 +352,8 @@ export default {
 
     this.getClickupCards();
 
+    this.fetchMentionableUsers();
+
     // Load background image if set
     this.refreshBackgroundImage();
   },
@@ -350,7 +373,7 @@ export default {
           const dateTime = new Date(store.get('settings.day_end'))
 
           return dateTime.getHours() * 60;
-      }
+      },
   },
 
   methods: {
@@ -574,10 +597,19 @@ export default {
 
           if (eventIndex === -1) return;
 
+
+          console.dir({
+            before: this.events[eventIndex],
+            after: entry,
+            index: eventIndex
+          })
+
           this.events[eventIndex] = eventFactory.updateFromRemote(
               this.events[eventIndex],
               entry
           );
+
+          this.closeDetailModal()
 
           console.dir(`Updated time tracking entry for: ${entry.task.name}`);
         })
@@ -618,6 +650,29 @@ export default {
         return Boolean(
             events.find(event => event.start.getDate() == date.getDate())
         )
+    },
+
+    fetchMentionableUsers() {
+        clickupService.getCachedUsers().then(users => {
+            this.mentionable = users.map(user => ({
+                label: user.username.toLowerCase(),
+                value: user.username.toLowerCase(),
+                avatar: user.profilePicture,
+                initials: user.initials
+            }))
+        })
+    },
+
+    renderMentionLabel(option) {
+        return h('div', { style: 'display: flex; align-items: center;' }, [
+          h(NAvatar, {
+            style: 'margin-right: 8px;',
+            size: 24,
+            round: true,
+            src: option.avatar
+          }, option.avatar ? '' : option.initials,),
+          option.value
+        ])
     },
 
     refreshBackgroundImage: function() {
