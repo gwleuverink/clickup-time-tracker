@@ -50,7 +50,13 @@
         <span class="xsmall">{{ heading.label[0] }}</span>
         <span>&nbsp;{{ heading.date.toLocaleDateString('en-US', { day: 'numeric' }) }}</span>
 
-        <span v-html="formatTotalHoursOnDate(heading.date, view.events)"></span>
+        <span
+            v-if="hasTimeTrackedOn(heading.date, view.events)"
+            class="inline-flex items-center ml-2 text-xs text-gray-600 space-x-[2px]"
+        >
+            <clock-icon class="w-3 -mt-0.5" />
+            <span class="italic">{{ totalHoursOnDate(heading.date, view.events) }}</span>
+        </span>
     </template>
     <!-- END | Custom Day heading -->
 
@@ -138,12 +144,12 @@ import eventFactory from "@/events-factory";
 import clickupService from "@/clickup-service";
 
 import { InformationCircleIcon, CogIcon, UserIcon } from "@heroicons/vue/20/solid";
-import { PencilIcon } from "@heroicons/vue/24/outline";
+import { ClockIcon, PencilIcon } from "@heroicons/vue/24/outline";
 import { NModal,  NCard,  NSpace, NPopover,  useNotification } from "naive-ui";
 import MemberSelector from '@/components/MemberSelector'
 
 export default {
-  components: { MemberSelector, VueCal, RouterLink, NModal, NCard, NSpace, NPopover, CogIcon, UserIcon, PencilIcon, InformationCircleIcon },
+  components: { MemberSelector, VueCal, RouterLink, NModal, NCard, NSpace, NPopover, CogIcon, UserIcon, ClockIcon, PencilIcon, InformationCircleIcon },
 
   setup() {
     const notification = useNotification();
@@ -242,7 +248,7 @@ export default {
     | MISC & EASTER EGG LAND
     |--------------------------------------------------------------------------
     */
-    formatTotalHoursOnDate(date, events) {
+    totalHoursOnDate(date, events) {
         let totalMinutes = events
             .filter(event => event.start.getDate() == date.getDate())
             .reduce((carry, event) => carry + (event.endTimeMinutes - event.startTimeMinutes), 0)
@@ -254,11 +260,13 @@ export default {
             return
         }
 
-        if(minutes < 10) {
-            minutes = minutes + '0'
-        }
+        return hours + ':' + String(minutes).padStart(2, '0')
+    },
 
-        return '&nbsp;-&nbsp;' + hours + ':' + minutes
+    hasTimeTrackedOn(date, events) {
+        return Boolean(
+            events.find(event => event.start.getDate() == date.getDate())
+        )
     },
 
     refreshBackgroundImage: function() {
