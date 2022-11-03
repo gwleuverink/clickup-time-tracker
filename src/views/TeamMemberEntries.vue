@@ -45,18 +45,24 @@
 
     <!-- START | Custom Day heading -->
     <template v-slot:weekday-heading="{ heading, view }">
-        <span class="full">{{ heading.label }}</span>
-        <span class="small">{{ heading.date.toLocaleDateString('en-US', { weekday: 'short' }) }}</span>
-        <span class="xsmall">{{ heading.label[0] }}</span>
-        <span>&nbsp;{{ heading.date.toLocaleDateString('en-US', { day: 'numeric' }) }}</span>
+        <div class="flex flex-col justify-center sm:flex-row">
 
-        <span
-            v-if="hasTimeTrackedOn(heading.date, view.events)"
-            class="inline-flex items-center ml-2 text-xs text-gray-600 space-x-[2px]"
-        >
-            <clock-icon class="w-3 -mt-0.5" />
-            <span class="italic">{{ totalHoursOnDate(heading.date, view.events) }}</span>
-        </span>
+            <div>
+                <span class="full">{{ heading.label }}</span>
+                <span class="small">{{ heading.date.toLocaleDateString('en-US', { weekday: 'short' }) }}</span>
+                <span class="xsmall">{{ heading.label[0] }}</span>
+                <span>&nbsp;{{ heading.date.toLocaleDateString('en-US', { day: 'numeric' }) }}</span>
+            </div>
+
+            <div
+                v-if="hasTimeTrackedOn(heading.date, view.events)"
+                class="inline-flex items-center ml-2 text-xs text-gray-600 space-x-[2px]"
+            >
+                <clock-icon class="w-3 -mt-0.5" />
+                <span class="italic">{{ totalHoursOnDate(heading.date, view.events) }}</span>
+            </div>
+
+        </div>
     </template>
     <!-- END | Custom Day heading -->
 
