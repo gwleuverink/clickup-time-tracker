@@ -386,7 +386,9 @@ export default {
       clickupService
         .getTimeTrackingRange(startDate, endDate)
         .then(entries => {
-          this.events = entries.map((entry) => eventFactory.fromClickup(entry));
+          this.events = entries
+            .map((entry) => eventFactory.fromClickup(entry)) // Map into Event DTO
+            .filter((entry) => entry); // Remove falsey entries
         })
         .catch(error => this.error({
             error,
