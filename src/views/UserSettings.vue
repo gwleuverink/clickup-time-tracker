@@ -153,6 +153,12 @@ export default {
     const notification = useNotification();
     const model = ref(store.get("settings") || {});
 
+    function mustFlushCachesAfterPersist() {
+        // Either the CU acces token or team id has changed
+        return model.value.clickup_access_token !== store.get('settings.clickup_access_token')
+            || model.value.clickup_team_id !== store.get('settings.clickup_team_id')
+    }
+
     return {
       form,
 
@@ -162,6 +168,11 @@ export default {
         form.value
           .validate()
           .then(() => {
+
+            if(mustFlushCachesAfterPersist()) {
+                cache.flush();
+            }
+
             store.set({ settings: model.value });
 
             router.replace({ name: "time-tracker" });
