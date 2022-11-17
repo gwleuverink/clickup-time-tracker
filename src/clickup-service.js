@@ -151,7 +151,7 @@ export default {
         return cache.put(
             TASKS_CACHE_KEY,
             tasks,
-            Date.now() + 3600 * 6 // plus 6 hours
+            3600 * 6 // plus 6 hours
         )
     },
 
@@ -278,7 +278,7 @@ export default {
         return cache.put(
             USERS_CACHE_KEY,
             await this.getUsers(),
-            Date.now() + 3600 * 6 // plus 6 hours
+            3600 * 6 // plus 6 hours
         )
     }
 }

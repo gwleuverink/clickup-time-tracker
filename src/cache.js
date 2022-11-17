@@ -26,14 +26,16 @@ export default {
             ? null
             : defaultValue;
 
-        if(expiresAt && expiresAt < Date.now()) {
+        if(expiresAt && expiresAt < Date.now() / 1000) {
             return store.get(`cache.values.${key}`) || defaultValue;
         }
 
         return defaultValue;
     },
 
-    put: function(key, value, expiresAt) {
+    put: function(key, value, expiresAfterMinutes) {
+        const expiresAt = (Date.now() / 1000) + expiresAfterMinutes
+
         store.set(`cache.expires_at.${key}`, expiresAt)
         store.set(`cache.values.${key}`, value)
 
