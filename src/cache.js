@@ -43,5 +43,10 @@ export default {
     clear: function(key) {
         store.delete(`cache.expires_at.${key}`)
         store.delete(`cache.values.${key}`)
+    },
+
+    flush: function() {
+        store.delete('cache.expires_at')
+        store.delete('cache.values')
     }
 }
