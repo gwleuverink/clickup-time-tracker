@@ -145,12 +145,12 @@
     <n-card
       :bordered="false"
       class="max-w-xl"
-      title="Register new time entry"
+      title="What did you work on?"
       size="huge"
       role="dialog"
       aria-modal="true"
     >
-      <template #header> Log a new task </template>
+      <template #header> What did you work on? </template>
 
       <n-form :model="selectedTask" :rules="rules.task" ref="createForm" size="large">
         <div class="flex space-x-2">
@@ -211,7 +211,7 @@
     <n-card
       :bordered="false"
       class="max-w-xl"
-      title="Log a new task"
+      title="Edit tracking entry"
       size="huge"
       role="dialog"
       aria-modal="true"
@@ -386,7 +386,9 @@ export default {
       clickupService
         .getTimeTrackingRange(startDate, endDate)
         .then(entries => {
-          this.events = entries.map((entry) => eventFactory.fromClickup(entry));
+          this.events = entries
+            .map((entry) => eventFactory.fromClickup(entry)) // Map into Event DTO
+            .filter((entry) => entry); // Remove falsey entries
         })
         .catch(error => this.error({
             error,

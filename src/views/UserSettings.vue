@@ -37,26 +37,57 @@
         <n-input v-model:value="model.background_image_url" clearable />
       </n-form-item>
 
-      <div class="flex space-x-4">
-        <n-form-item label="Show weekends" path="show_weekend">
+
+      <!-- START | Feature toggles -->
+      <div class="relative p-4 bg-white border rounded-lg shadow-sm">
+
+        <label class="absolute px-1.5 bg-white -left-0.5 -top-3">Optional features</label>
+
+        <n-form-item path="show_weekend" :show-label="false" :show-feedback="false">
           <n-switch v-model:value="model.show_weekend" :default-value="true" />
+          <label class="ml-3 text-gray-800">Show weekends</label>
         </n-form-item>
 
-        <n-form-item label="Require description" path="require_description">
+        <n-form-item path="require_description" :show-label="false" :show-feedback="false">
           <n-switch v-model:value="model.require_description" :default-value="false" />
+          <label class="ml-3 text-gray-800">Require descriptions</label>
         </n-form-item>
 
-        <n-form-item label="Enable admin features" path="admin_features_enabled">
+        <n-form-item path="admin_features_enabled" :show-label="false" :show-feedback="false">
           <n-switch v-model:value="model.admin_features_enabled" :default-value="false" />
+          <label class="ml-3 text-gray-800">
+            Enable admin features
+            <div class="text-sm text-gray-500">You must be a CU admin to use this</div>
+          </label>
         </n-form-item>
-      </div>
 
-      <div class="flex justify-end">
+        <hr class="my-6" />
+        <label class="absolute px-1.5 bg-white -ml-4 -mt-9">Danger zone</label>
+
+        <n-popconfirm @positive-click="flushCaches" :show-icon="false">
+            <template #activator>
+                <n-button size="small" type="warning" secondary>
+                    Flush caches
+                </n-button>
+            </template>
+
+            This will clear all locally cached<br />
+            ClickUp tasks & team members
+
+        </n-popconfirm>
+
+      </div>
+      <!-- END | Feature toggles -->
+
+
+      <div class="flex justify-end mt-4 space-x-2">
+        <n-button @click="cancel" round>Cancel</n-button>
         <n-button @click="persist" type="primary" round>Save</n-button>
       </div>
+
     </n-form>
 
-    <div class="p-3 space-y-4 shadow-inner bg-gray-50">
+    <div class="flex flex-col p-3 space-y-4 shadow-inner bg-gray-50">
       <h2 class="text-lg font-bold text-gray-700">Instructions</h2>
       <p>Click & drag in order to create a new tracking entry</p>
 
@@ -99,6 +130,7 @@
           ⌘ + D
         </kbd>
       </div>
+
     </div>
   </div>
 </template>
@@ -106,19 +138,26 @@
 <script>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { NForm, NFormItem, NInput, NTimePicker, NSwitch, NButton, useNotification } from "naive-ui";
+import { NForm, NFormItem, NInput, NTimePicker, NSwitch, NButton, NPopconfirm, useNotification } from "naive-ui";
 import { BackspaceIcon } from "@heroicons/vue/24/outline";
 import clickupService from '@/clickup-service';
 import store from "@/store";
+import cache from "@/cache";
 
 export default {
-  components: { NForm, NFormItem, NInput, NTimePicker, NSwitch, NButton, BackspaceIcon },
+  components: { NForm, NFormItem, NInput, NTimePicker, NSwitch, NButton, NPopconfirm, BackspaceIcon },
 
   setup() {
     const form = ref(null);
     const router = useRouter();
     const notification = useNotification();
     const model = ref(store.get("settings") || {});
+
+    function mustFlushCachesAfterPersist() {
+        // Either the CU acces token or team id has changed
+        return model.value.clickup_access_token !== store.get('settings.clickup_access_token')
+            || model.value.clickup_team_id !== store.get('settings.clickup_team_id')
+    }
 
     return {
       form,
@@ -129,6 +168,11 @@ export default {
         form.value
           .validate()
           .then(() => {
+
+            if(mustFlushCachesAfterPersist()) {
+                cache.flush();
+            }
+
             store.set({ settings: model.value });
 
             router.replace({ name: "time-tracker" });
@@ -136,6 +180,16 @@ export default {
             notification.success({ title: "Settings saved!", duration: 1500 });
           })
           .catch((errors) => console.error(errors));
+      },
+
+      cancel() {
+        router.replace({ name: "time-tracker" });
+      },
+
+      flushCaches() {
+        cache.flush()
+
+        notification.success({ title: "All caches flushed!", duration: 1500 });
       },
 
       rules: {
