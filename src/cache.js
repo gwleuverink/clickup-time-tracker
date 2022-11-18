@@ -21,16 +21,21 @@ export default {
     get: function(key, defaultValue) {
 
         const expiresAt = store.get(`cache.expires_at.${key}`) || null;
+        const now = Date.now() / 1000;
 
         defaultValue = typeof(defaultValue) === 'undefined'
             ? null
             : defaultValue;
 
-        if(expiresAt && expiresAt < Date.now() / 1000) {
-            return store.get(`cache.values.${key}`) || defaultValue;
+        if(! expiresAt) {
+            return defaultValue
         }
 
-        return defaultValue;
+        if(expiresAt < now) {
+            return defaultValue
+        }
+
+        return store.get(`cache.values.${key}`) || defaultValue;
     },
 
     put: function(key, value, expiresAfterMinutes) {
