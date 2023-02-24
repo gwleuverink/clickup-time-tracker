@@ -1,6 +1,6 @@
 {
   "private": true,
-  "version": "1.1.2",
+  "version": "1.2.0",
   "name": "clickup-time-tracker",
   "productName": "Time Tracker",
   "description": "A tool for painlessly tracking time on ClickUp tasks",
@@ -32,6 +32,7 @@
     "core-js": "^3.26.1",
     "electron-store": "^8.1.0",
     "electron-updater": "^5.3.0",
+    "install": "^0.13.0",
     "naive-ui": "^2.33.5",
     "sass": "^1.56.1",
     "v-offline": "^3.3.0",
