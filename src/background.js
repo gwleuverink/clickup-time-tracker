@@ -18,20 +18,55 @@ import path from 'path';
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
+// Fetch ClickUp spaces from cache when the app starts up
+ipcMain.on('get-clickup-spaces', event => {
+    clickupService.getCachedSpaces()
+        .then(spaces => event.reply('set-clickup-spaces', spaces))
+        .catch(err => event.reply('fetch-clickup-spaces-error', err))
+})
+
+ipcMain.on('refresh-clickup-spaces', event => {
+    clickupService.clearCachedSpaces()
+    clickupService.getCachedSpaces()
+        .then(spaces => event.reply('set-clickup-spaces', spaces))
+        .catch(err => event.reply('fetch-clickup-spaces-error', err))
+})
+
+// Fetch ClickUp lists from cache when the app starts up
+ipcMain.on('get-clickup-lists',(event, spaceId) => {
+    clickupService.getCachedLists(spaceId)
+        .then(lists => event.reply('set-clickup-lists', lists))
+        .catch(err => event.reply('fetch-clickup-lists-error', err))
+})
+
+// Clear ClickUp lists cache & fetch fresh list
+ipcMain.on('refresh-clickup-lists', (event, spaceId) => {
+    clickupService.clearCachedLists()
+    clickupService.getCachedLists(spaceId)
+        .then(lists => event.reply('set-clickup-lists', lists))
+        .catch(err => event.reply('fetch-clickup-lists-error', err))
+})
+
 // Fetch ClickUp tasks from cache when the app starts up
-ipcMain.on('get-clickup-cards', event => {
-    clickupService.getCachedTasks()
+ipcMain.on('get-clickup-cards', (event, spaceId, listId) => {
+    clickupService.getTasks(spaceId, listId)
+    // clickupService.getCachedTasks(spaceId, listId)
         .then(tasks => event.reply('set-clickup-cards', tasks))
         .catch(err => event.reply('fetch-clickup-cards-error', err))
 })
 
 // Clear ClickUp tasks cache & fetch fresh list
-ipcMain.on('refresh-clickup-cards', event => {
+/*
+TODO: Task cashing is removed after the optional list and space id.
+
+ipcMain.on('refresh-clickup-cards', (event, listId) => {
     clickupService.clearCachedTasks()
-    clickupService.getCachedTasks()
+    clickupService.getCachedTasks(listId)
         .then(tasks => event.reply('set-clickup-cards', tasks))
         .catch(err => event.reply('fetch-clickup-cards-error', err))
 })
+ */
+
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([

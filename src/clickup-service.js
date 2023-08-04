@@ -1,9 +1,13 @@
 import request from 'request';
 import store from '@/store';
 import cache from '@/cache';
+//import {list} from "postcss";
 
 const BASE_URL = 'https://api.clickup.com/api/v2';
-const TASKS_CACHE_KEY = 'tasks';
+// TODO: Task cashing is removed after the optional list and space id.
+// const TASKS_CACHE_KEY = 'tasks';
+const SPACES_CACHE_KEY = 'spaces';
+const LISTS_CACHE_KEY = 'lists';
 const USERS_CACHE_KEY = 'users';
 
 function teamRootUrl() {
@@ -79,19 +83,181 @@ export default {
         })
     },
 
-    /*
-     * Retrieves a page of tasks from the ClickUp API
-     */
-    getTasksPage(page) {
-
-        page = page || 0
+    async getSpaces() {
 
         return new Promise((resolve, reject) => {
 
             request({
                 method: 'GET',
                 mode: 'no-cors',
-                url: `${teamRootUrl()}/task?` + new URLSearchParams({
+                url: `${BASE_URL}/team/${store.get('settings.clickup_team_id')}/space?archived=false'`,
+
+                headers: {
+                    'Authorization': store.get('settings.clickup_access_token'),
+                    'Content-Type': 'application/json'
+                }
+            }, (error, response) => {
+                if (error) return reject(error)
+                resolve(JSON.parse(response.body).spaces || [])
+            });
+        })
+
+    },
+
+    /*
+        * Fetch spaces from cache
+     */
+    async getCachedSpaces() {
+        const cached = cache.get(SPACES_CACHE_KEY)
+
+        if (cached) {
+
+            return cached
+        }
+
+        // Fetch a fresh spaces list
+
+        let spaces = await this.getSpaces()
+
+        return cache.put(
+            SPACES_CACHE_KEY,
+            spaces,
+            3600 * 6 // plus 6 hours
+        )
+    },
+
+    clearCachedSpaces() {
+        cache.clear(SPACES_CACHE_KEY)
+    },
+
+    async getLists(spaceId) {
+        console.log('get foldereless lists');
+        const folderlessLists = await this.getFolderlessLists(spaceId);
+        console.dir(folderlessLists);
+
+        console.log('get folderd lists');
+        let folderedLists = [];
+        const folders = await this.getFolders(spaceId);
+        for (const folder of folders) {
+            folderedLists = folderedLists.concat(await this.getFolderedLists(folder.id));
+            console.dir(folderedLists);
+        }
+
+        /*
+        const folderedLists = await this.getFolders(spaceId).then(folders => {
+            console.dir(folders);
+            return Promise.all(folders.map(folder => this.getFolderedLists(folder.id)))
+        });
+         */
+
+        let mergedLists = folderlessLists.concat(folderedLists.flat());
+        console.log('merged lists');
+        console.dir(mergedLists);
+        return mergedLists;
+    },
+
+    async getCachedLists(spaceId) {
+
+            const cached = cache.get(LISTS_CACHE_KEY)
+
+            if (cached && cached.length > 0) {
+
+                // check if chached lists are from the same space as requested
+                console.log('cached lists:');
+                console.dir(cached)
+
+                if (cached[0].space.id === spaceId) {
+                    return cached
+                }
+            }
+
+            // Fetch a fresh spaceslist
+            console.log('fetching fresh lists');
+            let lists = await this.getLists(spaceId)
+
+            return cache.put(
+                LISTS_CACHE_KEY,
+                lists,
+                3600 * 6 // plus 6 hours
+            )
+
+    },
+
+    clearCachedLists() {
+        cache.clear(LISTS_CACHE_KEY)
+    },
+
+    async getFolders(spaceId) {
+        return new Promise((resolve, reject) => {
+
+                request({
+                    method: 'GET',
+                    url: `${BASE_URL}/space/${spaceId}/folder?archived=false`,
+                    headers: {
+                        'Authorization': store.get('settings.clickup_access_token'),
+                        'Content-Type': 'application/json'
+                    }
+                }, (error, response) => {
+                    if (error) return reject(error)
+                    resolve(JSON.parse(response.body).folders || [])
+                });
+        })
+    },
+
+    async getFolderedLists(FolderId) {
+        return new Promise((resolve, reject) => {
+
+            request({
+                method: 'GET',
+                url: `${BASE_URL}/folder/${FolderId}/list?archived=false`,
+                headers: {
+                    'Authorization': store.get('settings.clickup_access_token'),
+                    'Content-Type': 'application/json'
+                }
+            }, (error, response) => {
+                if (error) return reject(error)
+                resolve(JSON.parse(response.body).lists || [])
+            });
+        })
+    },
+
+    async getFolderlessLists(spaceId) {
+        return new Promise((resolve, reject) => {
+
+            request({
+                method: 'GET',
+                mode: 'no-cors',
+                url: `${BASE_URL}/space/${spaceId}/list?archived=false`,
+
+                headers: {
+                    'Authorization': store.get('settings.clickup_access_token'),
+                    'Content-Type': 'application/json'
+                }
+            }, (error, response) => {
+                if (error) return reject(error)
+                resolve(JSON.parse(response.body).lists || [])
+            });
+        })
+    },
+
+    /*
+   * Retrieves a page of tasks from the ClickUp API
+   * TODO: rewrite api call to use spaceId and listId. List id should be possible put it is a different api call. For spaceId i have no idea.
+   */
+    async getTasksPage(page, spaceId = null, listId = null) {
+        let url = `${teamRootUrl()}/task`
+
+        console.log('get tasks page');
+        console.log(url, page, spaceId, listId);
+
+        page = page || 0
+
+        let results = await new Promise((resolve, reject) => {
+
+            request({
+                method: 'GET',
+                mode: 'no-cors',
+                url: url + '?' + new URLSearchParams({
                     page: page,
                     archived: false,
                     include_closed: false,
@@ -107,20 +273,28 @@ export default {
                 resolve(JSON.parse(response.body).tasks || [])
             });
         })
+
+        // Filter tasks by spaceId and listId
+        results = results.filter(task => task.space.id === spaceId && task.list.id === listId)
+
+        console.log('get tasks page');
+        console.dir(results);
+
+        return results
     },
 
     /*
     * Get all tasks. Iterated over a paginated list in order to fetch them all.
     * This might take a while
     */
-    async getTasks() {
+    async getTasks(spaceId = null, listId = null) {
 
         let page = 0
         let results = []
 
         do {
             try {
-                results = await results.concat(await this.getTasksPage(page))
+                results = results.concat(await this.getTasksPage(page, spaceId, listId))
                 page++
             } catch(e) {
                 console.log(`Error retrieving tasks page ${page}. Retrying...`, e)
@@ -130,16 +304,28 @@ export default {
         return results
     },
 
-    async getCachedTasks() {
+    /*
+    TODO: implement caching. White the optional spaceId and listId parameters, this function is not used.
+     It is hard to check it current cash is actually from the same space/list as requested.
+
+    async getCachedTasks(spaceId = null, listId = null) {
 
         const cached = cache.get(TASKS_CACHE_KEY)
 
-        if (cached) {
-            return cached
+        if (cached.length > 0) {
+            console.log('cached tasks:');
+            console.dir(cached)
+
+            if (cached[0].list.id === listId) {
+                return cached
+            }
         }
 
         // Fetch a fresh tasklist
-        let tasks = await this.getTasks()
+        console.log('fetching fresh tasks');
+        let tasks = await this.getTasks(spaceId, listId)
+        console.log('fetched fresh tasks');
+        console.dir(tasks);
 
         // Only keep the data we care about
         tasks = tasks.map(task => ({
@@ -158,6 +344,7 @@ export default {
     clearCachedTasks() {
         cache.clear(TASKS_CACHE_KEY)
     },
+     */
 
     /*
      * Create a new time tracking entry
