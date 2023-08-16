@@ -162,14 +162,13 @@
                 filterable
                 :options="clickupSpaces"
                 :disabled="loadingClickupSpaces"
-                v-model:value="selectedSpaces.spaceId"
+                v-model:value="selectedSpaces"
                 :render-label="renderTaskOptionLabel"
                 :render-tag="({ option, handleClose }) => option.name"
                 :placeholder="
                 loadingClickupSpaces
                   ? 'Refreshing Space list...'
                   : 'Please Select a space'"
-                @update:value="getClickupLists()"
             />
             <!-- TODO: make List refresh when space is changed -->
           </n-form-item>
@@ -194,7 +193,7 @@
                 filterable
                 :options="clickupLists"
                 :disabled="loadingClickupLists"
-                v-model:value="selectedList.listId"
+                v-model:value="selectedList"
                 :render-label="renderTaskOptionLabel"
                 :render-tag="({ option, handleClose }) => option.name"
                 :placeholder="
@@ -202,7 +201,6 @@
                   ? 'Refreshing List list...'
                   : 'Please Select the list of the task you worked on'
               "
-                @update:value="getClickupCards()"
             />
           </n-form-item>
 
@@ -359,7 +357,7 @@ import eventFactory from "@/events-factory";
 import clickupService from "@/clickup-service";
 
 import MemberSelector from '@/components/MemberSelector'
-import {CogIcon, UsersIcon, InformationCircleIcon, ArrowPathIcon} from "@heroicons/vue/20/solid";
+import {CogIcon, UsersIcon, InformationCircleIcon, ArrowPathIcon, XMarkIcon} from "@heroicons/vue/20/solid";
 import {ClockIcon, TrashIcon, PencilIcon} from "@heroicons/vue/24/outline";
 import {
   NMention,
@@ -399,7 +397,8 @@ export default {
     UsersIcon,
     TrashIcon,
     PencilIcon,
-    InformationCircleIcon
+    InformationCircleIcon,
+    XMarkIcon
   },
 
   setup() {
@@ -410,9 +409,9 @@ export default {
       store,
 
       events: ref([]),
-      selectedSpaces: ref([]),
-      selectedList: ref([]),
-      selectedTask: ref({}),
+      selectedSpaces: ref(null),
+      selectedList: ref(null),
+      selectedTask: ref(null),
       mentionable: ref([]),
 
       clickupCards: ref([]),
@@ -432,13 +431,13 @@ export default {
       rules: {
         space: {
           spaceId: {
-            required: true,
+            required: false,
             message: "Please select a space to start tracking",
           }
         },
         lists: {
           listId: {
-            required: true,
+            required: false,
             message: "Please select a list to start tracking",
           }
         },
@@ -454,7 +453,6 @@ export default {
           }
         }
       },
-
       error(options) {
         notification.error({duration: 5000, ...options});
 
@@ -504,18 +502,34 @@ export default {
         })
     );
 
-
     this.loadingClickupLists = true;
-    this.loadingClickupCards = true;
     this.getClickupSpaces();
-    /*
     this.getClickupCards();
-    */
 
     this.fetchMentionableUsers();
 
     // Load background image if set
     this.refreshBackgroundImage();
+  },
+
+  watch: {
+    selectedSpaces: {
+      handler: function (val) {
+        console.log("Selected spaces changed");
+        this.selectedSpaces = val;
+        this.getClickupLists()
+        this.getClickupCards()
+      },
+      deep: true,
+    },
+    selectedList: {
+      handler: function (val) {
+        console.log("Selected list changed");
+        this.selectedList = val;
+        this.getClickupCards()
+      },
+      deep: true,
+    },
   },
 
   computed: {
@@ -597,7 +611,8 @@ export default {
      */
 
     getClickupLists() {
-      ipcRenderer.send("get-clickup-lists", this.selectedSpaces.spaceId);
+      this.loadingClickupLists = true;
+      ipcRenderer.send("get-clickup-lists", this.selectedSpaces);
 
       console.info("Fetching Clickup lists (from cache when available)...");
     },
@@ -630,7 +645,8 @@ export default {
     // Instruct background process to get cached clickup cards
     getClickupCards() {
       this.loadingClickupCards = true;
-      ipcRenderer.send("get-clickup-cards", this.selectedSpaces.spaceId, this.selectedList.listId);
+
+      ipcRenderer.send("get-clickup-cards", this.selectedSpaces, this.selectedList);
 
       console.info("Fetching Clickup cards (from cache when available)...");
     },
@@ -823,13 +839,6 @@ export default {
             );
 
             if (eventIndex === -1) return;
-
-
-            console.dir({
-              before: this.events[eventIndex],
-              after: entry,
-              index: eventIndex
-            })
 
             this.events[eventIndex] = eventFactory.updateFromRemote(
                 this.events[eventIndex],

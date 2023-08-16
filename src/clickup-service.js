@@ -130,17 +130,14 @@ export default {
         cache.clear(SPACES_CACHE_KEY)
     },
 
-    async getLists(spaceId) {
-        console.log('get foldereless lists');
+    async getLists(spaceId = null) {
+        console.log('get lists for space: ' + spaceId);
         const folderlessLists = await this.getFolderlessLists(spaceId);
-        console.dir(folderlessLists);
 
-        console.log('get folderd lists');
         let folderedLists = [];
         const folders = await this.getFolders(spaceId);
         for (const folder of folders) {
             folderedLists = folderedLists.concat(await this.getFolderedLists(folder.id));
-            console.dir(folderedLists);
         }
 
         /*
@@ -247,8 +244,7 @@ export default {
     async getTasksPage(page, spaceId = null, listId = null) {
         let url = `${teamRootUrl()}/task`
 
-        console.log('get tasks page');
-        console.log(url, page, spaceId, listId);
+        console.log('get tasks page for space: ' + spaceId + ' and list: ' + listId + ' and page: ' + page);
 
         page = page || 0
 
@@ -274,11 +270,12 @@ export default {
             });
         })
 
-        // Filter tasks by spaceId and listId
-        results = results.filter(task => task.space.id === spaceId && task.list.id === listId)
-
-        console.log('get tasks page');
-        console.dir(results);
+        // Filter tasks by spaceId and listId if provided
+        results = results.filter(task => {
+            if (spaceId && task.space.id !== spaceId) return false
+            if (listId && task.list.id !== listId) return false
+            return true
+        });
 
         return results
     },
