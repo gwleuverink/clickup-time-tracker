@@ -154,15 +154,20 @@
     >
       <template #header> What did you work on?</template>
 
-      <n-form  ref="createForm" size="large">
+      <n-form
+          ref="createForm"
+          size="large"
+          :rules="rules"
+          :model="formValue"
+      >
         <div class="flex space-x-2">
           <!-- Searchable space select -->
-          <n-form-item :model="selectedSpaces" :rules="rules.space" path="spaceId" :show-label="false" class="flex-grow">
+          <n-form-item path="task.space" :show-label="false" class="flex-grow">
             <n-select
                 filterable
                 :options="clickupSpaces"
                 :disabled="loadingClickupSpaces"
-                v-model:value="selectedSpaces"
+                v-model:value="formValue.task.space"
                 :render-label="renderTaskOptionLabel"
                 :render-tag="({ option, handleClose }) => option.name"
                 :placeholder="
@@ -188,19 +193,15 @@
 
         <div class="flex space-x-2">
           <!-- Searchable list select -->
-          <n-form-item :model="selectedList" :rules="rules.lists" path="listId" :show-label="false" class="flex-grow">
+          <n-form-item path="task.lists" :show-label="false" class="flex-grow">
             <n-select
                 filterable
                 :options="clickupLists"
                 :disabled="loadingClickupLists"
-                v-model:value="selectedList"
+                v-model:value="formValue.task.lists"
                 :render-label="renderTaskOptionLabel"
                 :render-tag="({ option, handleClose }) => option.name"
-                :placeholder="
-                loadingClickupLists
-                  ? 'Refreshing List list...'
-                  : 'Please Select the list of the task you worked on'
-              "
+                :placeholder="getListPlaceholder()"
             />
           </n-form-item>
 
@@ -220,12 +221,12 @@
 
         <div class="flex space-x-2">
           <!-- Searchable task select -->
-          <n-form-item :model="selectedTask" :rules="rules.task" path="taskId" :show-label="false" class="flex-grow">
+          <n-form-item path="task.taskId" :show-label="false" class="flex-grow">
             <n-select
                 filterable
                 :options="clickupCards"
                 :disabled="loadingClickupCards"
-                v-model:value="selectedTask.taskId"
+                v-model:value="formValue.task.taskId"
                 :render-label="renderTaskOptionLabel"
                 :render-tag="({ option, handleClose }) => option.name"
                 :placeholder="
@@ -254,7 +255,7 @@
         <n-form-item path="description" :show-label="false">
           <n-mention
               type="textarea"
-              v-model:value="selectedTask.description"
+              v-model:value="formValue.task.description"
               :options="mentionable"
               :render-label="renderMentionLabel"
               placeholder="Describe what you worked on"
@@ -266,7 +267,6 @@
         <div class="flex justify-end space-x-2">
           <n-button @click="cancelTaskCreation()" round>Cancel</n-button>
           <n-button
-              :disabled="!$refs.createForm?.valid"
               @click="createTask()"
               round type="primary"
           >Create</n-button>
@@ -357,7 +357,7 @@ import eventFactory from "@/events-factory";
 import clickupService from "@/clickup-service";
 
 import MemberSelector from '@/components/MemberSelector'
-import {CogIcon, UsersIcon, InformationCircleIcon, ArrowPathIcon, XMarkIcon} from "@heroicons/vue/20/solid";
+import {CogIcon, UsersIcon, InformationCircleIcon, ArrowPathIcon} from "@heroicons/vue/20/solid";
 import {ClockIcon, TrashIcon, PencilIcon} from "@heroicons/vue/24/outline";
 import {
   NMention,
@@ -397,17 +397,18 @@ export default {
     UsersIcon,
     TrashIcon,
     PencilIcon,
-    InformationCircleIcon,
-    XMarkIcon
+    InformationCircleIcon
   },
 
   setup() {
     const notification = useNotification();
+    const createForm = ref(null);
 
     return {
       shell,
       store,
 
+      createForm,
       events: ref([]),
       selectedSpaces: ref(null),
       selectedList: ref(null),
@@ -428,20 +429,25 @@ export default {
       showTaskDetailsModal: ref(false),
       memberSelectorOpen: ref(false),
 
+      formValue: ref({
+        task: {
+          space: null,
+          lists: null,
+          taskId: null,
+          description: null,
+        },
+      }),
+
       rules: {
-        space: {
-          spaceId: {
+        task: {
+          space: {
             required: false,
             message: "Please select a space to start tracking",
-          }
-        },
-        lists: {
-          listId: {
+          },
+          lists: {
             required: false,
             message: "Please select a list to start tracking",
-          }
-        },
-        task: {
+          },
           taskId: {
             required: true,
             message: "Please select a task to start tracking",
@@ -453,13 +459,18 @@ export default {
           }
         }
       },
+
+      success(options) {
+        notification.success({duration: 5000, ...options});
+      },
+
       error(options) {
         notification.error({duration: 5000, ...options});
 
         if (options.error) {
           console.error(options.error);
         }
-      },
+      }
     };
   },
 
@@ -513,10 +524,38 @@ export default {
   },
 
   watch: {
+    formValue: {
+      handler: function (val) {
+        // get formValue check what has changed.
+        // if task has changed, update selectedTask
+        // if list has changed, update selectedList
+        // if space has changed, update selectedSpace
+        if (val.task.space !== this.selectedSpaces) {
+          this.selectedSpaces = val.task.space
+        } else if (val.task.lists !== this.selectedList) {
+          this.selectedList = val.task.lists
+        } else if (val.task.taskId !== this.selectedTask) {
+          this.selectedTask = val.task.taskId
+        }
+      },
+      deep: true,
+    },
     selectedSpaces: {
       handler: function (val) {
         console.log("Selected spaces changed");
         this.selectedSpaces = val;
+
+        // reset non space form values at the end
+        this.formValue = {
+          task: {
+            space: val,
+            lists: null,
+            taskId: null,
+          },
+        };
+        this.selectedList = null;
+        this.selectedTask = null;
+
         this.getClickupLists()
         this.getClickupCards()
       },
@@ -525,7 +564,19 @@ export default {
     selectedList: {
       handler: function (val) {
         console.log("Selected list changed");
+
+        // reset selected task at the end
+        this.formValue = {
+          task: {
+            space: this.selectedSpaces,
+            lists: val,
+            taskId: null,
+          },
+        };
+
         this.selectedList = val;
+        this.selectedTask = null;
+
         this.getClickupCards()
       },
       deep: true,
@@ -619,7 +670,7 @@ export default {
 
     refreshClickupLists() {
       this.loadingClickupLists = true;
-      ipcRenderer.send("refresh-clickup-lists", this.selectedSpaces.spaceId);
+      ipcRenderer.send("refresh-clickup-lists", this.selectedSpaces);
 
       console.info("Refreshing Clickup lists...");
     },
@@ -635,6 +686,17 @@ export default {
 
       console.dir(this.clickupLists)
       console.info("Clickup lists refreshed!");
+    },
+
+    getListPlaceholder() {
+      if (!this.selectedSpaces) {
+        return "Please select a space first";
+      } else if(this.loadingClickupLists) {
+        return "Loading lists...";
+      } else if (this.clickupLists.length === 0) {
+        return "No lists found";
+      }
+      return "Please select a list";
     },
 
     /*
@@ -695,20 +757,21 @@ export default {
     },
 
     createTask() {
-      if (isEmptyObject(this.selectedTask)) return;
-
-      this.$refs.createForm.validate()
+      this.createForm.validate()
           .then(() => pushToClickup())
           .catch(errors => console.error(errors))
 
       const pushToClickup = () => {
+        console.log("Test pushing to Clickup...")
+        console.log(this.selectedTask + " " + this.formValue.task.description + " " + this.selectedTask.start + " " + this.selectedTask.end)
+        console.log(this.formValue)
+        /*
         clickupService.createTimeTrackingEntry(
-            this.selectedTask.taskId,
-            this.selectedTask.description,
+            this.selectedTask,
+            this.formValue.task.description,
             this.selectedTask.start,
             this.selectedTask.end
-        )
-            .then(entry => {
+        ).then(entry => {
               console.info(`Created time tracking entry for: ${entry.task.name}`);
 
               this.selectedTask = eventFactory.updateFromRemote(
@@ -729,6 +792,16 @@ export default {
                 content: "There was a problem while pushing to Clickup. Check your console & internet connection and try again",
               });
             });
+         */
+        // reset form values at the end
+        this.formValue = {
+          task: {
+            space: null,
+            lists: null,
+            taskId: null,
+            description: null,
+          },
+        };
       }
     },
 

@@ -270,12 +270,19 @@ export default {
             });
         })
 
-        // Filter tasks by spaceId and listId if provided
-        results = results.filter(task => {
-            if (spaceId && task.space.id !== spaceId) return false
-            if (listId && task.list.id !== listId) return false
-            return true
-        });
+        // Filter tasks by spaceId and listId if provided. Only need to match both when both are provided.
+        // If only one is provided, only match that one.
+
+        if (spaceId) {
+            results = results.filter(task => {
+                return task.space.id === spaceId
+            });
+        }
+        if (listId) {
+            results = results.filter(task => {
+                return task.list.id === listId
+            });
+        }
 
         return results
     },
