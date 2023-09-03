@@ -314,7 +314,7 @@ import store from "@/store";
 import {isEmptyObject} from "@/helpers";
 import eventFactory from "@/events-factory";
 import clickupService from "@/clickup-service";
-import {ClickUpItem, ClickUpType} from "@/model/ClickUpModels";
+import {ClickUpItem, ClickUpType} from "@/model/ClickUpModels.ts";
 
 import MemberSelector from '@/components/MemberSelector'
 import {CogIcon, UsersIcon, InformationCircleIcon, ArrowPathIcon} from "@heroicons/vue/20/solid";
