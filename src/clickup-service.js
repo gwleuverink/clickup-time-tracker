@@ -136,9 +136,10 @@ export default {
 
         let folderedLists = [];
         const folders = await this.getFolders(spaceId);
-        for (const folder of folders) {
+
+        await Promise.all(folders.map(async  (folder) => {
             folderedLists = folderedLists.concat(await this.getFolderedLists(folder.id));
-        }
+        }))
 
         /*
         const folderedLists = await this.getFolders(spaceId).then(folders => {

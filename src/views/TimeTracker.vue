@@ -8,21 +8,25 @@
 
   <!-- START | Calendar view -->
   <vue-cal
-      :editable-events="{ drag: true, resize: true, create: true }"
-      :hide-weekends="!store.get('settings.show_weekend')"
+      ref="calendar"
+      :click-to-navigate="false"
       :disable-views="['years', 'year', 'month', 'day']"
-      :on-event-dblclick="onTaskDoubleClick"
+      :drag-to-create-threshold="20"
+      :editable-events="{ drag: true, resize: true, create: true }"
+      :events="events"
+      :hide-view-selector="true"
+      :hide-weekends="!store.get('settings.show_weekend')"
       :on-event-click="onTaskSingleClick"
       :on-event-create="onTaskCreate"
-      :drag-to-create-threshold="20"
-      :click-to-navigate="false"
-      :hide-view-selector="true"
-      :watch-real-time="true"
+      :on-event-dblclick="onTaskDoubleClick"
+      :snap-to-time="15"
       :time-cell-height="90"
       :time-from="dayStart"
       :time-to="dayEnd"
-      :snap-to-time="15"
-      :events="events"
+      :watch-real-time="true"
+      active-view="week"
+      today-button
+      @mousedown="memberSelectorOpen = false"
       @ready="fetchEvents"
       @view-change="fetchEvents"
       @event-drop="updateTimeTrackingEntry"
@@ -31,28 +35,24 @@
       @keydown.meta.v.exact="duplicateSelectedTask()"
       @keydown.meta.d.exact="duplicateSelectedTask()"
       @keydown.meta.x.exact="refreshBackgroundImage()"
-      @mousedown="memberSelectorOpen = false"
-      active-view="week"
-      today-button
-      ref="calendar"
   >
     <template v-slot:title="{ title }">
       <div class="flex items-center space-x-4">
-        <span type="false" aria-label="false">{{ title }}</span>
+        <span aria-label="false" type="false">{{ title }}</span>
 
         <!-- START | Extra controls -->
         <div
             class="flex space-x-1 text-gray-600"
             style="-webkit-app-region: no-drag"
         >
-          <router-link :to="{ name: 'settings' }" replace class="hover:text-gray-800">
+          <router-link :to="{ name: 'settings' }" class="hover:text-gray-800" replace>
             <cog-icon class="w-5"/>
           </router-link>
 
           <button
               v-if="store.get('settings.admin_features_enabled')"
-              @click="memberSelectorOpen = !memberSelectorOpen"
               class="hover:text-gray-800"
+              @click="memberSelectorOpen = !memberSelectorOpen"
           >
             <users-icon class="w-5"/>
           </button>
@@ -91,7 +91,7 @@
         <span v-text="event.title"/>
 
         <!-- START | Task context popover -->
-        <n-popover trigger="hover" :delay="500" :duration="60" width="260">
+        <n-popover :delay="500" :duration="60" trigger="hover" width="260">
 
           <template #trigger>
                     <span class="vuecal__event-task-info-popover absolute top-0 right-0 py-0.5 px-1 cursor-pointer">
@@ -103,18 +103,18 @@
             <span class="font-semibold text-gray-700" v-text="event.title"></span>
           </template>
 
-          <span v-text="event.description" class="whitespace-pre-wrap"></span>
+          <span class="whitespace-pre-wrap" v-text="event.description"></span>
 
           <hr class="my-2 -mx-3.5"/>
 
-          <button @click="shell.openExternal(event.taskUrl)"
-                  class="flex items-center py-1 space-x-1 italic text-gray-500 hover:text-gray-700">
-            <img class="mt-1 w-7" src="@/assets/images/white-rounded-logo.svg" alt="Open task in ClickUp">
+          <button class="flex items-center py-1 space-x-1 italic text-gray-500 hover:text-gray-700"
+                  @click="shell.openExternal(event.taskUrl)">
+            <img alt="Open task in ClickUp" class="mt-1 w-7" src="@/assets/images/white-rounded-logo.svg">
             <span>Open in ClickUp</span>
           </button>
 
-          <button @click="onTaskDoubleClick(event)"
-                  class="flex items-center py-1 space-x-1 italic text-gray-500 hover:text-gray-700">
+          <button class="flex items-center py-1 space-x-1 italic text-gray-500 hover:text-gray-700"
+                  @click="onTaskDoubleClick(event)">
             <pencil-icon class="w-4 mx-1.5"/>
             <span>Open details</span>
           </button>
@@ -141,50 +141,36 @@
   <!-- START | Task creation modal -->
   <n-modal
       v-model:show="showTaskCreationModal"
-      @keydown.esc="cancelTaskCreation"
       :mask-closable="false"
+      @keydown.esc="cancelTaskCreation"
   >
     <n-card
         :bordered="false"
-        class="max-w-xl"
-        title="What did you work on?"
-        size="huge"
-        role="dialog"
         aria-modal="true"
+        class="max-w-xl"
+        role="dialog"
+        size="huge"
+        title="What did you work on?"
     >
       <template #header> What did you work on?</template>
 
       <n-form
           ref="createForm"
-          size="large"
-          :rules="rules"
           :model="formValue"
+          :rules="rules"
+          size="large"
       >
         <div class="flex space-x-2">
-          <!-- Searchable space select -->
-          <n-form-item path="task.space" :show-label="false" class="flex-grow">
-            <n-select
-                filterable
-                :options="clickupSpaces"
-                :disabled="loadingClickupSpaces"
-                v-model:value="formValue.task.space"
-                :render-label="renderTaskOptionLabel"
-                :render-tag="({ option, handleClose }) => option.name"
-                :placeholder="
-                loadingClickupSpaces
-                  ? 'Refreshing Space list...'
-                  : 'Please Select a space'"
-            />
-            <!-- TODO: make List refresh when space is changed -->
-          </n-form-item>
+          <!-- Searchable nest dropdown for Space>lists>task>subtasks-->
+
 
           <!-- Refresh button -->
-          <n-button strong secondary circle
-                    @click="refreshClickupSpaces()"
-                    :disabled="loadingClickupSpaces"
-                    class="mt-0.5 bg-transparent color-gray-600"
+          <n-button :disabled="loadingClickupSpaces" circle class="mt-0.5 bg-transparent color-gray-600"
+                    secondary
+                    strong
+                    @click="refreshClickupSpaces"
           >
-            <n-icon name="refresh" size="20" class="flex items-center justify-center">
+            <n-icon class="flex items-center justify-center" name="refresh" size="20">
               <div v-if="loadingClickupSpaces" class="w-2 h-2 bg-blue-800 rounded-full animate-ping"></div>
               <arrow-path-icon v-else/>
             </n-icon>
@@ -192,59 +178,31 @@
         </div>
 
         <div class="flex space-x-2">
-          <!-- Searchable list select -->
-          <n-form-item path="task.lists" :show-label="false" class="flex-grow">
-            <n-select
-                filterable
-                :options="clickupLists"
-                :disabled="loadingClickupLists"
-                v-model:value="formValue.task.lists"
-                :render-label="renderTaskOptionLabel"
-                :render-tag="({ option, handleClose }) => option.name"
-                :placeholder="getListPlaceholder()"
-            />
-          </n-form-item>
-
-          <!-- Refresh button -->
-
-          <n-button strong secondary circle
-                    @click="refreshClickupLists()"
-                    :disabled="loadingClickupLists"
-                    class="mt-0.5 bg-transparent color-gray-600"
-          >
-            <n-icon name="refresh" size="20" class="flex items-center justify-center">
-              <div v-if="loadingClickupLists" class="w-2 h-2 bg-blue-800 rounded-full animate-ping"></div>
-              <arrow-path-icon v-else/>
-            </n-icon>
-          </n-button>
-        </div>
-
-        <div class="flex space-x-2">
           <!-- Searchable task select -->
-          <n-form-item path="task.taskId" :show-label="false" class="flex-grow">
+          <n-form-item :show-label="false" class="flex-grow" path="task.taskId">
             <n-select
-                filterable
-                :options="clickupCards"
-                :disabled="loadingClickupCards"
                 v-model:value="formValue.task.taskId"
-                :render-label="renderTaskOptionLabel"
-                :render-tag="({ option, handleClose }) => option.name"
+                :disabled="loadingClickupCards"
+                :options="clickupCards"
                 :placeholder="
                 loadingClickupCards
                   ? 'Refreshing Card list...'
                   : 'Please Select card to start tracking'
               "
+                :render-label="renderTaskOptionLabel"
+                :render-tag="({ option, handleClose }) => option.name"
+                filterable
             />
           </n-form-item>
 
           <!-- Refresh button -->
           <!-- TODO: reimplement cashing -->
-          <n-button strong secondary circle
+          <n-button :disabled="loadingClickupCards" circle class="mt-0.5 bg-transparent color-gray-600"
+                    secondary
+                    strong
                     @click="getClickupCards()"
-                    :disabled="loadingClickupCards"
-                    class="mt-0.5 bg-transparent color-gray-600"
           >
-            <n-icon name="refresh" size="20" class="flex items-center justify-center">
+            <n-icon class="flex items-center justify-center" name="refresh" size="20">
               <div v-if="loadingClickupCards" class="w-2 h-2 bg-blue-800 rounded-full animate-ping"></div>
               <arrow-path-icon v-else/>
             </n-icon>
@@ -252,24 +210,25 @@
         </div>
 
         <!-- Description textbox -->
-        <n-form-item path="description" :show-label="false">
+        <n-form-item :show-label="false" path="description">
           <n-mention
-              type="textarea"
               v-model:value="formValue.task.description"
               :options="mentionable"
               :render-label="renderMentionLabel"
               placeholder="Describe what you worked on"
+              type="textarea"
           />
         </n-form-item>
       </n-form>
 
       <template #footer>
         <div class="flex justify-end space-x-2">
-          <n-button @click="cancelTaskCreation()" round>Cancel</n-button>
+          <n-button round @click="cancelTaskCreation()">Cancel</n-button>
           <n-button
-              @click="createTask()"
-              round type="primary"
-          >Create</n-button>
+              round
+              type="primary" @click="createTask()"
+          >Create
+          </n-button>
         </div>
       </template>
     </n-card>
@@ -280,23 +239,23 @@
   <n-modal v-model:show="showTaskDetailsModal">
     <n-card
         :bordered="false"
-        class="max-w-xl"
-        title="Edit tracking entry"
-        size="huge"
-        role="dialog"
         aria-modal="true"
+        class="max-w-xl"
+        role="dialog"
+        size="huge"
+        title="Edit tracking entry"
     >
       <template #header>
         <span class="flex items-center space-x-3">
           <n-popconfirm
               v-if="selectedTask.deletable"
               :negative-text="null"
-              @positive-click="deleteSelectedTask"
-              positive-text="delete"
               :show-icon="false"
+              positive-text="delete"
+              @positive-click="deleteSelectedTask"
           >
             <template #trigger>
-              <n-button secondary circle type="error">
+              <n-button circle secondary type="error">
                 <n-icon name="delete-tracking-entry" size="18">
                   <trash-icon/>
                 </n-icon>
@@ -314,14 +273,14 @@
         <!-- TODO: Show some task labels -->
         <!-- TODO: Show current task column -->
 
-        <n-form :model="selectedTask" :rules="rules.task" ref="editForm" size="large">
-          <n-form-item path="description" :show-label="false">
+        <n-form ref="editForm" :model="selectedTask" :rules="rules.task" size="large">
+          <n-form-item :show-label="false" path="description">
             <n-mention
-                type="textarea"
                 v-model:value="selectedTask.description"
                 :options="mentionable"
                 :render-label="renderMentionLabel"
                 placeholder="Describe what you worked on"
+                type="textarea"
             />
           </n-form-item>
         </n-form>
@@ -330,8 +289,8 @@
 
       <template #footer>
         <div class="flex justify-end space-x-2">
-          <n-button @click="closeDetailModal()" round>Cancel</n-button>
-          <n-button @click="updateTimeTrackingEntry({ event: selectedTask })" round type="primary">Update</n-button>
+          <n-button round @click="closeDetailModal()">Cancel</n-button>
+          <n-button round type="primary" @click="updateTimeTrackingEntry({ event: selectedTask })">Update</n-button>
         </div>
       </template>
 
@@ -355,6 +314,7 @@ import store from "@/store";
 import {isEmptyObject} from "@/helpers";
 import eventFactory from "@/events-factory";
 import clickupService from "@/clickup-service";
+import {ClickUpItem, ClickUpType} from "@/model/ClickUpModels";
 
 import MemberSelector from '@/components/MemberSelector'
 import {CogIcon, UsersIcon, InformationCircleIcon, ArrowPathIcon} from "@heroicons/vue/20/solid";
@@ -374,7 +334,6 @@ import {
   NAvatar,
   useNotification
 } from "naive-ui";
-
 export default {
   components: {
     VueCal,
@@ -397,7 +356,7 @@ export default {
     UsersIcon,
     TrashIcon,
     PencilIcon,
-    InformationCircleIcon
+    InformationCircleIcon,
   },
 
   setup() {
@@ -415,6 +374,9 @@ export default {
       selectedTask: ref(null),
       mentionable: ref([]),
 
+      // One list to rule them all
+      clickUpItems: ref([]),
+
       clickupCards: ref([]),
       loadingClickupCards: ref(false),
 
@@ -431,8 +393,6 @@ export default {
 
       formValue: ref({
         task: {
-          space: null,
-          lists: null,
           taskId: null,
           description: null,
         },
@@ -440,14 +400,6 @@ export default {
 
       rules: {
         task: {
-          space: {
-            required: false,
-            message: "Please select a space to start tracking",
-          },
-          lists: {
-            required: false,
-            message: "Please select a list to start tracking",
-          },
           taskId: {
             required: true,
             message: "Please select a task to start tracking",
@@ -476,7 +428,6 @@ export default {
 
   mounted() {
     // Register background process listeners
-
     ipcRenderer.on("set-clickup-spaces", (event, spaces) =>
         this.onClickupSpacesRefreshed(spaces),
     );
@@ -512,75 +463,12 @@ export default {
           content: "You can try again later by pressing the refresh button when searching for a task",
         })
     );
-
-    this.loadingClickupLists = true;
-    this.getClickupSpaces();
-    this.getClickupCards();
+    this.getClickupSpaces()
 
     this.fetchMentionableUsers();
 
     // Load background image if set
     this.refreshBackgroundImage();
-  },
-
-  watch: {
-    formValue: {
-      handler: function (val) {
-        // get formValue check what has changed.
-        // if task has changed, update selectedTask
-        // if list has changed, update selectedList
-        // if space has changed, update selectedSpace
-        if (val.task.space !== this.selectedSpaces) {
-          this.selectedSpaces = val.task.space
-        } else if (val.task.lists !== this.selectedList) {
-          this.selectedList = val.task.lists
-        } else if (val.task.taskId !== this.selectedTask) {
-          this.selectedTask = val.task.taskId
-        }
-      },
-      deep: true,
-    },
-    selectedSpaces: {
-      handler: function (val) {
-        console.log("Selected spaces changed");
-        this.selectedSpaces = val;
-
-        // reset non space form values at the end
-        this.formValue = {
-          task: {
-            space: val,
-            lists: null,
-            taskId: null,
-          },
-        };
-        this.selectedList = null;
-        this.selectedTask = null;
-
-        this.getClickupLists()
-        this.getClickupCards()
-      },
-      deep: true,
-    },
-    selectedList: {
-      handler: function (val) {
-        console.log("Selected list changed");
-
-        // reset selected task at the end
-        this.formValue = {
-          task: {
-            space: this.selectedSpaces,
-            lists: val,
-            taskId: null,
-          },
-        };
-
-        this.selectedList = val;
-        this.selectedTask = null;
-
-        this.getClickupCards()
-      },
-      deep: true,
-    },
   },
 
   computed: {
@@ -624,6 +512,29 @@ export default {
 
     /*
     |--------------------------------------------------------------------------
+    | TREE SELECT CHANGE HANDLER
+    |--------------------------------------------------------------------------
+     */
+
+    handleTreeSelectChange(option) {
+      console.log("Tree select changed")
+      console.dir(option)
+      switch (option.type) {
+        case ClickUpType.SPACE:
+          break
+        case ClickUpType.LIST:
+          this.getClickupLists(option.id)
+          break
+        case ClickUpType.TASK:
+          this.selectedTask(option)
+          break
+        default:
+          console.error("Unknown type")
+      }
+    },
+
+    /*
+    |--------------------------------------------------------------------------
     | FETCH CLICKUP SPACES FOR SELECT FIELD
     |--------------------------------------------------------------------------
      */
@@ -643,11 +554,16 @@ export default {
     },
 
     onClickupSpacesRefreshed(spaces) {
-      this.clickupSpaces = spaces.map((space) => ({
-        value: space.id,
-        name: `${space.name}`,
-        label: `${space.name}`
-      }));
+
+      for (const space of spaces) {
+        this.addClickupItem({
+          type: ClickUpType.SPACE,
+          id: space.id,
+          name: space.name,
+          label: space.name,
+          children: []
+        })
+      }
 
       this.loadingClickupSpaces = false;
 
@@ -661,9 +577,12 @@ export default {
     |--------------------------------------------------------------------------
      */
 
-    getClickupLists() {
+    getClickupLists(spaceId) {
+      if (!spaceId) {
+        spaceId = this.selectedSpaces
+      }
       this.loadingClickupLists = true;
-      ipcRenderer.send("get-clickup-lists", this.selectedSpaces);
+      ipcRenderer.send("get-clickup-lists", spaceId);
 
       console.info("Fetching Clickup lists (from cache when available)...");
     },
@@ -676,27 +595,22 @@ export default {
     },
 
     onClickupListsRefreshed(lists) {
-      this.clickupLists = lists.map((list) => ({
-        value: list.id,
-        name: `${list.name}`,
-        label: `${list.name}`
-      }));
+      // turn lists into a list of ClickUpItems
+      // add this list to the corresponding clickUpItems space
+      for (const list of lists) {
+        this.clickUpItems.find(item => item.id === list.space.id).addChild({
+          type: ClickUpType.LIST,
+          id: list.id,
+          name: list.name,
+          label: list.name,
+          children: []
+        })
+      }
 
       this.loadingClickupLists = false;
 
       console.dir(this.clickupLists)
       console.info("Clickup lists refreshed!");
-    },
-
-    getListPlaceholder() {
-      if (!this.selectedSpaces) {
-        return "Please select a space first";
-      } else if(this.loadingClickupLists) {
-        return "Loading lists...";
-      } else if (this.clickupLists.length === 0) {
-        return "No lists found";
-      }
-      return "Please select a list";
     },
 
     /*
@@ -994,7 +908,15 @@ export default {
       bg.style.backgroundRepeat = "no-repeat";
       bg.style.backgroundPosition = "center";
       bg.style.backgroundSize = "cover";
-    }
+    },
+
+    addClickupItem: function (item){
+      if(!(item instanceof ClickUpItem)){
+        throw new Error("item must be of type ClickUpItem")
+      }
+
+      this.clickUpItems.push(item)
+    },
   }
 };
 </script>
