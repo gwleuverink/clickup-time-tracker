@@ -152,126 +152,7 @@
         role="dialog"
         aria-modal="true"
     >
-      <template #header> What did you work on?</template>
 
-      <n-form
-          ref="createForm"
-          size="large"
-          :rules="rules"
-          :model="formValue"
-      >
-        <div class="flex space-x-2">
-          <!-- Searchable space select -->
-          <n-form-item path="task.space" :show-label="false" class="flex-grow">
-            <n-select
-                filterable
-                :options="clickupSpaces"
-                :disabled="loadingClickupSpaces"
-                v-model:value="formValue.task.space"
-                :render-label="renderTaskOptionLabel"
-                :render-tag="({ option, handleClose }) => option.name"
-                :placeholder="
-                loadingClickupSpaces
-                  ? 'Refreshing Space list...'
-                  : 'Please Select a space'"
-            />
-            <!-- TODO: make List refresh when space is changed -->
-          </n-form-item>
-
-          <!-- Refresh button -->
-          <n-button strong secondary circle
-                    @click="refreshClickupSpaces()"
-                    :disabled="loadingClickupSpaces"
-                    class="mt-0.5 bg-transparent color-gray-600"
-          >
-            <n-icon name="refresh" size="20" class="flex items-center justify-center">
-              <div v-if="loadingClickupSpaces" class="w-2 h-2 bg-blue-800 rounded-full animate-ping"></div>
-              <arrow-path-icon v-else/>
-            </n-icon>
-          </n-button>
-        </div>
-
-        <div class="flex space-x-2">
-          <!-- Searchable list select -->
-          <n-form-item path="task.lists" :show-label="false" class="flex-grow">
-            <n-select
-                filterable
-                :options="clickupLists"
-                :disabled="loadingClickupLists"
-                v-model:value="formValue.task.lists"
-                :render-label="renderTaskOptionLabel"
-                :render-tag="({ option, handleClose }) => option.name"
-                :placeholder="getListPlaceholder()"
-            />
-          </n-form-item>
-
-          <!-- Refresh button -->
-
-          <n-button strong secondary circle
-                    @click="refreshClickupLists()"
-                    :disabled="loadingClickupLists"
-                    class="mt-0.5 bg-transparent color-gray-600"
-          >
-            <n-icon name="refresh" size="20" class="flex items-center justify-center">
-              <div v-if="loadingClickupLists" class="w-2 h-2 bg-blue-800 rounded-full animate-ping"></div>
-              <arrow-path-icon v-else/>
-            </n-icon>
-          </n-button>
-        </div>
-
-        <div class="flex space-x-2">
-          <!-- Searchable task select -->
-          <n-form-item path="task.taskId" :show-label="false" class="flex-grow">
-            <n-select
-                filterable
-                :options="clickupCards"
-                :disabled="loadingClickupCards"
-                v-model:value="formValue.task.taskId"
-                :render-label="renderTaskOptionLabel"
-                :render-tag="({ option, handleClose }) => option.name"
-                :placeholder="
-                loadingClickupCards
-                  ? 'Refreshing Card list...'
-                  : 'Please Select card to start tracking'
-              "
-            />
-          </n-form-item>
-
-          <!-- Refresh button -->
-          <!-- TODO: reimplement cashing -->
-          <n-button strong secondary circle
-                    @click="getClickupCards()"
-                    :disabled="loadingClickupCards"
-                    class="mt-0.5 bg-transparent color-gray-600"
-          >
-            <n-icon name="refresh" size="20" class="flex items-center justify-center">
-              <div v-if="loadingClickupCards" class="w-2 h-2 bg-blue-800 rounded-full animate-ping"></div>
-              <arrow-path-icon v-else/>
-            </n-icon>
-          </n-button>
-        </div>
-
-        <!-- Description textbox -->
-        <n-form-item path="description" :show-label="false">
-          <n-mention
-              type="textarea"
-              v-model:value="formValue.task.description"
-              :options="mentionable"
-              :render-label="renderMentionLabel"
-              placeholder="Describe what you worked on"
-          />
-        </n-form-item>
-      </n-form>
-
-      <template #footer>
-        <div class="flex justify-end space-x-2">
-          <n-button @click="cancelTaskCreation()" round>Cancel</n-button>
-          <n-button
-              @click="createTask()"
-              round type="primary"
-          >Create</n-button>
-        </div>
-      </template>
     </n-card>
   </n-modal>
   <!-- END | Task creation modal -->
@@ -344,7 +225,6 @@
 <script>
 import {ref, h} from "vue";
 import {RouterLink} from "vue-router";
-import {ipcRenderer} from "electron";
 
 const shell = require('electron').shell;
 
@@ -357,7 +237,7 @@ import eventFactory from "@/events-factory";
 import clickupService from "@/clickup-service";
 
 import MemberSelector from '@/components/MemberSelector'
-import {CogIcon, UsersIcon, InformationCircleIcon, ArrowPathIcon} from "@heroicons/vue/20/solid";
+import {CogIcon, UsersIcon, InformationCircleIcon} from "@heroicons/vue/20/solid";
 import {ClockIcon, TrashIcon, PencilIcon} from "@heroicons/vue/24/outline";
 import {
   NMention,
@@ -370,7 +250,6 @@ import {
   NPopconfirm,
   NPopover,
   NButton,
-  NSelect,
   NAvatar,
   useNotification
 } from "naive-ui";
@@ -390,8 +269,6 @@ export default {
     NPopconfirm,
     NPopover,
     NButton,
-    NSelect,
-    ArrowPathIcon,
     ClockIcon,
     CogIcon,
     UsersIcon,
@@ -410,55 +287,13 @@ export default {
 
       createForm,
       events: ref([]),
-      selectedSpaces: ref(null),
-      selectedList: ref(null),
-      selectedTask: ref(null),
       mentionable: ref([]),
-
-      clickupCards: ref([]),
-      loadingClickupCards: ref(false),
-
-      clickupSpaces: ref([]),
-      loadingClickupSpaces: ref(false),
-
-      clickupLists: ref([]),
-      loadingClickupLists: ref(false),
 
       deleteCallable: ref(() => null),
       showTaskCreationModal: ref(false),
       showTaskDetailsModal: ref(false),
       memberSelectorOpen: ref(false),
 
-      formValue: ref({
-        task: {
-          space: null,
-          lists: null,
-          taskId: null,
-          description: null,
-        },
-      }),
-
-      rules: {
-        task: {
-          space: {
-            required: false,
-            message: "Please select a space to start tracking",
-          },
-          lists: {
-            required: false,
-            message: "Please select a list to start tracking",
-          },
-          taskId: {
-            required: true,
-            message: "Please select a task to start tracking",
-          },
-          description: {
-            required: store.get('settings.require_description'),
-            trigger: ["blur"],
-            message: "Please provide a description",
-          }
-        }
-      },
 
       success(options) {
         notification.success({duration: 5000, ...options});
@@ -476,111 +311,10 @@ export default {
 
   mounted() {
     // Register background process listeners
-
-    ipcRenderer.on("set-clickup-spaces", (event, spaces) =>
-        this.onClickupSpacesRefreshed(spaces),
-    );
-
-    ipcRenderer.on("fetch-clickup-spaces-error", (event, error) =>
-        this.error({
-          error,
-          title: "Failed to fetch Clickup spaces in the background",
-          content: "You can try again later by pressing the refresh button when searching for a space",
-        })
-    );
-
-    ipcRenderer.on("set-clickup-lists", (event, lists) =>
-        this.onClickupListsRefreshed(lists)
-    );
-
-    ipcRenderer.on("fetch-clickup-lists-error", (event, error) =>
-        this.error({
-          error,
-          title: "Failed to fetch Clickup lists in the background",
-          content: "You can try again later by pressing the refresh button when searching for a list",
-        })
-    );
-
-    ipcRenderer.on("set-clickup-cards", (event, cards) =>
-        this.onClickupCardsRefreshed(cards)
-    );
-
-    ipcRenderer.on("fetch-clickup-cards-error", (event, error) =>
-        this.error({
-          error,
-          title: "Failed to fetch Clickup tasks in the background",
-          content: "You can try again later by pressing the refresh button when searching for a task",
-        })
-    );
-
-    this.loadingClickupLists = true;
-    this.getClickupSpaces();
-    this.getClickupCards();
-
     this.fetchMentionableUsers();
 
     // Load background image if set
     this.refreshBackgroundImage();
-  },
-
-  watch: {
-    formValue: {
-      handler: function (val) {
-        // get formValue check what has changed.
-        // if task has changed, update selectedTask
-        // if list has changed, update selectedList
-        // if space has changed, update selectedSpace
-        if (val.task.space !== this.selectedSpaces) {
-          this.selectedSpaces = val.task.space
-        } else if (val.task.lists !== this.selectedList) {
-          this.selectedList = val.task.lists
-        } else if (val.task.taskId !== this.selectedTask) {
-          this.selectedTask = val.task.taskId
-        }
-      },
-      deep: true,
-    },
-    selectedSpaces: {
-      handler: function (val) {
-        console.log("Selected spaces changed");
-        this.selectedSpaces = val;
-
-        // reset non space form values at the end
-        this.formValue = {
-          task: {
-            space: val,
-            lists: null,
-            taskId: null,
-          },
-        };
-        this.selectedList = null;
-        this.selectedTask = null;
-
-        this.getClickupLists()
-        this.getClickupCards()
-      },
-      deep: true,
-    },
-    selectedList: {
-      handler: function (val) {
-        console.log("Selected list changed");
-
-        // reset selected task at the end
-        this.formValue = {
-          task: {
-            space: this.selectedSpaces,
-            lists: val,
-            taskId: null,
-          },
-        };
-
-        this.selectedList = val;
-        this.selectedTask = null;
-
-        this.getClickupCards()
-      },
-      deep: true,
-    },
   },
 
   computed: {
@@ -621,120 +355,6 @@ export default {
             content: "Check your console & internet connection and try again",
           }));
     },
-
-    /*
-    |--------------------------------------------------------------------------
-    | FETCH CLICKUP SPACES FOR SELECT FIELD
-    |--------------------------------------------------------------------------
-     */
-
-    getClickupSpaces() {
-      this.loadingClickupSpaces = true;
-      ipcRenderer.send("get-clickup-spaces");
-
-      console.info("Fetching Clickup spaces (from cache when available)...");
-    },
-
-    refreshClickupSpaces() {
-      this.loadingClickupSpaces = true;
-      ipcRenderer.send("refresh-clickup-spaces");
-
-      console.info("Refreshing Clickup spaces...");
-    },
-
-    onClickupSpacesRefreshed(spaces) {
-      this.clickupSpaces = spaces.map((space) => ({
-        value: space.id,
-        name: `${space.name}`,
-        label: `${space.name}`
-      }));
-
-      this.loadingClickupSpaces = false;
-
-      console.dir(this.clickupSpaces)
-      console.info("Clickup spaces refreshed!");
-    },
-
-    /*
-    |--------------------------------------------------------------------------
-    | FETCH CLICKUP LISTS FOR SELECT FIELD
-    |--------------------------------------------------------------------------
-     */
-
-    getClickupLists() {
-      this.loadingClickupLists = true;
-      ipcRenderer.send("get-clickup-lists", this.selectedSpaces);
-
-      console.info("Fetching Clickup lists (from cache when available)...");
-    },
-
-    refreshClickupLists() {
-      this.loadingClickupLists = true;
-      ipcRenderer.send("refresh-clickup-lists", this.selectedSpaces);
-
-      console.info("Refreshing Clickup lists...");
-    },
-
-    onClickupListsRefreshed(lists) {
-      this.clickupLists = lists.map((list) => ({
-        value: list.id,
-        name: `${list.name}`,
-        label: `${list.name}`
-      }));
-
-      this.loadingClickupLists = false;
-
-      console.dir(this.clickupLists)
-      console.info("Clickup lists refreshed!");
-    },
-
-    getListPlaceholder() {
-      if (!this.selectedSpaces) {
-        return "Please select a space first";
-      } else if(this.loadingClickupLists) {
-        return "Loading lists...";
-      } else if (this.clickupLists.length === 0) {
-        return "No lists found";
-      }
-      return "Please select a list";
-    },
-
-    /*
-    |--------------------------------------------------------------------------
-    | FETCH TIME CLICKUP CARDS FOR SELECT FIELD
-    |--------------------------------------------------------------------------
-    */
-    // Instruct background process to get cached clickup cards
-    getClickupCards() {
-      this.loadingClickupCards = true;
-
-      ipcRenderer.send("get-clickup-cards", this.selectedSpaces, this.selectedList);
-
-      console.info("Fetching Clickup cards (from cache when available)...");
-    },
-
-    refreshClickupCards() {
-      this.loadingClickupCards = true;
-      ipcRenderer.send("refresh-clickup-cards");
-
-      console.info("Refreshing Clickup cards...");
-    },
-
-    // Fired when background process sends us the refreshed cards
-    onClickupCardsRefreshed(cards) {
-
-      this.clickupCards = cards.map((card) => ({
-        value: card.id,
-        name: `${card.name}`,
-        folder: `${card.folder}`,
-        label: `${card.name} ${card.folder}` // Native UI uses this for fuzzy searching
-      }));
-
-      this.loadingClickupCards = false;
-
-      console.info("Clickup cards refreshed!");
-    },
-
     /*
     |--------------------------------------------------------------------------
     | CREATE A TASK
@@ -754,55 +374,6 @@ export default {
       this.selectedTask = event;
 
       return this.selectedTask;
-    },
-
-    createTask() {
-      this.createForm.validate()
-          .then(() => pushToClickup())
-          .catch(errors => console.error(errors))
-
-      const pushToClickup = () => {
-        console.log("Test pushing to Clickup...")
-        console.log(this.selectedTask + " " + this.formValue.task.description + " " + this.selectedTask.start + " " + this.selectedTask.end)
-        console.log(this.formValue)
-        /*
-        clickupService.createTimeTrackingEntry(
-            this.selectedTask,
-            this.formValue.task.description,
-            this.selectedTask.start,
-            this.selectedTask.end
-        ).then(entry => {
-              console.info(`Created time tracking entry for: ${entry.task.name}`);
-
-              this.selectedTask = eventFactory.updateFromRemote(
-                  this.selectedTask,
-                  entry
-              );
-              // Explicitly push to model so time update works properly
-              this.events.push(this.selectedTask);
-
-              this.closeCreationModal();
-            })
-            .catch(error => {
-              this.cancelTaskCreation();
-
-              this.error({
-                error,
-                title: "Looks like something went wrong",
-                content: "There was a problem while pushing to Clickup. Check your console & internet connection and try again",
-              });
-            });
-         */
-        // reset form values at the end
-        this.formValue = {
-          task: {
-            space: null,
-            lists: null,
-            taskId: null,
-            description: null,
-          },
-        };
-      }
     },
 
     duplicateSelectedTask() {
