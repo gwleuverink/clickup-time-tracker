@@ -1,7 +1,7 @@
-<script setup lang="js">
-import {NAvatar, NButton, NForm, NFormItem, NIcon, NMention, TreeSelectOption, useNotification} from "naive-ui";
+<script setup >
+  import {NAvatar, NButton, NForm, NTreeSelect, NIcon, NMention, NH1, useNotification} from "naive-ui";
   import {ArrowPathIcon} from "@heroicons/vue/20/solid";
-  import {h, onMounted, Ref, ref} from "vue";
+  import {h, onMounted, ref} from "vue";
   import { ipcRenderer } from 'electron';
 
   import {ClickUpItem, ClickUpType} from "@/model/ClickUpModels";
@@ -10,7 +10,7 @@ import {NAvatar, NButton, NForm, NFormItem, NIcon, NMention, TreeSelectOption, u
   const createForm = null;
 
   // Refs
-  let clickUpItems: Ref<ClickUpItem[]> = ref([]);
+  let clickUpItems = ref([]);
 
   let loadingClickupSpaces = ref(false);
   let loadingClickupLists = ref(false);
@@ -39,6 +39,7 @@ import {NAvatar, NButton, NForm, NFormItem, NIcon, NMention, TreeSelectOption, u
   })
 
   // IPC event handlers
+  // Space handlers
   ipcRenderer.on("set-clickup-spaces", (event, spaces) => {
       onClickupSpacesRefreshed(spaces)
       onSuccess({
@@ -56,11 +57,12 @@ import {NAvatar, NButton, NForm, NFormItem, NIcon, NMention, TreeSelectOption, u
       })
   );
 
+  // List handlers
   ipcRenderer.on("set-clickup-lists", (
-      //event, lists
+      // event, lists
       ) => {
       onClickupListsRefreshed(
-          //lists
+          // lists
       )
       onSuccess({
         title: "Clickup lists refreshed",
@@ -77,6 +79,7 @@ import {NAvatar, NButton, NForm, NFormItem, NIcon, NMention, TreeSelectOption, u
       })
   );
 
+  // Card handlers
   ipcRenderer.on("set-clickup-cards", (
       //event, cards
       ) => {
@@ -105,17 +108,23 @@ import {NAvatar, NButton, NForm, NFormItem, NIcon, NMention, TreeSelectOption, u
   |--------------------------------------------------------------------------
    */
 
-  function handleTreeSelectChange(option: TreeSelectOption) {
+  function handleTreeSelectChange(option) {
     //TODO: handle tree select change
 
     console.log("Tree select changed")
     console.dir(option)
 
+    // TODO: handle tree select change
+    // 1. get the corresponding item from the clickUpItems list
+    // 2. if it's a space, get the lists belonging to that space and add them as children to the space
+    // 3. if it's a list, get the cards belonging to that list and add them as children to the list
+    // 4. if it's a card, set the selected card to that card and find the subtasks belonging to that card
+    // 5. if it's a subtask, set the selected subtask to that subtask
+
+    let foundItem = clickUpItems.value.find(item => item.id === option.id)
+
     //What is in tree select option?
-    /*
-    console.log("Tree select changed")
-    console.dir(option)
-    switch (option.type) {
+    switch (foundItem.type) {
       case ClickUpType.SPACE:
         getClickupLists(option.id)
         break
@@ -128,8 +137,6 @@ import {NAvatar, NButton, NForm, NFormItem, NIcon, NMention, TreeSelectOption, u
       default:
         console.error("Unknown type")
     }
-
-     */
   }
 
   /*
@@ -152,7 +159,7 @@ import {NAvatar, NButton, NForm, NFormItem, NIcon, NMention, TreeSelectOption, u
     console.info("Refreshing Clickup spaces...");
   }
 
-  function onClickupSpacesRefreshed(spaces: any[]) {
+  function onClickupSpacesRefreshed(spaces) {
 
     // Compare the new spaces ID with the old ones, and only add the new ones
     spaces = spaces.filter(space => !clickUpItems.value.some(oldSpace => oldSpace.id === space.id))
@@ -320,11 +327,11 @@ import {NAvatar, NButton, NForm, NFormItem, NIcon, NMention, TreeSelectOption, u
   |--------------------------------------------------------------------------
   */
 
-  function onSuccess(options: any) {
+  function onSuccess(options) {
     notification.success({duration: 5000, ...options});
   }
 
-  function onError(options: any) {
+  function onError(options) {
     notification.error({duration: 5000, ...options});
 
     if (options.error) {
@@ -338,7 +345,7 @@ import {NAvatar, NButton, NForm, NFormItem, NIcon, NMention, TreeSelectOption, u
   |--------------------------------------------------------------------------
   */
 
-  function renderMentionLabel(option: any) {
+  function renderMentionLabel(option) {
     return h('div', {style: 'display: flex; align-items: center;'}, [
       h(NAvatar, {
         style: 'margin-right: 8px;',
@@ -379,6 +386,8 @@ import {NAvatar, NButton, NForm, NFormItem, NIcon, NMention, TreeSelectOption, u
 
       <n-tree-select
         @update:value = "handleTreeSelectChange"
+        :multiple="false"
+        :options="clickUpItems"
       />
 
       <!-- Refresh button -->
@@ -395,7 +404,7 @@ import {NAvatar, NButton, NForm, NFormItem, NIcon, NMention, TreeSelectOption, u
     </div>
 
     <!-- Description textbox -->
-    <n-form-item :show-label="false" path="description">
+    <div class="flex space-x-2">
       <n-mention
           v-model:value="formValue.task.description"
           :options="mentionable"
@@ -403,21 +412,21 @@ import {NAvatar, NButton, NForm, NFormItem, NIcon, NMention, TreeSelectOption, u
           placeholder="Describe what you worked on"
           type="textarea"
       />
-    </n-form-item>
+    </div>
+
+    <!-- Create and cancel buttons -->
+    <div class="flex justify-end space-x-2">
+        <n-button
+            round
+            @click="cancelTaskCreation()"
+        >Cancel</n-button>
+        <n-button
+            round
+            type="primary"
+            @click="createTask"
+        >Create</n-button>
+      </div>
   </n-form>
-  <!-- Buttons
-  <div class="flex justify-end space-x-2">
-    <n-button
-        round
-        @click="cancelTaskCreation()"
-    >Cancel</n-button>
-    <n-button
-        round
-        type="primary"
-        @click="createTask"
-    >Create</n-button>
-  </div>
-  -->
 </template>
 
 <style scoped>

@@ -147,11 +147,12 @@
     <n-card
         :bordered="false"
         class="max-w-xl"
-        title="What did you work on?"
         size="huge"
         role="dialog"
         aria-modal="true"
     >
+
+      <TaskCreatorForm/>
 
     </n-card>
   </n-modal>
@@ -253,9 +254,11 @@ import {
   NAvatar,
   useNotification
 } from "naive-ui";
+import TaskCreatorForm from "@/components/TaskCreatorForm.vue";
 
 export default {
   components: {
+    TaskCreatorForm,
     VueCal,
     MemberSelector,
     RouterLink,
