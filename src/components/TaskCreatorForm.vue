@@ -12,9 +12,7 @@
   // Refs
   let clickUpItems = ref([]);
 
-  let loadingClickupSpaces = ref(false);
-  let loadingClickupLists = ref(false);
-  let loadingClickupCards = ref(false);
+  let loadingClickup = ref(false);
 
   //let selectedItem: ClickUpItem;
 
@@ -58,12 +56,8 @@
   );
 
   // List handlers
-  ipcRenderer.on("set-clickup-lists", (
-      // event, lists
-      ) => {
-      onClickupListsRefreshed(
-          // lists
-      )
+  ipcRenderer.on("set-clickup-lists", (event, lists) => {
+      onClickupListsRefreshed(lists)
       onSuccess({
         title: "Clickup lists refreshed",
         content: "Clickup lists have been refreshed in the background",
@@ -80,12 +74,8 @@
   );
 
   // Card handlers
-  ipcRenderer.on("set-clickup-cards", (
-      //event, cards
-      ) => {
-        onClickupCardsRefreshed(
-            //cards
-        )
+  ipcRenderer.on("set-clickup-cards", (event, cards) => {
+        onClickupCardsRefreshed(cards)
         onSuccess({
           title: "Clickup tasks refreshed",
           content: "Clickup tasks have been refreshed in the background",
@@ -104,38 +94,28 @@
 
   /*
   |--------------------------------------------------------------------------
-  | TREE SELECT CHANGE HANDLER
+  | TREE SELECT HANDLERS
   |--------------------------------------------------------------------------
    */
 
-  function handleTreeSelectChange(option) {
-    //TODO: handle tree select change
+  function handleLoad(option) {
+    console.log("Loading children for " + option)
 
-    console.log("Tree select changed")
-    console.dir(option)
-
-    // TODO: handle tree select change
-    // 1. get the corresponding item from the clickUpItems list
-    // 2. if it's a space, get the lists belonging to that space and add them as children to the space
-    // 3. if it's a list, get the cards belonging to that list and add them as children to the list
-    // 4. if it's a card, set the selected card to that card and find the subtasks belonging to that card
-    // 5. if it's a subtask, set the selected subtask to that subtask
-
-    let foundItem = clickUpItems.value.find(item => item.id === option.id)
+    let foundItem = clickUpItems.value.find(item => item.id == option)
 
     //What is in tree select option?
     switch (foundItem.type) {
       case ClickUpType.SPACE:
-        getClickupLists(option.id)
-        break
+        return getClickupLists(option)
       case ClickUpType.LIST:
-        getClickupCards(option.id)
+        getClickupCards(option)
         break
       case ClickUpType.TASK:
         //selectedItem = option
         break
       default:
         console.error("Unknown type")
+        return Promise.reject()
     }
   }
 
@@ -146,33 +126,28 @@
    */
 
   function getClickupSpaces() {
-    loadingClickupSpaces.value = true;
+    loadingClickup.value = true;
     ipcRenderer.send("get-clickup-spaces");
 
     console.info("Fetching Clickup spaces (from cache when available)...");
   }
 
   function refreshClickupSpaces() {
-    loadingClickupSpaces.value = true;
+    loadingClickup.value = true;
     ipcRenderer.send("refresh-clickup-spaces");
 
     console.info("Refreshing Clickup spaces...");
   }
 
   function onClickupSpacesRefreshed(spaces) {
-
     // Compare the new spaces ID with the old ones, and only add the new ones
     spaces = spaces.filter(space => !clickUpItems.value.some(oldSpace => oldSpace.id === space.id))
 
-    for (const space of spaces) {
-      let item = new ClickUpItem(space.id, space.name, ClickUpType.SPACE, [])
+    spaces.forEach(space => {
+      clickUpItems.value.push(new ClickUpItem(space.id, space.name, ClickUpType.SPACE, []))
+    })
 
-      clickUpItems.value.push(item)
-    }
-
-    loadingClickupSpaces.value = false;
-
-    console.dir(clickUpItems)
+    loadingClickup.value = false;
     console.info("Clickup spaces refreshed!");
   }
 
@@ -182,37 +157,50 @@
    |--------------------------------------------------------------------------
   */
 
-  /*
-  function getClickupLists(spaceId: number) {
-    loadingClickupLists.value = true;
-    ipcRenderer.send("get-clickup-lists", spaceId);
+  function getClickupLists(spaceId) {
+    return new Promise((resolve, reject) => {
+      loadingClickup.value = true;
+      ipcRenderer.send("get-clickup-lists", spaceId);
+      console.info("Fetching Clickup lists (from cache when available)...");
 
-    console.info("Fetching Clickup lists (from cache when available)...");
+      ipcRenderer.once("set-clickup-lists", (event, lists) => {
+        onSuccess({
+          title: "Clickup lists refreshed",
+          content: "Clickup lists have been refreshed in the background",
+        })
+        return onClickupListsRefreshed(lists)
+      });
+
+      ipcRenderer.once("fetch-clickup-lists-error", (event, error) => {
+        onError({
+          error,
+          title: "Failed to fetch Clickup lists in the background",
+          content: "You can try again later by pressing the refresh button when searching for a list",
+        })
+        reject();
+      });
+
+    });
   }
-  */
 
-  function onClickupListsRefreshed(
-      //lists: any[]
-  ) {
-    // TODO: load lists into the corresponding space
-    // turn lists into a list of ClickUpItems
-    // add this list to the corresponding clickUpItems space
-    /*
-    for (const list of lists) {
-      clickUpItems.value.find(item => item.id === list.space.id).push({
-        type: ClickUpType.LIST,
-        id: list.id,
-        name: list.name,
-        label: list.name,
-        children: []
-      })
-     }
-     */
-    
-    loadingClickupLists.value = false;
+  function onClickupListsRefreshed(lists) {
+    //Set options to track what is pressent in the tree select, after that return the lists as ClickUpItems
+    lists = lists.filter(list => !clickUpItems.value.some(oldList => oldList.id === list.id))
+
+    let newLists = lists.map(list => new ClickUpItem(list.id, list.name, ClickUpType.LIST, []))
+
+    lists.forEach(list => {
+      clickUpItems.value.find(item => item.id === lists[0].space.id)
+          .addChild(new ClickUpItem(list.id, list.name, ClickUpType.LIST, []))
+
+    })
+
+    loadingClickup.value = false;
 
     console.dir(clickUpItems)
     console.info("Clickup lists refreshed!");
+
+    return newLists
   }
 
   /*
@@ -221,43 +209,27 @@
     |--------------------------------------------------------------------------
     */
   // Instruct background process to get cached clickup cards
-  /*
-  function getClickupCards(listId: number) {
-    // TODO: load cards into the corresponding list
 
-    loadingClickupCards.value = true;
+  function getClickupCards(listId) {
+    loadingClickup.value = true;
 
     ipcRenderer.send("get-clickup-cards", listId);
 
     console.info("Fetching Clickup cards (from cache when available)...");
   }
-   */
-
-  /*
-    function refreshClickupCards() {
-    loadingClickupCards.value = true;
-    ipcRenderer.send("refresh-clickup-cards");
-
-    console.info("Refreshing Clickup cards...");
-  }
-   */
-
-
 
   // Fired when background process sends us the refreshed cards
-  function onClickupCardsRefreshed(
-      //cards: any[]
-  ) {
-    /*
-    this.clickupCards = cards.map((card) => ({
-      value: card.id,
-      name: `${card.name}`,
-      folder: `${card.folder}`,
-      label: `${card.name} ${card.folder}` // Native UI uses this for fuzzy searching
-    }));
-    */
-    loadingClickupCards.value = false;
+  function onClickupCardsRefreshed(cards) {
+    cards = cards.filter(card => !clickUpItems.value.some(oldCard => oldCard.id === card.id))
 
+    cards.forEach(card => {
+      clickUpItems.value.find(item => item.id === cards[0].list.id)
+          .addChild(new ClickUpItem(card.id, card.name, ClickUpType.TASK, []))
+    })
+
+    loadingClickup.value = false;
+
+    console.dir(clickUpItems)
     console.info("Clickup cards refreshed!");
   }
 
@@ -385,19 +357,19 @@
       <!-- Searchable nest dropdown for Space>lists>task>subtasks-->
 
       <n-tree-select
-        @update:value = "handleTreeSelectChange"
-        :multiple="false"
-        :options="clickUpItems"
+          :on-load="handleLoad"
+          :multiple="false"
+          :options="clickUpItems"
       />
 
       <!-- Refresh button -->
-      <n-button :disabled="loadingClickupSpaces" circle class="mt-0.5 bg-transparent color-gray-600"
+      <n-button :disabled="loadingClickup" circle class="mt-0.5 bg-transparent color-gray-600"
                 secondary
                 strong
                 @click="refreshClickupSpaces"
       >
         <n-icon class="flex items-center justify-center" name="refresh" size="20">
-          <div v-if="loadingClickupSpaces" class="w-2 h-2 bg-blue-800 rounded-full animate-ping"></div>
+          <div v-if="loadingClickup" class="w-2 h-2 bg-blue-800 rounded-full animate-ping"></div>
           <arrow-path-icon v-else/>
         </n-icon>
       </n-button>

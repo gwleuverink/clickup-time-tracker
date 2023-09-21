@@ -111,7 +111,6 @@ export default {
         const cached = cache.get(SPACES_CACHE_KEY)
 
         if (cached) {
-
             return cached
         }
 
@@ -161,16 +160,12 @@ export default {
             if (cached && cached.length > 0) {
 
                 // check if chached lists are from the same space as requested
-                console.log('cached lists:');
-                console.dir(cached)
 
-                if (cached[0].space.id === spaceId) {
+                if (cached[0].space.id == spaceId) {
                     return cached
                 }
             }
 
-            // Fetch a fresh spaceslist
-            console.log('fetching fresh lists');
             let lists = await this.getLists(spaceId)
 
             return cache.put(

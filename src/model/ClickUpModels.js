@@ -27,6 +27,19 @@ export class ClickUpItem{
 
         this.type = type;
         this.children = children;
+
+        this.isLeaf = false;
+
+        /*
+        switch (type){
+            case ClickUpType.TASK:
+                this.isLeaf = true;
+                break;
+            case ClickUpType.SUBTASK:
+                this.isLeaf = true;
+                break;
+        }
+         */
     }
 
     addChild(child){
