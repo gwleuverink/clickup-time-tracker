@@ -28,8 +28,13 @@ export class ClickUpItem{
         this.type = type;
         this.children = children;
 
+        // Check if item is a leaf. aka has no children to load
+        // should be true for tasks and subtasks
         this.isLeaf = false;
 
+        // Check if item is disabled. So not clickable
+        // should be true for spaces and lists
+        this.disabled = false;
         /*
         switch (type){
             case ClickUpType.TASK:

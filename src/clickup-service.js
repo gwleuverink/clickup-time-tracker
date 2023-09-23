@@ -148,8 +148,6 @@ export default {
          */
 
         let mergedLists = folderlessLists.concat(folderedLists.flat());
-        console.log('merged lists');
-        console.dir(mergedLists);
         return mergedLists;
     },
 
@@ -237,10 +235,10 @@ export default {
    * Retrieves a page of tasks from the ClickUp API
    * TODO: rewrite api call to use spaceId and listId. List id should be possible put it is a different api call. For spaceId i have no idea.
    */
-    async getTasksPage(page, spaceId = null, listId = null) {
+    async getTasksPage(page, listId = null) {
         let url = `${teamRootUrl()}/task`
 
-        console.log('get tasks page for space: ' + spaceId + ' and list: ' + listId + ' and page: ' + page);
+        console.log('get tasks page for list: ' + listId + ' and page: ' + page);
 
         page = page || 0
 
@@ -266,14 +264,6 @@ export default {
             });
         })
 
-        // Filter tasks by spaceId and listId if provided. Only need to match both when both are provided.
-        // If only one is provided, only match that one.
-
-        if (spaceId) {
-            results = results.filter(task => {
-                return task.space.id === spaceId
-            });
-        }
         if (listId) {
             results = results.filter(task => {
                 return task.list.id === listId

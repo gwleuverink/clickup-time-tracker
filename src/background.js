@@ -48,8 +48,8 @@ ipcMain.on('refresh-clickup-lists', (event, spaceId) => {
 })
 
 // Fetch ClickUp tasks from cache when the app starts up
-ipcMain.on('get-clickup-cards', (event, spaceId, listId) => {
-    clickupService.getTasks(spaceId, listId)
+ipcMain.on('get-clickup-cards', (event, listId) => {
+    clickupService.getTasks(listId)
     // clickupService.getCachedTasks(spaceId, listId)
         .then(tasks => event.reply('set-clickup-cards', tasks))
         .catch(err => event.reply('fetch-clickup-cards-error', err))

@@ -32,7 +32,7 @@
     "core-js": "^3.26.1",
     "electron-store": "^8.1.0",
     "electron-updater": "^5.3.0",
-    "naive-ui": "^2.33.5",
+    "naive-ui": "^2.34.4",
     "sass": "^1.56.1",
     "v-offline": "^3.3.0",
     "vue": "^3.2.45",

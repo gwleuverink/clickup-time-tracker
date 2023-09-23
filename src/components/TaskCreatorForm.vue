@@ -1,344 +1,332 @@
-<script setup >
-  import {NAvatar, NButton, NForm, NTreeSelect, NIcon, NMention, NH1, useNotification} from "naive-ui";
-  import {ArrowPathIcon} from "@heroicons/vue/20/solid";
-  import {h, onMounted, ref} from "vue";
-  import { ipcRenderer } from 'electron';
+<script setup>
+import {NAvatar, NButton, NForm, NIcon, NMention, NH1, NCascader, useNotification} from "naive-ui";
+import {ArrowPathIcon} from "@heroicons/vue/20/solid";
+import {h, onMounted, ref} from "vue";
+import {ipcRenderer} from 'electron';
 
-  import {ClickUpItem, ClickUpType} from "@/model/ClickUpModels";
+import {ClickUpItem, ClickUpType} from "@/model/ClickUpModels";
 
-  const notification = useNotification();
-  const createForm = null;
+const notification = useNotification();
+const createForm = null;
 
-  // Refs
-  let clickUpItems = ref([]);
+// Refs
+let clickUpItems = ref([]);
+let loadingClickup = ref(false);
+let selectedItem = ref(null);
 
-  let loadingClickup = ref(false);
+let mentionable = ref([]);
 
-  //let selectedItem: ClickUpItem;
+const formValue = ref({
+  task: {
+    taskId: null,
+    description: null,
+  },
+})
 
-  let mentionable = ref([]);
+const rules = ref({
+  task: {
+    taskId: [
+      {required: true, message: 'Please select a task', trigger: 'change'},
+    ],
+    description: [
+      {required: true, message: 'Please describe what you worked on', trigger: 'change'},
+    ],
+  },
+})
 
-  const formValue = ref({
-    task: {
-      taskId: null,
-      description: null,
-    },
-  })
-
-  const rules = ref({
-    task: {
-      taskId: [
-        {required: true, message: 'Please select a task', trigger: 'change'},
-      ],
-      description: [
-        {required: true, message: 'Please describe what you worked on', trigger: 'change'},
-      ],
-    },
-  })
-
-  // IPC event handlers
-  // Space handlers
-  ipcRenderer.on("set-clickup-spaces", (event, spaces) => {
-      onClickupSpacesRefreshed(spaces)
+// IPC event handle
+// Card handlers
+ipcRenderer.on("set-clickup-cards", (event, cards) => {
+      onClickupTasksLoaded(cards)
       onSuccess({
-        title: "Clickup spaces refreshed",
-        content: "Clickup spaces have been refreshed in the background",
+        title: "Clickup tasks refreshed",
+        content: "Clickup tasks have been refreshed in the background",
       })
     }
-  );
+);
 
-  ipcRenderer.on("fetch-clickup-spaces-error", (event, error) =>
-      onError({
-        error,
-        title: "Failed to fetch Clickup spaces in the background",
-        content: "You can try again later by pressing the refresh button when searching for a space",
-      })
-  );
+ipcRenderer.on("fetch-clickup-cards-error", (event, error) =>
+    onError({
+      error,
+      title: "Failed to fetch Clickup tasks in the background",
+      content: "You can try again later by pressing the refresh button when searching for a task",
+    })
+);
 
-  // List handlers
-  ipcRenderer.on("set-clickup-lists", (event, lists) => {
-      onClickupListsRefreshed(lists)
-      onSuccess({
-        title: "Clickup lists refreshed",
-        content: "Clickup lists have been refreshed in the background",
-      })
-    }
-  );
 
-  ipcRenderer.on("fetch-clickup-lists-error", (event, error) =>
-      onError({
-        error,
-        title: "Failed to fetch Clickup lists in the background",
-        content: "You can try again later by pressing the refresh button when searching for a list",
-      })
-  );
+/*
+|--------------------------------------------------------------------------
+| CASCASER HANDLERS
+|--------------------------------------------------------------------------
+ */
 
-  // Card handlers
-  ipcRenderer.on("set-clickup-cards", (event, cards) => {
-        onClickupCardsRefreshed(cards)
-        onSuccess({
-          title: "Clickup tasks refreshed",
-          content: "Clickup tasks have been refreshed in the background",
+// A function that builds the cascader options. loops through the clickupItems and builds the options
+async function buildCascaderOptions() {
+  // Load spaces
+  loadingClickup.value = true;
+  let options = []
+
+  getClickupSpaces().then(spaces => {
+    spaces.forEach(space => {
+      // Load lists
+      getChildren(space).then(lists => {
+        // When lists are loaded, load tasks
+        lists.forEach(list => {
+        // TODO: add subtask functionality
+          getChildren(list).then(tasks => {
+            list.children = tasks
+            console.log("Loaded tasks for " + list.type + " " + list.id)
+            console.dir(list.children)
+          })
+        }).then(() => {
+          space.children = lists
+          console.log("Loaded lists for " + space.type + " " + space.id)
+          console.dir(space.children)
+          options.push(space)
         })
-      }
-  );
-
-  ipcRenderer.on("fetch-clickup-cards-error", (event, error) =>
-      onError({
-        error,
-        title: "Failed to fetch Clickup tasks in the background",
-        content: "You can try again later by pressing the refresh button when searching for a task",
       })
-  );
+    })
+  }).catch(error => {
+    loadingClickup.value = false
+    console.error(error)
+  })
+}
 
-
-  /*
-  |--------------------------------------------------------------------------
-  | TREE SELECT HANDLERS
-  |--------------------------------------------------------------------------
-   */
-
-  function handleLoad(option) {
-    console.log("Loading children for " + option)
-
-    let foundItem = clickUpItems.value.find(item => item.id == option)
-
-    //What is in tree select option?
-    switch (foundItem.type) {
+function getChildren(option) {
+  return new Promise((resolve, reject) => {
+    switch (option.type) {
       case ClickUpType.SPACE:
-        return getClickupLists(option)
+        resolve(getClickupLists(option.id))
+        break
       case ClickUpType.LIST:
-        getClickupCards(option)
+        resolve(getClickupTasks(option.id))
         break
       case ClickUpType.TASK:
         //selectedItem = option
         break
       default:
         console.error("Unknown type")
-        return Promise.reject()
+        reject()
     }
-  }
-
-  /*
-  |--------------------------------------------------------------------------
-  | FETCH CLICKUP SPACES FOR SELECT FIELD
-  |--------------------------------------------------------------------------
-   */
-
-  function getClickupSpaces() {
-    loadingClickup.value = true;
-    ipcRenderer.send("get-clickup-spaces");
-
-    console.info("Fetching Clickup spaces (from cache when available)...");
-  }
-
-  function refreshClickupSpaces() {
-    loadingClickup.value = true;
-    ipcRenderer.send("refresh-clickup-spaces");
-
-    console.info("Refreshing Clickup spaces...");
-  }
-
-  function onClickupSpacesRefreshed(spaces) {
-    // Compare the new spaces ID with the old ones, and only add the new ones
-    spaces = spaces.filter(space => !clickUpItems.value.some(oldSpace => oldSpace.id === space.id))
-
-    spaces.forEach(space => {
-      clickUpItems.value.push(new ClickUpItem(space.id, space.name, ClickUpType.SPACE, []))
-    })
-
-    loadingClickup.value = false;
-    console.info("Clickup spaces refreshed!");
-  }
-
-  /*
-   |--------------------------------------------------------------------------
-   | FETCH CLICKUP LISTS FOR SELECT FIELD
-   |--------------------------------------------------------------------------
-  */
-
-  function getClickupLists(spaceId) {
-    return new Promise((resolve, reject) => {
-      loadingClickup.value = true;
-      ipcRenderer.send("get-clickup-lists", spaceId);
-      console.info("Fetching Clickup lists (from cache when available)...");
-
-      ipcRenderer.once("set-clickup-lists", (event, lists) => {
-        onSuccess({
-          title: "Clickup lists refreshed",
-          content: "Clickup lists have been refreshed in the background",
-        })
-        return onClickupListsRefreshed(lists)
-      });
-
-      ipcRenderer.once("fetch-clickup-lists-error", (event, error) => {
-        onError({
-          error,
-          title: "Failed to fetch Clickup lists in the background",
-          content: "You can try again later by pressing the refresh button when searching for a list",
-        })
-        reject();
-      });
-
-    });
-  }
-
-  function onClickupListsRefreshed(lists) {
-    //Set options to track what is pressent in the tree select, after that return the lists as ClickUpItems
-    lists = lists.filter(list => !clickUpItems.value.some(oldList => oldList.id === list.id))
-
-    let newLists = lists.map(list => new ClickUpItem(list.id, list.name, ClickUpType.LIST, []))
-
-    lists.forEach(list => {
-      clickUpItems.value.find(item => item.id === lists[0].space.id)
-          .addChild(new ClickUpItem(list.id, list.name, ClickUpType.LIST, []))
-
-    })
-
-    loadingClickup.value = false;
-
-    console.dir(clickUpItems)
-    console.info("Clickup lists refreshed!");
-
-    return newLists
-  }
-
-  /*
-    |--------------------------------------------------------------------------
-    | FETCH TIME CLICKUP CARDS FOR SELECT FIELD
-    |--------------------------------------------------------------------------
-    */
-  // Instruct background process to get cached clickup cards
-
-  function getClickupCards(listId) {
-    loadingClickup.value = true;
-
-    ipcRenderer.send("get-clickup-cards", listId);
-
-    console.info("Fetching Clickup cards (from cache when available)...");
-  }
-
-  // Fired when background process sends us the refreshed cards
-  function onClickupCardsRefreshed(cards) {
-    cards = cards.filter(card => !clickUpItems.value.some(oldCard => oldCard.id === card.id))
-
-    cards.forEach(card => {
-      clickUpItems.value.find(item => item.id === cards[0].list.id)
-          .addChild(new ClickUpItem(card.id, card.name, ClickUpType.TASK, []))
-    })
-
-    loadingClickup.value = false;
-
-    console.dir(clickUpItems)
-    console.info("Clickup cards refreshed!");
-  }
-
-  /*
-  |--------------------------------------------------------------------------
-  | CREATE A TASK
-  |--------------------------------------------------------------------------
-  */
-
-  /*
-  function createTask() {
-    // TODO: create task, send to clickup, and send close modal event
-
-    /*
-    createForm.validate()
-        .then(() => pushToClickup())
-        .catch(errors => console.error(errors))
-
-    const pushToClickup = () => {
-      console.log("Test pushing to Clickup...")
-      console.log(selectedItem.value + " " + formValue.value.task.description + " " + this.selectedTask.start + " " + this.selectedTask.end)
-      console.log(formValue.value)
-      /*
-      clickupService.createTimeTrackingEntry(
-          this.selectedTask,
-          this.formValue.task.description,
-          this.selectedTask.start,
-          this.selectedTask.end
-      ).then(entry => {
-            console.info(`Created time tracking entry for: ${entry.task.name}`);
-
-            this.selectedTask = eventFactory.updateFromRemote(
-                this.selectedTask,
-                entry
-            );
-            // Explicitly push to model so time update works properly
-            this.events.push(this.selectedTask);
-
-            this.closeCreationModal();
-          })
-          .catch(error => {
-            this.cancelTaskCreation();
-
-            this.error({
-              error,
-              title: "Looks like something went wrong",
-              content: "There was a problem while pushing to Clickup. Check your console & internet connection and try again",
-            });
-          });
-
-      // reset form values at the end
-      // TODO: update to new form
-      this.formValue = {
-        task: {
-          space: null,
-          lists: null,
-          taskId: null,
-          description: null,
-        },
-      };
-    }
-  */
-
-  /*
-  |--------------------------------------------------------------------------
-  | NOTIFICATION HANDLERS
-  |--------------------------------------------------------------------------
-  */
-
-  function onSuccess(options) {
-    notification.success({duration: 5000, ...options});
-  }
-
-  function onError(options) {
-    notification.error({duration: 5000, ...options});
-
-    if (options.error) {
-      console.error(options.error);
-    }
-  }
-
-  /*
-  |--------------------------------------------------------------------------
-  | MISC & EASTER EGG LAND
-  |--------------------------------------------------------------------------
-  */
-
-  function renderMentionLabel(option) {
-    return h('div', {style: 'display: flex; align-items: center;'}, [
-      h(NAvatar, {
-        style: 'margin-right: 8px;',
-        size: 24,
-        round: true,
-        src: option.avatar
-      }, option.avatar ? '' : option.initials,),
-      option.value
-    ])
-  }
-
-  /*
-  |--------------------------------------------------------------------------
-  | MAIN
-  |--------------------------------------------------------------------------
-  */
-
-  // Fetch Clickup spaces on mount
-  onMounted(() => {
-    getClickupSpaces()
   })
+}
+
+/*
+|--------------------------------------------------------------------------
+| FETCH CLICKUP SPACES FOR SELECT FIELD
+|--------------------------------------------------------------------------
+ */
+
+function getClickupSpaces() {
+  return new Promise((resolve, reject) => {
+    ipcRenderer.send("get-clickup-spaces");
+    console.info("Fetching Clickup spaces (from cache when available)...");
+    ipcRenderer.once("set-clickup-spaces", (event, spaces) => {
+      resolve(onClickupSpacesLoaded(spaces))
+    });
+
+    ipcRenderer.once("fetch-clickup-spaces-error", (event, error) => {
+      onError({
+        error,
+        title: "Failed to fetch Clickup spaces in the background",
+        content: "You can try again later by pressing the refresh button when searching for a space",
+      })
+      reject();
+    });
+  });
+}
+
+function refreshClickupSpaces() {
+  ipcRenderer.send("refresh-clickup-spaces");
+
+  console.info("Refreshing Clickup spaces...");
+}
+
+function onClickupSpacesLoaded(spaces) {
+  let items = []
+
+  spaces.forEach(space => {
+    items.push(new ClickUpItem(space.id, space.name, ClickUpType.SPACE, []))
+  })
+  return items
+}
+
+/*
+ |--------------------------------------------------------------------------
+ | FETCH CLICKUP LISTS FOR SELECT FIELD
+ |--------------------------------------------------------------------------
+*/
+
+function getClickupLists(spaceId) {
+  return new Promise((resolve, reject) => {
+    ipcRenderer.send("get-clickup-lists", spaceId);
+    console.info("Fetching Clickup lists (from cache when available)...");
+    ipcRenderer.once("set-clickup-lists", (event, lists) => {
+      resolve(onClickupListsLoaded(lists))
+    });
+    ipcRenderer.once("fetch-clickup-lists-error", (event, error) => {
+      onError({
+        error,
+        title: "Failed to fetch Clickup lists in the background",
+        content: "You can try again later by pressing the refresh button when searching for a list",
+      })
+      reject();
+    });
+
+  });
+}
+
+function onClickupListsLoaded(lists) {
+  let items = []
+
+  lists.forEach(list => {
+    items.push(new ClickUpItem(list.id, list.name, ClickUpType.LIST, []))
+  })
+
+  return items
+}
+
+/*
+  |--------------------------------------------------------------------------
+  | FETCH TIME CLICKUP CARDS FOR SELECT FIELD
+  |--------------------------------------------------------------------------
+  */
+// Instruct background process to get cached clickup cards
+
+function getClickupTasks(listId) {
+  return new Promise((resolve, reject) => {
+    ipcRenderer.send("get-clickup-cards", listId);
+    console.info("Fetching Clickup cards (from cache when available)...");
+    ipcRenderer.once("set-clickup-cards", (event, cards) => {
+      resolve(onClickupTasksLoaded(cards))
+    });
+    ipcRenderer.once("fetch-clickup-cards-error", (event, error) => {
+      onError({
+        error,
+        title: "Failed to fetch Clickup tasks in the background",
+        content: "You can try again later by pressing the refresh button when searching for a task",
+      })
+      reject();
+    });
+  });
+}
+
+function onClickupTasksLoaded(tasks) {
+  let items = []
+
+  tasks.forEach(task => {
+    items.push(new ClickUpItem(task.id, task.name, ClickUpType.TASK, []))
+  })
+
+  return items
+}
+
+/*
+|--------------------------------------------------------------------------
+| CREATE A TASK
+|--------------------------------------------------------------------------
+*/
+
+/*
+function createTask() {
+  // TODO: create task, send to clickup, and send close modal event
+
+  /*
+  createForm.validate()
+      .then(() => pushToClickup())
+      .catch(errors => console.error(errors))
+
+  const pushToClickup = () => {
+    console.log("Test pushing to Clickup...")
+    console.log(selectedItem.value + " " + formValue.value.task.description + " " + this.selectedTask.start + " " + this.selectedTask.end)
+    console.log(formValue.value)
+    /*
+    clickupService.createTimeTrackingEntry(
+        this.selectedTask,
+        this.formValue.task.description,
+        this.selectedTask.start,
+        this.selectedTask.end
+    ).then(entry => {
+          console.info(`Created time tracking entry for: ${entry.task.name}`);
+
+          this.selectedTask = eventFactory.updateFromRemote(
+              this.selectedTask,
+              entry
+          );
+          // Explicitly push to model so time update works properly
+          this.events.push(this.selectedTask);
+
+          this.closeCreationModal();
+        })
+        .catch(error => {
+          this.cancelTaskCreation();
+
+          this.error({
+            error,
+            title: "Looks like something went wrong",
+            content: "There was a problem while pushing to Clickup. Check your console & internet connection and try again",
+          });
+        });
+
+    // reset form values at the end
+    // TODO: update to new form
+    this.formValue = {
+      task: {
+        space: null,
+        lists: null,
+        taskId: null,
+        description: null,
+      },
+    };
+  }
+*/
+
+/*
+|--------------------------------------------------------------------------
+| NOTIFICATION HANDLERS
+|--------------------------------------------------------------------------
+*/
+
+function onSuccess(options) {
+  notification.success({duration: 5000, ...options});
+}
+
+function onError(options) {
+  notification.error({duration: 5000, ...options});
+
+  if (options.error) {
+    console.error(options.error);
+  }
+}
+
+/*
+|--------------------------------------------------------------------------
+| MISC & EASTER EGG LAND
+|--------------------------------------------------------------------------
+*/
+
+function renderMentionLabel(option) {
+  return h('div', {style: 'display: flex; align-items: center;'}, [
+    h(NAvatar, {
+      style: 'margin-right: 8px;',
+      size: 24,
+      round: true,
+      src: option.avatar
+    }, option.avatar ? '' : option.initials,),
+    option.value
+  ])
+}
+
+/*
+|--------------------------------------------------------------------------
+| MAIN
+|--------------------------------------------------------------------------
+*/
+
+// Fetch Clickup spaces on mount
+onMounted(() => {
+  clickUpItems.value = buildCascaderOptions()
+})
 
 </script>
 
@@ -356,10 +344,12 @@
     <div class="flex space-x-2">
       <!-- Searchable nest dropdown for Space>lists>task>subtasks-->
 
-      <n-tree-select
-          :on-load="handleLoad"
-          :multiple="false"
+      <n-cascader
+          v-model:value="selectedItem"
+          :check-strategy="'child'"
           :options="clickUpItems"
+          filterable
+          placeholder="Select a task or subtask"
       />
 
       <!-- Refresh button -->
@@ -388,16 +378,16 @@
 
     <!-- Create and cancel buttons -->
     <div class="flex justify-end space-x-2">
-        <n-button
-            round
-            @click="cancelTaskCreation()"
-        >Cancel</n-button>
-        <n-button
-            round
-            type="primary"
-            @click="createTask"
-        >Create</n-button>
-      </div>
+      <n-button
+          round
+      >Cancel
+      </n-button>
+      <n-button
+          round
+          type="primary"
+      >Create
+      </n-button>
+    </div>
   </n-form>
 </template>
 
