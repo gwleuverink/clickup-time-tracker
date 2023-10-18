@@ -34,26 +34,6 @@ const rules = ref({
   },
 })
 
-// IPC event handle
-// Card handlers
-ipcRenderer.on("set-clickup-cards", (event, cards) => {
-      onClickupTasksLoaded(cards)
-      onSuccess({
-        title: "Clickup tasks refreshed",
-        content: "Clickup tasks have been refreshed in the background",
-      })
-    }
-);
-
-ipcRenderer.on("fetch-clickup-cards-error", (event, error) =>
-    onError({
-      error,
-      title: "Failed to fetch Clickup tasks in the background",
-      content: "You can try again later by pressing the refresh button when searching for a task",
-    })
-);
-
-
 /*
 |--------------------------------------------------------------------------
 | CASCASER HANDLERS
@@ -64,15 +44,18 @@ ipcRenderer.on("fetch-clickup-cards-error", (event, error) =>
 async function buildCascaderOptions() {
   // Load spaces
   loadingClickup.value = true;
-  let options = []
+  //let options = []
+
 
   getClickupSpaces().then(spaces => {
+    // eslint-disable-next-line no-unused-vars
     spaces.forEach(space => {
       // Load lists
+      /*
       getChildren(space).then(lists => {
         // When lists are loaded, load tasks
         lists.forEach(list => {
-        // TODO: add subtask functionality
+          // TODO: add subtask functionality
           getChildren(list).then(tasks => {
             list.children = tasks
             console.log("Loaded tasks for " + list.type + " " + list.id)
@@ -85,13 +68,24 @@ async function buildCascaderOptions() {
           options.push(space)
         })
       })
+
     })
-  }).catch(error => {
-    loadingClickup.value = false
-    console.error(error)
+
+    */
+    }).finally(() => {
+      onSuccess({
+        title: "Clickup items loaded",
+        content: "Clickup items have been loaded in the background",
+      })
+      loadingClickup.value = false
+    }).catch(error => {
+      loadingClickup.value = false
+      console.error(error)
+    })
   })
 }
 
+// eslint-disable-next-line no-unused-vars
 function getChildren(option) {
   return new Promise((resolve, reject) => {
     switch (option.type) {

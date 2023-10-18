@@ -1,6 +1,7 @@
 import request from 'request';
 import store from '@/store';
 import cache from '@/cache';
+import {ClickUpType, ClickUpItem} from "@/model/ClickUpModels";
 //import {list} from "postcss";
 
 const BASE_URL = 'https://api.clickup.com/api/v2';
@@ -86,7 +87,6 @@ export default {
     async getSpaces() {
 
         return new Promise((resolve, reject) => {
-
             request({
                 method: 'GET',
                 mode: 'no-cors',
@@ -108,6 +108,11 @@ export default {
         * Fetch spaces from cache
      */
     async getCachedSpaces() {
+
+        let shared = await this.getHierarchy()
+        console.dir(shared)
+
+        /*
         const cached = cache.get(SPACES_CACHE_KEY)
 
         if (cached) {
@@ -123,10 +128,77 @@ export default {
             spaces,
             3600 * 6 // plus 6 hours
         )
+         */
     },
 
     clearCachedSpaces() {
         cache.clear(SPACES_CACHE_KEY)
+    },
+
+    /* NOTE TO SELF: You did not prepare for this project. You just started coding. You are a software architect. You
+    should know better. I hope you learn from this. I will learn from this. I will analyse further additions more in depth.
+    */
+
+    /*
+    Try out function to build hierarchy in the back end and send it to the front end. instead of sending all the data to
+    the front end and let the front end build the hierarchy. If it doesnt take too long to build the hierarchy, this might
+    be a better solution.
+     */
+    async getHierarchy() {
+        console.log("Getting hierarchy")
+        let options = []
+
+        this.getSpaces().then( spaces => {
+            spaces.forEach(space => {
+                space = new  ClickUpItem(space.id, space.name, ClickUpType.SPACE, [])
+                this.getChildren(space).then(lists => {
+                    // When lists are loaded, load tasks
+                    lists.forEach(list => {
+                        list = new ClickUpItem(list.id, list.name, ClickUpType.LIST, [])
+                        // TODO: add subtask functionality
+                        this.getChildren(list).then(tasks => {
+                            list.children = tasks
+                            console.log("Loaded tasks for " + list.type + " " + list.id)
+                            console.dir(list.children)
+                        })
+                    }).then(() => {
+                        space.children = lists
+                        console.log("Loaded lists for " + space.type + " " + space.id)
+                        console.dir(space.children)
+                        options.push(space)
+                    }).catch(error => {
+                            console.error(error)
+                        })
+                }).catch(error => {
+                    console.error(error)
+                })
+            })
+        }).catch(error => {
+            console.error(error)
+        }).finally(() => {
+            console.log("Hierarchy loaded")
+            console.dir(options)
+            return options
+        })
+    },
+
+    async getChildren(option) {
+        return new Promise((resolve, reject) => {
+            switch (option.type) {
+                case ClickUpType.SPACE:
+                    resolve(this.getLists(option.id))
+                    break
+                case ClickUpType.LIST:
+                    resolve(this.getTasks(option.id))
+                    break
+                case ClickUpType.TASK:
+                    //selectedItem = option
+                    break
+                default:
+                    console.error("Unknown type")
+                    reject()
+            }
+        })
     },
 
     async getLists(spaceId = null) {
@@ -270,13 +342,16 @@ export default {
             });
         }
 
+        console.log(results.length + ' tasks found in list: ' + listId)
+
         return results
     },
 
     /*
-    * Get all tasks. Iterated over a paginated list in order to fetch them all.
-    * This might take a while
+    TODO: Do something with the spaceId. If you only use the clickup api we dont need it. But it could be of use in a
+     cash solution.
     */
+    // eslint-disable-next-line no-unused-vars
     async getTasks(spaceId = null, listId = null) {
 
         let page = 0
@@ -284,7 +359,7 @@ export default {
 
         do {
             try {
-                results = results.concat(await this.getTasksPage(page, spaceId, listId))
+                results = results.concat(await this.getTasksPage(page, listId))
                 page++
             } catch(e) {
                 console.log(`Error retrieving tasks page ${page}. Retrying...`, e)
@@ -295,9 +370,12 @@ export default {
     },
 
     /*
-    TODO: implement caching. White the optional spaceId and listId parameters, this function is not used.
-     It is hard to check it current cash is actually from the same space/list as requested.
+    TODO: Get cashing to work for tasks.
+    create cash by spaceId and listId?
+    get all and cash those? Then return the ones that are needed based on the listId? <-- this one (maybe)
+     */
 
+    /*
     async getCachedTasks(spaceId = null, listId = null) {
 
         const cached = cache.get(TASKS_CACHE_KEY)
