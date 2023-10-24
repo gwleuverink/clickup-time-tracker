@@ -41,68 +41,22 @@ const rules = ref({
  */
 
 // A function that builds the cascader options. loops through the clickupItems and builds the options
-async function buildCascaderOptions() {
+async function getClickUpHierarchy() {
   // Load spaces
   loadingClickup.value = true;
   //let options = []
 
+  let spaces = await getClickupSpaces()
 
-  getClickupSpaces().then(spaces => {
-    // eslint-disable-next-line no-unused-vars
-    spaces.forEach(space => {
-      // Load lists
-      /*
-      getChildren(space).then(lists => {
-        // When lists are loaded, load tasks
-        lists.forEach(list => {
-          // TODO: add subtask functionality
-          getChildren(list).then(tasks => {
-            list.children = tasks
-            console.log("Loaded tasks for " + list.type + " " + list.id)
-            console.dir(list.children)
-          })
-        }).then(() => {
-          space.children = lists
-          console.log("Loaded lists for " + space.type + " " + space.id)
-          console.dir(space.children)
-          options.push(space)
-        })
-      })
+  console.log("Spaces loaded")
+  console.log(spaces)
 
-    })
+  onSuccess({
+    title: "Clickup spaces loaded",
+    content: "Clickup spaces loaded successfully",
+  });
 
-    */
-    }).finally(() => {
-      onSuccess({
-        title: "Clickup items loaded",
-        content: "Clickup items have been loaded in the background",
-      })
-      loadingClickup.value = false
-    }).catch(error => {
-      loadingClickup.value = false
-      console.error(error)
-    })
-  })
-}
-
-// eslint-disable-next-line no-unused-vars
-function getChildren(option) {
-  return new Promise((resolve, reject) => {
-    switch (option.type) {
-      case ClickUpType.SPACE:
-        resolve(getClickupLists(option.id))
-        break
-      case ClickUpType.LIST:
-        resolve(getClickupTasks(option.id))
-        break
-      case ClickUpType.TASK:
-        //selectedItem = option
-        break
-      default:
-        console.error("Unknown type")
-        reject()
-    }
-  })
+  return spaces
 }
 
 /*
@@ -151,6 +105,7 @@ function onClickupSpacesLoaded(spaces) {
  |--------------------------------------------------------------------------
 */
 
+// eslint-disable-next-line no-unused-vars
 function getClickupLists(spaceId) {
   return new Promise((resolve, reject) => {
     ipcRenderer.send("get-clickup-lists", spaceId);
@@ -187,6 +142,7 @@ function onClickupListsLoaded(lists) {
   */
 // Instruct background process to get cached clickup cards
 
+// eslint-disable-next-line no-unused-vars
 function getClickupTasks(listId) {
   return new Promise((resolve, reject) => {
     ipcRenderer.send("get-clickup-cards", listId);
@@ -319,7 +275,7 @@ function renderMentionLabel(option) {
 
 // Fetch Clickup spaces on mount
 onMounted(() => {
-  clickUpItems.value = buildCascaderOptions()
+  clickUpItems.value = getClickUpHierarchy()
 })
 
 </script>
