@@ -73,6 +73,14 @@ protocol.registerSchemesAsPrivileged([
     { scheme: 'app', privileges: { secure: true, standard: true } }
 ])
 
+
+// Fetch ClickUp hierarchy when the app starts up
+ipcMain.on('get-clickup-hierarchy', (event, listId) => {
+    clickupService.getHierarchy(listId)
+        .then(hierarchy => event.reply('set-clickup-hierarchy', hierarchy))
+        .catch(err => event.reply('fetch-clickup-hierarchy-error', err))
+})
+
 async function createWindow() {
     // Create the browser window.
     const win = new BrowserWindow({

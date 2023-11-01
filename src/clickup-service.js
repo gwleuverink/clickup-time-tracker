@@ -99,20 +99,26 @@ export default {
         // TODO: rewrite to cashed spaces
         let spaces = await this.getSpaces()
 
-        for (let space in spaces) {
-            options.push(new ClickUpItem(space.id, space.name, ClickUpType.SPACE, space))
-        }
-        console.log("Got spaces")
-        console.dir(options)
-
-        /*
-        let lists = await this.getCachedLists()
-        options.forEach(option => {
-            option.children = lists.filter(list => list.space.id === option.id)
+        spaces.forEach( space => {
+            let item = new ClickUpItem(space.id, space.name, ClickUpType.SPACE, [])
+            options.push(item)
         })
+
+        console.log("Got spaces")
+
+        //TODO: code performance comparacen?
+        for (let option of options) {
+            await this.getLists(option.id).then(lists => {
+                lists.forEach(list => {
+                    let item = new ClickUpItem(list.id, list.name, ClickUpType.LIST, [])
+                    option.addChild(item)
+                })
+            });
+        }
+
         console.log("Got lists")
         console.dir(options)
-
+        /*
         let tasks = await this.getCachedTasks()
 
         options.forEach(option => {
@@ -213,19 +219,20 @@ export default {
     async getCachedLists(spaceId) {
 
         let lists = [];
-        const cached = cache.get(LISTS_CACHE_KEY)
+        //const cached = cache.get(LISTS_CACHE_KEY)
 
+        //TODO: if spaceID is used, the way lists are cached and returned must be more specific, or different otherwise
+        //  it only returns the lists of the first space
+        /*
         if (cached && cached.length > 0) {
             console.log('cached lists:');
-            console.dir(cached)
             lists = cached
         } else {
             // Fetch a fresh tasklist
             console.log('fetching fresh lists');
             lists = await this.getLists(spaceId)
-            console.log('fetched fresh lists');
-            console.dir(lists);
         }
+        */
 
         cache.put(
             LISTS_CACHE_KEY,

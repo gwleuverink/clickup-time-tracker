@@ -1,5 +1,6 @@
 <script setup>
-import {NAvatar, NButton, NForm, NIcon, NMention, NH1, NCascader, useNotification} from "naive-ui";
+import {NAvatar, NButton, NForm, NIcon, NMention, NH1, //NCascader,
+ useNotification} from "naive-ui";
 import {ArrowPathIcon} from "@heroicons/vue/20/solid";
 import {h, onMounted, ref} from "vue";
 import {ipcRenderer} from 'electron';
@@ -12,7 +13,7 @@ const createForm = null;
 // Refs
 let clickUpItems = ref([]);
 let loadingClickup = ref(false);
-let selectedItem = ref(null);
+//let selectedItem = ref(null);
 
 let mentionable = ref([]);
 
@@ -44,19 +45,25 @@ const rules = ref({
 async function getClickUpHierarchy() {
   // Load spaces
   loadingClickup.value = true;
-  //let options = []
+  let hierarchy = new Promise((resolve, reject) => {
+    ipcRenderer.send("get-clickup-hierarchy");
+    console.info("Fetching Clickup hierarchy (from cache when available)...");
+    ipcRenderer.once("set-clickup-hierarchy", (event, hierarchy) => {
+      resolve(hierarchy)
+    });
 
-  let spaces = await getClickupSpaces()
+    ipcRenderer.once("fetch-clickup-hierarchy-error", (event, error) => {
+      onError({
+        error,
+        title: "Failed to fetch Clickup hierarchy in the background",
+        content: "You can try again later by pressing the refresh button when searching for a space",
+      })
+      reject();
+    });
 
-  console.log("Spaces loaded")
-  console.log(spaces)
+  })
 
-  onSuccess({
-    title: "Clickup spaces loaded",
-    content: "Clickup spaces loaded successfully",
-  });
-
-  return spaces
+  return hierarchy
 }
 
 /*
@@ -64,7 +71,7 @@ async function getClickUpHierarchy() {
 | FETCH CLICKUP SPACES FOR SELECT FIELD
 |--------------------------------------------------------------------------
  */
-
+/*
 function getClickupSpaces() {
   return new Promise((resolve, reject) => {
     ipcRenderer.send("get-clickup-spaces");
@@ -98,7 +105,7 @@ function onClickupSpacesLoaded(spaces) {
   })
   return items
 }
-
+*/
 /*
  |--------------------------------------------------------------------------
  | FETCH CLICKUP LISTS FOR SELECT FIELD
@@ -237,6 +244,7 @@ function createTask() {
 |--------------------------------------------------------------------------
 */
 
+// eslint-disable-next-line no-unused-vars
 function onSuccess(options) {
   notification.success({duration: 5000, ...options});
 }
@@ -294,6 +302,7 @@ onMounted(() => {
     <div class="flex space-x-2">
       <!-- Searchable nest dropdown for Space>lists>task>subtasks-->
 
+      <!--
       <n-cascader
           v-model:value="selectedItem"
           :check-strategy="'child'"
@@ -301,6 +310,7 @@ onMounted(() => {
           filterable
           placeholder="Select a task or subtask"
       />
+      -->
 
       <!-- Refresh button -->
       <n-button :disabled="loadingClickup" circle class="mt-0.5 bg-transparent color-gray-600"
