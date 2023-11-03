@@ -297,7 +297,6 @@ export default {
       showTaskDetailsModal: ref(false),
       memberSelectorOpen: ref(false),
 
-
       success(options) {
         notification.success({duration: 5000, ...options});
       },

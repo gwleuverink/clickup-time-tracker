@@ -1,11 +1,11 @@
 <script setup>
-import {NAvatar, NButton, NForm, NIcon, NMention, NH1, //NCascader,
+import {NAvatar, NButton, NForm,
+  //NIcon,
+  NMention, NH1, NCascader,
  useNotification} from "naive-ui";
-import {ArrowPathIcon} from "@heroicons/vue/20/solid";
+//import {ArrowPathIcon} from "@heroicons/vue/20/solid";
 import {h, onMounted, ref} from "vue";
 import {ipcRenderer} from 'electron';
-
-import {ClickUpItem, ClickUpType} from "@/model/ClickUpModels";
 
 const notification = useNotification();
 const createForm = null;
@@ -64,118 +64,6 @@ async function getClickUpHierarchy() {
   })
 
   return hierarchy
-}
-
-/*
-|--------------------------------------------------------------------------
-| FETCH CLICKUP SPACES FOR SELECT FIELD
-|--------------------------------------------------------------------------
- */
-/*
-function getClickupSpaces() {
-  return new Promise((resolve, reject) => {
-    ipcRenderer.send("get-clickup-spaces");
-    console.info("Fetching Clickup spaces (from cache when available)...");
-    ipcRenderer.once("set-clickup-spaces", (event, spaces) => {
-      resolve(onClickupSpacesLoaded(spaces))
-    });
-
-    ipcRenderer.once("fetch-clickup-spaces-error", (event, error) => {
-      onError({
-        error,
-        title: "Failed to fetch Clickup spaces in the background",
-        content: "You can try again later by pressing the refresh button when searching for a space",
-      })
-      reject();
-    });
-  });
-}
-
-function refreshClickupSpaces() {
-  ipcRenderer.send("refresh-clickup-spaces");
-
-  console.info("Refreshing Clickup spaces...");
-}
-
-function onClickupSpacesLoaded(spaces) {
-  let items = []
-
-  spaces.forEach(space => {
-    items.push(new ClickUpItem(space.id, space.name, ClickUpType.SPACE, []))
-  })
-  return items
-}
-*/
-/*
- |--------------------------------------------------------------------------
- | FETCH CLICKUP LISTS FOR SELECT FIELD
- |--------------------------------------------------------------------------
-*/
-
-// eslint-disable-next-line no-unused-vars
-function getClickupLists(spaceId) {
-  return new Promise((resolve, reject) => {
-    ipcRenderer.send("get-clickup-lists", spaceId);
-    console.info("Fetching Clickup lists (from cache when available)...");
-    ipcRenderer.once("set-clickup-lists", (event, lists) => {
-      resolve(onClickupListsLoaded(lists))
-    });
-    ipcRenderer.once("fetch-clickup-lists-error", (event, error) => {
-      onError({
-        error,
-        title: "Failed to fetch Clickup lists in the background",
-        content: "You can try again later by pressing the refresh button when searching for a list",
-      })
-      reject();
-    });
-
-  });
-}
-
-function onClickupListsLoaded(lists) {
-  let items = []
-
-  lists.forEach(list => {
-    items.push(new ClickUpItem(list.id, list.name, ClickUpType.LIST, []))
-  })
-
-  return items
-}
-
-/*
-  |--------------------------------------------------------------------------
-  | FETCH TIME CLICKUP CARDS FOR SELECT FIELD
-  |--------------------------------------------------------------------------
-  */
-// Instruct background process to get cached clickup cards
-
-// eslint-disable-next-line no-unused-vars
-function getClickupTasks(listId) {
-  return new Promise((resolve, reject) => {
-    ipcRenderer.send("get-clickup-cards", listId);
-    console.info("Fetching Clickup cards (from cache when available)...");
-    ipcRenderer.once("set-clickup-cards", (event, cards) => {
-      resolve(onClickupTasksLoaded(cards))
-    });
-    ipcRenderer.once("fetch-clickup-cards-error", (event, error) => {
-      onError({
-        error,
-        title: "Failed to fetch Clickup tasks in the background",
-        content: "You can try again later by pressing the refresh button when searching for a task",
-      })
-      reject();
-    });
-  });
-}
-
-function onClickupTasksLoaded(tasks) {
-  let items = []
-
-  tasks.forEach(task => {
-    items.push(new ClickUpItem(task.id, task.name, ClickUpType.TASK, []))
-  })
-
-  return items
 }
 
 /*
@@ -284,6 +172,7 @@ function renderMentionLabel(option) {
 // Fetch Clickup spaces on mount
 onMounted(() => {
   clickUpItems.value = getClickUpHierarchy()
+  console.log(clickUpItems.value)
 })
 
 </script>
@@ -302,7 +191,6 @@ onMounted(() => {
     <div class="flex space-x-2">
       <!-- Searchable nest dropdown for Space>lists>task>subtasks-->
 
-      <!--
       <n-cascader
           v-model:value="selectedItem"
           :check-strategy="'child'"
@@ -310,19 +198,21 @@ onMounted(() => {
           filterable
           placeholder="Select a task or subtask"
       />
-      -->
 
       <!-- Refresh button -->
+      <!--
       <n-button :disabled="loadingClickup" circle class="mt-0.5 bg-transparent color-gray-600"
                 secondary
                 strong
                 @click="refreshClickupSpaces"
       >
+
         <n-icon class="flex items-center justify-center" name="refresh" size="20">
           <div v-if="loadingClickup" class="w-2 h-2 bg-blue-800 rounded-full animate-ping"></div>
           <arrow-path-icon v-else/>
         </n-icon>
       </n-button>
+      -->
     </div>
 
     <!-- Description textbox -->

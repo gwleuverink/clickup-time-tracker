@@ -99,36 +99,33 @@ export default {
         // TODO: rewrite to cashed spaces
         let spaces = await this.getSpaces()
 
-        spaces.forEach( space => {
+        spaces.forEach(space => {
             let item = new ClickUpItem(space.id, space.name, ClickUpType.SPACE, [])
             options.push(item)
         })
 
-        console.log("Got spaces")
+        console.log("Got " + spaces.length + " spaces")
 
-        //TODO: code performance comparacen?
-        for (let option of options) {
-            await this.getLists(option.id).then(lists => {
-                lists.forEach(list => {
-                    let item = new ClickUpItem(list.id, list.name, ClickUpType.LIST, [])
-                    option.addChild(item)
-                })
-            });
-        }
+        await Promise.all( options.map(async (option) => {
+            const lists = await this.getLists(option.id);
+            await Promise.all(lists.map(async (list) => {
+                let list_item = new ClickUpItem(list.id, list.name, ClickUpType.LIST, [])
+                const tasks = await this.getAllTasks(list_item.id);
 
-        console.log("Got lists")
-        console.dir(options)
-        /*
-        let tasks = await this.getCachedTasks()
+                for (const task of tasks) {
+                    const task_item = new ClickUpItem(task.id, task.name, ClickUpType.TASK, [])
+                    list_item.addChild(task_item)
+                }
+                console.log("Got " + list_item.children.length + " tasks for list " + list_item.name + "(" + list_item.id + ")" + " in space " + option.name + "(" + option.id + ")");
 
-        options.forEach(option => {
-            option.children.forEach(child => {
-                child.children = tasks.filter(task => task.list.id === child.id)
-            })
-        })
-        console.log("Got tasks")
-        console.dir(options)
-         */
+                // Add list to space
+                option.addChild(list_item);
+            }))
+
+        }));
+
+        console.log("Hierarchy built")
+        return options
     },
 
     async getChildren(option) {
@@ -203,7 +200,6 @@ export default {
     },
 
     async getLists(spaceId = null) {
-        console.log('get lists for space: ' + spaceId);
         const folderlessLists = await this.getFolderlessLists(spaceId);
 
         let folderedLists = [];
@@ -305,6 +301,29 @@ export default {
         })
     },
 
+    async getAllTasks(listId = null) {
+
+        let results = await new Promise((resolve, reject) => {
+
+            request({
+                method: 'GET',
+                mode: 'no-cors',
+                url: `${BASE_URL}/list/${listId}/task?archived=false&include_closed=false&subtasks=false`,
+
+                headers: {
+                    'Authorization': store.get('settings.clickup_access_token'),
+                    'Content-Type': 'application/json'
+                }
+            }, (error, response) => {
+                if (error) return reject(error)
+
+                resolve(JSON.parse(response.body).tasks || [])
+            });
+        })
+
+        return results
+    },
+
     async getTasksPage(page) {
         let url = `${teamRootUrl()}/task`
 
@@ -352,6 +371,7 @@ export default {
         return results
     },
 
+    //TODO: List specific cashing?
     async getCachedTasks(listId = null) {
 
         let tasks = [];
