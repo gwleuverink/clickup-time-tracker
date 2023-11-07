@@ -1,6 +1,4 @@
 <template>
-
-
   <member-selector
       v-if="store.get('settings.admin_features_enabled')"
       :open="memberSelectorOpen"
@@ -152,7 +150,9 @@
         aria-modal="true"
     >
 
-      <TaskCreatorForm/>
+      <TaskCreatorForm
+        @close="cancelTaskCreation"
+      />
 
     </n-card>
   </n-modal>
@@ -401,6 +401,7 @@ export default {
     },
 
     cancelTaskCreation() {
+      console.log("cancelTaskCreation")
       this.closeCreationModal();
       this.deleteCallable();
     },

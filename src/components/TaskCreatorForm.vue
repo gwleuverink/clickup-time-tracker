@@ -1,19 +1,19 @@
 <script setup>
-import {NAvatar, NButton, NForm,
-  //NIcon,
-  NMention, NH1, NCascader,
- useNotification} from "naive-ui";
-//import {ArrowPathIcon} from "@heroicons/vue/20/solid";
-import {h, onMounted, ref} from "vue";
+import {NAvatar, NButton, NForm, NIcon, NMention, NH1, NCascader, useNotification} from "naive-ui";
+import {ArrowPathIcon} from "@heroicons/vue/20/solid";
+import {h, onMounted, ref, defineEmits} from "vue";
 import {ipcRenderer} from 'electron';
 
 const notification = useNotification();
 const createForm = null;
 
+// Emits
+const emit = defineEmits(['close'])
+
 // Refs
 let clickUpItems = ref([]);
 let loadingClickup = ref(false);
-//let selectedItem = ref(null);
+let selectedItem = ref(null);
 
 let mentionable = ref([]);
 
@@ -62,13 +62,12 @@ async function getClickUpHierarchy() {
     });
 
   })
-
   return hierarchy
 }
 
 /*
 |--------------------------------------------------------------------------
-| CREATE A TASK
+| BUTTON HANDLERS
 |--------------------------------------------------------------------------
 */
 
@@ -126,6 +125,11 @@ function createTask() {
   }
 */
 
+function cancelTaskCreation() {
+  console.log("Canceling task creation...")
+  emit('close');
+}
+
 /*
 |--------------------------------------------------------------------------
 | NOTIFICATION HANDLERS
@@ -170,12 +174,20 @@ function renderMentionLabel(option) {
 */
 
 // Fetch Clickup spaces on mount
-onMounted(() => {
-  clickUpItems.value = getClickUpHierarchy()
-  console.log(clickUpItems.value)
+onMounted(async () => {
+  loadingClickup.value = true;
+  clickUpItems.value = await getClickUpHierarchy()
+  console.log("Hierarchy loaded")
+  console.dir(clickUpItems.value)
+  loadingClickup.value = false;
 })
-
 </script>
+
+/*
+|--------------------------------------------------------------------------
+| TEMPLATE
+|--------------------------------------------------------------------------
+*/
 
 <template>
   <n-form
@@ -192,19 +204,20 @@ onMounted(() => {
       <!-- Searchable nest dropdown for Space>lists>task>subtasks-->
 
       <n-cascader
-          v-model:value="selectedItem"
+          v-model="selectedItem"
           :check-strategy="'child'"
           :options="clickUpItems"
+          :disabled="loadingClickup"
           filterable
           placeholder="Select a task or subtask"
+
       />
 
       <!-- Refresh button -->
-      <!--
       <n-button :disabled="loadingClickup" circle class="mt-0.5 bg-transparent color-gray-600"
                 secondary
                 strong
-                @click="refreshClickupSpaces"
+                @click="getClickUpHierarchy"
       >
 
         <n-icon class="flex items-center justify-center" name="refresh" size="20">
@@ -212,7 +225,6 @@ onMounted(() => {
           <arrow-path-icon v-else/>
         </n-icon>
       </n-button>
-      -->
     </div>
 
     <!-- Description textbox -->
@@ -230,6 +242,8 @@ onMounted(() => {
     <div class="flex justify-end space-x-2">
       <n-button
           round
+          @click="cancelTaskCreation"
+
       >Cancel
       </n-button>
       <n-button
