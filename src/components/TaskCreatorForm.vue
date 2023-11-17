@@ -204,12 +204,18 @@ onMounted(async () => {
       <!-- Searchable nest dropdown for Space>lists>task>subtasks-->
 
       <n-cascader
-          v-model="selectedItem"
-          :check-strategy="'child'"
+          v-model:value="selectedItem"
           :options="clickUpItems"
           :disabled="loadingClickup"
-          filterable
           placeholder="Select a task or subtask"
+
+          :children-field="'children'"
+          :clearable="true"
+          :check-strategy="'child'"
+          :expand-trigger="'hover'"
+
+
+
 
       />
 

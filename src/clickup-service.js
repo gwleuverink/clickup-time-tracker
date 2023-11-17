@@ -100,7 +100,7 @@ export default {
         let spaces = await this.getSpaces()
 
         spaces.forEach(space => {
-            let item = new ClickUpItem(space.id, space.name, ClickUpType.SPACE, [])
+            let item = new ClickUpItem(space.id, space.name, ClickUpType.SPACE)
             options.push(item)
         })
 
@@ -109,14 +109,18 @@ export default {
         await Promise.all( options.map(async (option) => {
             const lists = await this.getLists(option.id);
             await Promise.all(lists.map(async (list) => {
-                let list_item = new ClickUpItem(list.id, list.name, ClickUpType.LIST, [])
+                let list_item = new ClickUpItem(list.id, list.name, ClickUpType.LIST)
                 const tasks = await this.getAllTasks(list_item.id);
 
                 for (const task of tasks) {
-                    const task_item = new ClickUpItem(task.id, task.name, ClickUpType.TASK, [])
+                    const task_item = new ClickUpItem(task.id, task.name, ClickUpType.TASK)
                     list_item.addChild(task_item)
                 }
-                console.log("Got " + list_item.children.length + " tasks for list " + list_item.name + "(" + list_item.id + ")" + " in space " + option.name + "(" + option.id + ")");
+                if (list_item.children.length > 0) {
+                    console.log("Got " + list_item.children.length + " tasks for list " + list_item.name + "(" + list_item.id + ")" + " in space " + option.name + "(" + option.id + ")");
+                } else {
+                    console.log("Got no tasks for list " + list_item.name + "(" + list_item.id + ")" + " in space " + option.name + "(" + option.id + ")");
+                }
 
                 // Add list to space
                 option.addChild(list_item);
