@@ -7,9 +7,7 @@ import {ClickUpItem, ClickUpType} from "@/model/ClickUpModels";
 const BASE_URL = 'https://api.clickup.com/api/v2';
 
 // Cache keys
-const TASKS_CACHE_KEY = 'tasks';
-const SPACES_CACHE_KEY = 'spaces';
-const LISTS_CACHE_KEY = 'lists';
+const HIERARCHY_CACHE_KEY = 'hierarchy';
 const USERS_CACHE_KEY = 'users';
 
 function teamRootUrl() {
@@ -88,21 +86,17 @@ export default {
         console.log("Getting hierarchy")
         let options = []
 
-        // TODO: rewrite to cashed spaces
-        let spaces = await this.getCachedSpaces()
+        let spaces = await this.getSpaces()
 
         spaces.forEach(space => {
             let item = new ClickUpItem(space.id, space.name, ClickUpType.SPACE)
             options.push(item)
         })
-
-
-
         await Promise.all( options.map(async (option) => {
-            const lists = await this.getCachedLists(option.id);
+            const lists = await this.getLists(option.id);
             await Promise.all(lists.map(async (list) => {
                 let list_item = new ClickUpItem(list.id, list.name, ClickUpType.LIST)
-                const tasks = await this.getCachedTasks(list_item.id);
+                const tasks = await this.getTasks(list_item.id);
 
                 for (const task of tasks) {
                     const task_item = new ClickUpItem(task.id, task.name, ClickUpType.TASK)
@@ -119,8 +113,24 @@ export default {
         return options
     },
 
-    flushCached() {
-        cache.flush()
+    async getCachedHierarchy(){
+        const cached = cache.get(HIERARCHY_CACHE_KEY)
+
+        if (cached) {
+            console.log("Got hierarchy from cache")
+            return cached
+        }
+
+        let hierarchy = await this.getHierarchy()
+        return cache.put(
+            HIERARCHY_CACHE_KEY,
+            hierarchy,
+            3600 * 6 // plus 6 hours
+        )
+    },
+
+    clearCachedHierarchy() {
+        cache.clear(HIERARCHY_CACHE_KEY)
     },
 
     async getSpaces() {
@@ -143,28 +153,6 @@ export default {
 
     },
 
-    /*
-        * Fetch spaces from cache
-     */
-    async getCachedSpaces() {
-        //1 list of spaces so only 1 cache key
-        const cached = cache.get(SPACES_CACHE_KEY)
-
-        if (cached) {
-            console.log("Got " + cached.length + " spaces from cache")
-            return cached
-        }
-
-        let spaces = await this.getSpaces()
-
-        console.log("Got " + spaces.length + " spaces from api")
-        return cache.put(
-            SPACES_CACHE_KEY,
-            spaces,
-            3600 * 6 // plus 6 hours
-        )
-    },
-
     async getLists(spaceId) {
         const folderlessLists = await this.getFolderlessLists(spaceId);
 
@@ -176,31 +164,6 @@ export default {
         }))
 
         return folderlessLists.concat(folderedLists.flat());
-    },
-
-    async getCachedLists(spaceId) {
-        //Lists are cached per space, so multiple cache keys, one for each space
-        //Cache key = LIST_CACHE_KEY + spaceId
-
-        let lists = [];
-        const cached = cache.get(LISTS_CACHE_KEY + spaceId)
-
-        if (cached) {
-            console.log("Got " + cached.length + " lists from cache for space " + spaceId)
-            return cached
-        }
-
-        // Fetch a fresh tasklist
-        lists = await this.getLists(spaceId)
-
-        console.log("Got " + lists.length + " lists from api for space " + spaceId)
-        cache.put(
-            LISTS_CACHE_KEY + spaceId,
-            lists,
-            3600 * 6 // plus 6 hours
-        )
-
-        return lists
     },
 
     async getFolders(spaceId) {
@@ -277,31 +240,6 @@ export default {
         })
 
         return results
-    },
-
-    async getCachedTasks(listId) {
-        //Tasks are cached per list, so multiple cache keys, one for each list
-        //Could be a lot of cache keys, but it's the only way to keep the cache up to date...
-        //or is it? cash db running on the api server? something like redis?
-
-        let tasks = [];
-        const cached = cache.get(TASKS_CACHE_KEY + listId)
-
-        if (cached) {
-            console.log("Got " + cached.length + " tasks from cache for list " + listId)
-            return cached
-        }
-
-        tasks = await this.getTasks(listId)
-        console.log("Got " + tasks.length + " tasks from api for list " + listId)
-
-        cache.put(
-            TASKS_CACHE_KEY + listId,
-            tasks,
-            3600 * 6 // plus 6 hours
-        )
-
-        return tasks
     },
 
     /*

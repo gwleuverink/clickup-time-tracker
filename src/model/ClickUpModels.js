@@ -18,7 +18,8 @@ export class ClickUpItem{
         this.label = name;
 
         this.type = type;
-        switch (type){
+
+        switch (this.type){
             case ClickUpType.SPACE:
                 this.leaf = false;
                 break;
@@ -38,11 +39,9 @@ export class ClickUpItem{
         if (!(child instanceof ClickUpItem)){
             throw new Error("Child must be of type ClickUpItem");
         }
-
         if (!this.children){
             this.children = [];
         }
-
         this.children.push(child);
     }
 }

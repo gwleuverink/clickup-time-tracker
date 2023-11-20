@@ -1,11 +1,12 @@
 <script setup>
-import {NAvatar, NButton, NForm, NIcon, NMention, NH1, NCascader, useNotification} from "naive-ui";
+import {NAvatar, NButton, NForm, NIcon, NMention, NH1, NCascader, NFormItem, useNotification} from "naive-ui";
 import {ArrowPathIcon} from "@heroicons/vue/20/solid";
 import {h, onMounted, ref, defineEmits} from "vue";
 import {ipcRenderer} from 'electron';
+import clickupService from "@/clickup-service";
+import store from "@/store";
 
 const notification = useNotification();
-const createForm = null;
 
 // Emits
 const emit = defineEmits(['close'])
@@ -13,11 +14,11 @@ const emit = defineEmits(['close'])
 // Refs
 let clickUpItems = ref([]);
 let loadingClickup = ref(false);
-let selectedItem = ref(null);
-
 let mentionable = ref([]);
 
-const formValue = ref({
+let createForm = ref(null);
+
+let formValue = ref({
   task: {
     taskId: null,
     description: null,
@@ -26,12 +27,15 @@ const formValue = ref({
 
 const rules = ref({
   task: {
-    taskId: [
-      {required: true, message: 'Please select a task', trigger: 'change'},
-    ],
-    description: [
-      {required: true, message: 'Please describe what you worked on', trigger: 'change'},
-    ],
+    taskId: {
+      required: true,
+      message: 'Please select a task'
+    },
+    description: {
+      required: store.get('settings.requireDescription'),
+      message: 'Please describe what you worked on',
+      trigger: ['blur']
+    },
   },
 })
 
@@ -104,37 +108,43 @@ async function refreshClickUpHierarchy() {
 |--------------------------------------------------------------------------
 */
 
-/*
+
 function createTask() {
-  // TODO: create task, send to clickup, and send close modal event
-
-  /*
-  createForm.validate()
-      .then(() => pushToClickup())
-      .catch(errors => console.error(errors))
-
+  createForm.value?.validate((errors) => {
+    if (errors) {
+      console.error('Form validation failed:', errors);
+      onError({
+        title: 'Form validation failed',
+        content: 'Please check the form for errors',
+      })
+    } else {
+      console.log('Form validated');
+      console.log(formValue.value.task.taskId);
+      console.log(formValue.value.task.description);
+      onSuccess({
+        title: 'Task created',
+        content: 'The task has been created in Clickup',
+      });
+      cancelTaskCreation();
+    }
+  })
+  //.then(() => pushToClickup())
+  // eslint-disable-next-line no-unused-vars
   const pushToClickup = () => {
-    console.log("Test pushing to Clickup...")
-    console.log(selectedItem.value + " " + formValue.value.task.description + " " + this.selectedTask.start + " " + this.selectedTask.end)
-    console.log(formValue.value)
-    /*
     clickupService.createTimeTrackingEntry(
-        this.selectedTask,
-        this.formValue.task.description,
+        formValue.value.task.taskId,
+        formValue.value.task.description,
         this.selectedTask.start,
         this.selectedTask.end
     ).then(entry => {
-          console.info(`Created time tracking entry for: ${entry.task.name}`);
+      console.info(`Created time tracking entry for: ${entry.task.name}`);
 
-          this.selectedTask = eventFactory.updateFromRemote(
-              this.selectedTask,
-              entry
-          );
-          // Explicitly push to model so time update works properly
-          this.events.push(this.selectedTask);
+      //this.selectedTask = eventFactory.updateFromRemote(this.selectedTask,entry);
+      // Explicitly push to model so time update works properly
+      this.events.push(this.selectedTask);
 
-          this.closeCreationModal();
-        })
+      this.closeCreationModal();
+    })
         .catch(error => {
           this.cancelTaskCreation();
 
@@ -144,22 +154,25 @@ function createTask() {
             content: "There was a problem while pushing to Clickup. Check your console & internet connection and try again",
           });
         });
-
-    // reset form values at the end
-    // TODO: update to new form
-    this.formValue = {
-      task: {
-        space: null,
-        lists: null,
-        taskId: null,
-        description: null,
-      },
-    };
   }
-*/
+}
 
 function cancelTaskCreation() {
   emit('close');
+}
+
+// Check selected item from the cascader, if it's a task, or subtask, set the taskId in the formValue
+// otherwise, set it to null, not perfect, but it works, would be better to have a changable check-stategy
+// on the cascader. Is there a way to do that?
+
+function checkSelection(value, selectedOptions) {
+  //value = taskId
+  // selectedOptions = "id", "value", "name", "label", "list", "leaf"
+  if (selectedOptions) {
+    if (!(selectedOptions.leaf)) {
+      formValue.value.task.taskId = null;
+    }
+  }
 }
 
 /*
@@ -220,8 +233,8 @@ onMounted(async () => {
 <template>
   <n-form
       ref="createForm"
-      :model="formValue"
-      :rules="rules"
+      :model="formValue.task"
+      :rules="rules.task"
       size="large"
   >
     <div class="flex space-x-2">
@@ -229,20 +242,30 @@ onMounted(async () => {
     </div>
 
     <div class="flex space-x-2">
+
       <!-- Searchable nest dropdown for Space>lists>task>subtasks-->
+      <!-- TODO: make list not selectable -->
+      <n-form-item path="taskId" class="flex-grow">
+        <n-cascader
+            v-model:value="formValue.task.taskId"
+            :options="clickUpItems"
+            :disabled="loadingClickup"
+            :placeholder="
+            loadingClickup
+              ? 'Loading tasks...'
+              : 'Select a task or subtask'
+            "
 
-      <n-cascader
-          v-model:value="selectedItem"
-          :options="clickUpItems"
-          :disabled="loadingClickup"
-          placeholder="Select a task or subtask"
+            :clearable="true"
+            :check-strategy="'child'"
+            :expand-trigger="'hover'"
+            :filterable="true"
+            :show-path="false"
 
-          :clearable="true"
-          :check-strategy="'child'"
-          :expand-trigger="'hover'"
-          :filterable="true"
-          :show-path="false"
-      />
+            @update:value="checkSelection"
+        />
+      </n-form-item>
+
 
       <!-- Refresh button -->
       <n-button :disabled="loadingClickup" circle class="mt-0.5 bg-transparent color-gray-600"
@@ -260,14 +283,16 @@ onMounted(async () => {
 
     <!-- Description textbox -->
     <div class="flex space-x-2">
-      <n-mention
-          v-model:value="formValue.task.description"
-          :options="mentionable"
-          :render-label="renderMentionLabel"
-          placeholder="Describe what you worked on"
-          type="textarea"
-          :disabled="!selectedItem || loadingClickup"
-      />
+      <n-form-item path="description" class="flex-grow">
+        <n-mention
+            v-model:value="formValue.task.description"
+            :options="mentionable"
+            :render-label="renderMentionLabel"
+            placeholder="Describe what you worked on"
+            type="textarea"
+            :disabled="loadingClickup"
+        />
+      </n-form-item>
     </div>
 
     <!-- Create and cancel buttons -->
@@ -281,7 +306,7 @@ onMounted(async () => {
       <n-button
           round
           type="primary"
-          :disabled="!selectedItem || loadingClickup"
+          @click="createTask"
       >Create
       </n-button>
     </div>

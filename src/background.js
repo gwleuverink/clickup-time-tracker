@@ -26,14 +26,14 @@ protocol.registerSchemesAsPrivileged([
 
 // Fetch ClickUp hierarchy when the app starts up
 ipcMain.on('get-clickup-hierarchy', (event) => {
-    clickupService.getHierarchy()
+    clickupService.getCachedHierarchy()
         .then(hierarchy => event.reply('set-clickup-hierarchy', hierarchy))
         .catch(err => event.reply('fetch-clickup-hierarchy-error', err))
 })
 
 // Clear ClickUp hierarchy cache & fetch fresh hierarchy
 ipcMain.on('refresh-clickup-hierarchy', (event) => {
-    clickupService.flushCached()
+    clickupService.clearCachedHierarchy()
     clickupService.getHierarchy()
         .then(hierarchy => event.reply('set-clickup-hierarchy', hierarchy))
         .catch(err => event.reply('fetch-clickup-hierarchy-error', err))
