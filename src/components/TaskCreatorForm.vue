@@ -43,9 +43,8 @@ const rules = ref({
 
 // A function that builds the cascader options. loops through the clickupItems and builds the options
 async function getClickUpHierarchy() {
-  // Load spaces
   loadingClickup.value = true;
-  let hierarchy = new Promise((resolve, reject) => {
+  new Promise((resolve, reject) => {
     ipcRenderer.send("get-clickup-hierarchy");
     console.info("Fetching Clickup hierarchy (from cache when available)...");
     ipcRenderer.once("set-clickup-hierarchy", (event, hierarchy) => {
@@ -61,8 +60,42 @@ async function getClickUpHierarchy() {
       reject();
     });
 
+  }).then((hierarchy) => {
+    clickUpItems.value = hierarchy
+    onSuccess({
+      title: "Clickup hierarchy refreshed",
+      content: "The Clickup hierarchy has been refreshed in the background",
+    })
+    loadingClickup.value = false;
   })
-  return hierarchy
+}
+
+async function refreshClickUpHierarchy() {
+  loadingClickup.value = true;
+  new Promise((resolve, reject) => {
+    ipcRenderer.send("refresh-clickup-hierarchy");
+    console.info("Fetching Clickup hierarchy (from cache when available)...");
+    ipcRenderer.once("set-clickup-hierarchy", (event, hierarchy) => {
+      resolve(hierarchy)
+    });
+
+    ipcRenderer.once("fetch-clickup-hierarchy-error", (event, error) => {
+      onError({
+        error,
+        title: "Failed to fetch Clickup hierarchy in the background",
+        content: "You can try again later by pressing the refresh button when searching for a space",
+      })
+      reject();
+    });
+
+  }).then((hierarchy) => {
+    clickUpItems.value = hierarchy
+    onSuccess({
+      title: "Clickup hierarchy refreshed",
+      content: "The Clickup hierarchy has been refreshed in the background",
+    })
+    loadingClickup.value = false;
+  })
 }
 
 /*
@@ -126,7 +159,6 @@ function createTask() {
 */
 
 function cancelTaskCreation() {
-  console.log("Canceling task creation...")
   emit('close');
 }
 
@@ -175,11 +207,7 @@ function renderMentionLabel(option) {
 
 // Fetch Clickup spaces on mount
 onMounted(async () => {
-  loadingClickup.value = true;
-  clickUpItems.value = await getClickUpHierarchy()
-  console.log("Hierarchy loaded")
-  console.dir(clickUpItems.value)
-  loadingClickup.value = false;
+  await getClickUpHierarchy()
 })
 </script>
 
@@ -209,21 +237,18 @@ onMounted(async () => {
           :disabled="loadingClickup"
           placeholder="Select a task or subtask"
 
-          :children-field="'children'"
           :clearable="true"
           :check-strategy="'child'"
           :expand-trigger="'hover'"
-
-
-
-
+          :filterable="true"
+          :show-path="false"
       />
 
       <!-- Refresh button -->
       <n-button :disabled="loadingClickup" circle class="mt-0.5 bg-transparent color-gray-600"
                 secondary
                 strong
-                @click="getClickUpHierarchy"
+                @click="refreshClickUpHierarchy"
       >
 
         <n-icon class="flex items-center justify-center" name="refresh" size="20">
@@ -241,6 +266,7 @@ onMounted(async () => {
           :render-label="renderMentionLabel"
           placeholder="Describe what you worked on"
           type="textarea"
+          :disabled="!selectedItem || loadingClickup"
       />
     </div>
 
@@ -255,6 +281,7 @@ onMounted(async () => {
       <n-button
           round
           type="primary"
+          :disabled="!selectedItem || loadingClickup"
       >Create
       </n-button>
     </div>

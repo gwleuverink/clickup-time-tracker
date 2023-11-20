@@ -401,7 +401,6 @@ export default {
     },
 
     cancelTaskCreation() {
-      console.log("cancelTaskCreation")
       this.closeCreationModal();
       this.deleteCallable();
     },

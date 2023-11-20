@@ -18,56 +18,6 @@ import path from 'path';
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
-// Fetch ClickUp spaces from cache when the app starts up
-ipcMain.on('get-clickup-spaces', event => {
-    clickupService.getCachedSpaces()
-        .then(spaces => event.reply('set-clickup-spaces', spaces))
-        .catch(err => event.reply('fetch-clickup-spaces-error', err))
-})
-
-ipcMain.on('refresh-clickup-spaces', event => {
-    clickupService.clearCachedSpaces()
-    clickupService.getCachedSpaces()
-        .then(spaces => event.reply('set-clickup-spaces', spaces))
-        .catch(err => event.reply('fetch-clickup-spaces-error', err))
-})
-
-// Fetch ClickUp lists from cache when the app starts up
-ipcMain.on('get-clickup-lists',(event, spaceId) => {
-    clickupService.getCachedLists(spaceId)
-        .then(lists => event.reply('set-clickup-lists', lists))
-        .catch(err => event.reply('fetch-clickup-lists-error', err))
-})
-
-// Clear ClickUp lists cache & fetch fresh list
-ipcMain.on('refresh-clickup-lists', (event, spaceId) => {
-    clickupService.clearCachedLists()
-    clickupService.getCachedLists(spaceId)
-        .then(lists => event.reply('set-clickup-lists', lists))
-        .catch(err => event.reply('fetch-clickup-lists-error', err))
-})
-
-// Fetch ClickUp tasks from cache when the app starts up
-ipcMain.on('get-clickup-cards', (event, listId) => {
-    clickupService.getTasks(listId)
-    // clickupService.getCachedTasks(spaceId, listId)
-        .then(tasks => event.reply('set-clickup-cards', tasks))
-        .catch(err => event.reply('fetch-clickup-cards-error', err))
-})
-
-// Clear ClickUp tasks cache & fetch fresh list
-/*
-TODO: Task cashing is removed after the optional list and space id.
-
-ipcMain.on('refresh-clickup-cards', (event, listId) => {
-    clickupService.clearCachedTasks()
-    clickupService.getCachedTasks(listId)
-        .then(tasks => event.reply('set-clickup-cards', tasks))
-        .catch(err => event.reply('fetch-clickup-cards-error', err))
-})
- */
-
-
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
     { scheme: 'app', privileges: { secure: true, standard: true } }
@@ -75,8 +25,16 @@ protocol.registerSchemesAsPrivileged([
 
 
 // Fetch ClickUp hierarchy when the app starts up
-ipcMain.on('get-clickup-hierarchy', (event, listId) => {
-    clickupService.getHierarchy(listId)
+ipcMain.on('get-clickup-hierarchy', (event) => {
+    clickupService.getHierarchy()
+        .then(hierarchy => event.reply('set-clickup-hierarchy', hierarchy))
+        .catch(err => event.reply('fetch-clickup-hierarchy-error', err))
+})
+
+// Clear ClickUp hierarchy cache & fetch fresh hierarchy
+ipcMain.on('refresh-clickup-hierarchy', (event) => {
+    clickupService.flushCached()
+    clickupService.getHierarchy()
         .then(hierarchy => event.reply('set-clickup-hierarchy', hierarchy))
         .catch(err => event.reply('fetch-clickup-hierarchy-error', err))
 })

@@ -18,21 +18,20 @@ export class ClickUpItem{
         this.label = name;
 
         this.type = type;
-        this.isLeaf = true;
-
-        // Check if item is disabled. So not clickable
-        // should be true for spaces and lists
-        this.disabled = false;
-        /*
         switch (type){
+            case ClickUpType.SPACE:
+                this.leaf = false;
+                break;
+            case ClickUpType.LIST:
+                this.leaf = false;
+                break;
             case ClickUpType.TASK:
-                this.isLeaf = true;
+                this.leaf = true;
                 break;
             case ClickUpType.SUBTASK:
-                this.isLeaf = true;
+                this.leaf = true;
                 break;
         }
-         */
     }
 
     addChild(child){
@@ -45,6 +44,5 @@ export class ClickUpItem{
         }
 
         this.children.push(child);
-        this.isLeaf = false;
     }
 }
