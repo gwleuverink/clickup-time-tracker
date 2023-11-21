@@ -84,31 +84,16 @@ export default {
 
     async getHierarchy() {
         console.log("Getting hierarchy")
-        let options = []
-
-        let spaces = await this.getSpaces()
-
-        spaces.forEach(space => {
-            let item = new ClickUpItem(space.id, space.name, ClickUpType.SPACE)
-            options.push(item)
-        })
+        let options = await this.getSpaces()
         await Promise.all( options.map(async (option) => {
             const lists = await this.getLists(option.id);
             await Promise.all(lists.map(async (list) => {
-                let list_item = new ClickUpItem(list.id, list.name, ClickUpType.LIST)
-                const tasks = await this.getTasks(list_item.id);
-
-                for (const task of tasks) {
-                    const task_item = new ClickUpItem(task.id, task.name, ClickUpType.TASK)
-                    list_item.addChild(task_item)
-                }
-
-                // Add list to space
-                option.addChild(list_item);
+                await this.getTasks(list.id).then(tasks => {
+                    list.addChildren(tasks)
+                });
+                option.addChild(list);
             }))
-
         }));
-
         console.log("Hierarchy built")
         return options
     },
@@ -135,7 +120,7 @@ export default {
 
     async getSpaces() {
 
-        return new Promise((resolve, reject) => {
+        let response = await new Promise((resolve, reject) => {
             request({
                 method: 'GET',
                 mode: 'no-cors',
@@ -151,6 +136,7 @@ export default {
             });
         })
 
+        return response.map(space => new ClickUpItem(space.id, space.name, ClickUpType.SPACE))
     },
 
     async getLists(spaceId) {
@@ -163,7 +149,8 @@ export default {
             folderedLists = folderedLists.concat(await this.getFolderedLists(folder.id));
         }))
 
-        return folderlessLists.concat(folderedLists.flat());
+        let list = folderlessLists.concat(folderedLists.flat());
+        return list.map(list => new ClickUpItem(list.id, list.name, ClickUpType.LIST))
     },
 
     async getFolders(spaceId) {
@@ -226,21 +213,31 @@ export default {
             request({
                 method: 'GET',
                 mode: 'no-cors',
-                url: `${BASE_URL}/list/${listId}/task?archived=false&include_closed=false&subtasks=false`,
-
-                headers: {
+                url: `${BASE_URL}/list/${listId}/task?archived=false&include_markdown_description=false&subtasks=true&include_closed=false`,
                     'Authorization': store.get('settings.clickup_access_token'),
                     'Content-Type': 'application/json'
-                }
             }, (error, response) => {
                 if (error) return reject(error)
-
+                console.log(response.body)
                 resolve(JSON.parse(response.body).tasks || [])
             });
         })
 
-        return results
+        console.log(results)
+
+        let tasks = results
+            .filter(task => task.parent == 'null')
+            .map(task => new ClickUpItem(task.id, task.name, ClickUpType.TASK, task.parent))
+
+        for (let task of results) {
+            if (task.parent) {
+                console.log(task)
+            }
+        }
+
+        return tasks
     },
+
 
     /*
      * Create a new time tracking entry

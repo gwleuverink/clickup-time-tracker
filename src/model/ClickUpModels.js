@@ -44,4 +44,11 @@ export class ClickUpItem{
         }
         this.children.push(child);
     }
+
+    addChildren(children){
+        if (!Array.isArray(children)){
+            throw new Error("Children must be an array");
+        }
+        children.forEach(child => this.addChild(child));
+    }
 }

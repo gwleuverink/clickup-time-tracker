@@ -237,15 +237,12 @@ onMounted(async () => {
       :rules="rules.task"
       size="large"
   >
-    <div class="flex space-x-2">
-      <n-h1>What are you working on?</n-h1>
-    </div>
+    <n-h1>What are you working on?</n-h1>
 
     <div class="flex space-x-2">
-
       <!-- Searchable nest dropdown for Space>lists>task>subtasks-->
       <!-- TODO: make list not selectable -->
-      <n-form-item path="taskId" class="flex-grow">
+      <n-form-item path="taskId" class="flex-grow" :show-label="false">
         <n-cascader
             v-model:value="formValue.task.taskId"
             :options="clickUpItems"
@@ -266,14 +263,15 @@ onMounted(async () => {
         />
       </n-form-item>
 
-
       <!-- Refresh button -->
-      <n-button :disabled="loadingClickup" circle class="mt-0.5 bg-transparent color-gray-600"
-                secondary
-                strong
-                @click="refreshClickUpHierarchy"
+      <n-button
+          :disabled="loadingClickup"
+          circle
+          class="mt-0.5 bg-transparent color-gray-600"
+          secondary
+          strong
+          @click="refreshClickUpHierarchy"
       >
-
         <n-icon class="flex items-center justify-center" name="refresh" size="20">
           <div v-if="loadingClickup" class="w-2 h-2 bg-blue-800 rounded-full animate-ping"></div>
           <arrow-path-icon v-else/>
@@ -283,7 +281,7 @@ onMounted(async () => {
 
     <!-- Description textbox -->
     <div class="flex space-x-2">
-      <n-form-item path="description" class="flex-grow">
+      <n-form-item path="description" class="flex-grow" :show-label="false">
         <n-mention
             v-model:value="formValue.task.description"
             :options="mentionable"
