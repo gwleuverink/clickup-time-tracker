@@ -1,15 +1,28 @@
 <script setup>
-import {NAvatar, NButton, NForm, NIcon, NMention, NH1, NCascader, NFormItem, useNotification} from "naive-ui";
+import {NAvatar, NButton, NForm, NIcon, NMention, NH1, NTreeSelect, NFormItem, useNotification, NConfigProvider} from "naive-ui";
 import {ArrowPathIcon} from "@heroicons/vue/20/solid";
+import {Planet, List, } from '@vicons/ionicons5'
+import {CircleFilled} from "@vicons/carbon";
 import {h, onMounted, ref, defineEmits} from "vue";
 import {ipcRenderer} from 'electron';
 import clickupService from "@/clickup-service";
 import store from "@/store";
 
+const props = defineProps({
+  start: {
+    type: Date,
+    required: true,
+  },
+  end: {
+    type: Date,
+    required: true,
+  },
+})
+
 const notification = useNotification();
 
 // Emits
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'create']);
 
 // Refs
 let clickUpItems = ref([]);
@@ -38,6 +51,19 @@ const rules = ref({
     },
   },
 })
+
+// Naive UI custom theme
+
+/**
+ * Use this for type hints under js file
+ * @type import('naive-ui').GlobalThemeOverrides
+ */
+const customTheme = {
+  common: {
+    "textColorDisabled": "-n-text-color"
+  }
+}
+
 
 /*
 |--------------------------------------------------------------------------
@@ -118,36 +144,25 @@ function createTask() {
         content: 'Please check the form for errors',
       })
     } else {
-      console.log('Form validated');
-      console.log(formValue.value.task.taskId);
-      console.log(formValue.value.task.description);
+      pushToClickup()
       onSuccess({
         title: 'Task created',
         content: 'The task has been created in Clickup',
       });
-      cancelTaskCreation();
+
     }
   })
-  //.then(() => pushToClickup())
-  // eslint-disable-next-line no-unused-vars
+
   const pushToClickup = () => {
     clickupService.createTimeTrackingEntry(
         formValue.value.task.taskId,
         formValue.value.task.description,
-        this.selectedTask.start,
-        this.selectedTask.end
+        props.start,
+        props.end
     ).then(entry => {
-      console.info(`Created time tracking entry for: ${entry.task.name}`);
-
-      //this.selectedTask = eventFactory.updateFromRemote(this.selectedTask,entry);
-      // Explicitly push to model so time update works properly
-      this.events.push(this.selectedTask);
-
-      this.closeCreationModal();
-    })
-        .catch(error => {
-          this.cancelTaskCreation();
-
+      pushEntryToCalendar(entry);
+    }).catch(error => {
+          cancelTaskCreation()
           this.error({
             error,
             title: "Looks like something went wrong",
@@ -157,22 +172,13 @@ function createTask() {
   }
 }
 
-function cancelTaskCreation() {
-  emit('close');
+function pushEntryToCalendar(entry) {
+  console.log('Pushing entry to calendar')
+  emit('create', entry);
 }
 
-// Check selected item from the cascader, if it's a task, or subtask, set the taskId in the formValue
-// otherwise, set it to null, not perfect, but it works, would be better to have a changable check-stategy
-// on the cascader. Is there a way to do that?
-
-function checkSelection(value, selectedOptions) {
-  //value = taskId
-  // selectedOptions = "id", "value", "name", "label", "list", "leaf"
-  if (selectedOptions) {
-    if (!(selectedOptions.leaf)) {
-      formValue.value.task.taskId = null;
-    }
-  }
+function cancelTaskCreation() {
+  emit('close');
 }
 
 /*
@@ -212,6 +218,30 @@ function renderMentionLabel(option) {
   ])
 }
 
+function renderSwitcherIcon(option) {
+  // Opion.option = id, label, leaf, name, type, value
+  let icon = null;
+
+
+  switch (option.option.type) {
+    case 'space':
+      icon = Planet
+      break;
+    case 'list':
+      icon = List;
+      break;
+    default:
+      icon = CircleFilled;
+      break;
+  }
+
+  return h(NIcon, { size: '15px', id: 'cascader-icon' }, { default: () => h(icon) })
+}
+
+function onUpdateIndeterminateKeys(keys) {
+  console.log(keys);
+}
+
 /*
 |--------------------------------------------------------------------------
 | MAIN
@@ -240,27 +270,30 @@ onMounted(async () => {
     <n-h1>What are you working on?</n-h1>
 
     <div class="flex space-x-2">
-      <!-- Searchable nest dropdown for Space>lists>task>subtasks-->
-      <!-- TODO: make list not selectable -->
       <n-form-item path="taskId" class="flex-grow" :show-label="false">
-        <n-cascader
-            v-model:value="formValue.task.taskId"
-            :options="clickUpItems"
-            :disabled="loadingClickup"
-            :placeholder="
-            loadingClickup
-              ? 'Loading tasks...'
-              : 'Select a task or subtask'
-            "
+        <n-config-provider class="flex-grow" :theme-overrides="customTheme">
+          <n-tree-select
+              v-model:value="formValue.task.taskId"
+              :options="clickUpItems"
+              :disabled="loadingClickup"
+              :placeholder="
+                loadingClickup
+                  ? 'Loading tasks...'
+                  : 'Select a task or subtask'
+              "
 
-            :clearable="true"
-            :check-strategy="'child'"
-            :expand-trigger="'hover'"
-            :filterable="true"
-            :show-path="false"
+              :size="'large'"
+              :clearable="true"
+              :expand-trigger="'hover'"
+              :filterable="true"
+              :key-field="'value'"
+              :disabled-field="'disable'"
+              :render-prefix="renderSwitcherIcon"
 
-            @update:value="checkSelection"
-        />
+              @update:indeterminate-keys="onUpdateIndeterminateKeys"
+          />
+
+        </n-config-provider>
       </n-form-item>
 
       <!-- Refresh button -->

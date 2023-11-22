@@ -152,6 +152,9 @@
 
       <TaskCreatorForm
         @close="cancelTaskCreation"
+        @create="pushTimeTrackingEntry"
+        :start="selectedTask.start"
+        :end="selectedTask.end"
       />
 
     </n-card>
@@ -296,6 +299,21 @@ export default {
       showTaskCreationModal: ref(false),
       showTaskDetailsModal: ref(false),
       memberSelectorOpen: ref(false),
+      selectedTask: ref({}),
+
+      rules: ref({
+        task: {
+          taskId: {
+            required: true,
+            message: 'Please select a task'
+          },
+          description: {
+            required: store.get('settings.requireDescription'),
+            message: 'Please describe what you worked on',
+            trigger: ['blur']
+          },
+        },
+      }),
 
       success(options) {
         notification.success({duration: 5000, ...options});
@@ -400,7 +418,15 @@ export default {
           }));
     },
 
+    pushTimeTrackingEntry(event){
+      console.log("Received event from form:" + event)
+      this.selectedTask = eventFactory.updateFromRemote(this.selectedTask, event);
+      this.events.push(this.selectedTask);
+      this.closeCreationModal();
+    },
+
     cancelTaskCreation() {
+      console.log("Canceling task creation")
       this.closeCreationModal();
       this.deleteCallable();
     },
@@ -449,16 +475,14 @@ export default {
     |--------------------------------------------------------------------------
     */
 
-    onTaskSingleClick(event, e) {
+    onTaskSingleClick(event) {
       this.selectedTask = event;
-      e.stopPropagation();
     },
 
-    onTaskDoubleClick(event, e) {
+    onTaskDoubleClick(event) {
       this.selectedTask = event;
 
       this.showTaskDetailsModal = true;
-      e.stopPropagation();
     },
 
     closeDetailModal() {

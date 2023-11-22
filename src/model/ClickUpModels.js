@@ -21,16 +21,16 @@ export class ClickUpItem{
 
         switch (this.type){
             case ClickUpType.SPACE:
-                this.leaf = false;
+                this.disable = true;
                 break;
             case ClickUpType.LIST:
-                this.leaf = false;
+                this.disable = true;
                 break;
             case ClickUpType.TASK:
-                this.leaf = true;
+                this.disable = false;
                 break;
             case ClickUpType.SUBTASK:
-                this.leaf = true;
+                this.disable = false;
                 break;
         }
     }

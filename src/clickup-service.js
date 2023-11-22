@@ -153,6 +153,42 @@ export default {
         return list.map(list => new ClickUpItem(list.id, list.name, ClickUpType.LIST))
     },
 
+    async getTasks(listId) {
+
+        let results = await new Promise((resolve, reject) => {
+
+            request({
+                method: 'GET',
+                mode: 'no-cors',
+                url: `${BASE_URL}/list/${listId}/task?archived=false&include_markdown_description=false&subtasks=true&include_closed=false`,
+                headers: {
+                    'Authorization': store.get('settings.clickup_access_token'),
+                    'Content-Type': 'application/json'
+                }
+            }, (error, response) => {
+                if (error) return reject(error)
+                resolve(JSON.parse(response.body).tasks || [])
+            });
+        })
+
+
+
+        let subtasks = results
+            .filter(task => task.parent != null)
+
+        let tasks = results
+            .filter(task => task.parent == null)
+            .map(task => {
+                let item = new ClickUpItem(task.id, task.name, ClickUpType.TASK)
+                subtasks
+                    .filter(subtask => subtask.parent == task.id)
+                    .map(subtask => new ClickUpItem(subtask.id, subtask.name, ClickUpType.SUBTASK))
+                    .forEach(subtask => item.addChild(subtask))
+                return item
+            })
+        return tasks
+    },
+
     async getFolders(spaceId) {
         return new Promise((resolve, reject) => {
 
@@ -204,38 +240,6 @@ export default {
                 resolve(JSON.parse(response.body).lists || [])
             });
         })
-    },
-
-    async getTasks(listId) {
-
-        let results = await new Promise((resolve, reject) => {
-
-            request({
-                method: 'GET',
-                mode: 'no-cors',
-                url: `${BASE_URL}/list/${listId}/task?archived=false&include_markdown_description=false&subtasks=true&include_closed=false`,
-                    'Authorization': store.get('settings.clickup_access_token'),
-                    'Content-Type': 'application/json'
-            }, (error, response) => {
-                if (error) return reject(error)
-                console.log(response.body)
-                resolve(JSON.parse(response.body).tasks || [])
-            });
-        })
-
-        console.log(results)
-
-        let tasks = results
-            .filter(task => task.parent == 'null')
-            .map(task => new ClickUpItem(task.id, task.name, ClickUpType.TASK, task.parent))
-
-        for (let task of results) {
-            if (task.parent) {
-                console.log(task)
-            }
-        }
-
-        return tasks
     },
 
 
