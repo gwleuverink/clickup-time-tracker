@@ -1,14 +1,16 @@
 import request from 'request';
 import store from '@/store';
 import cache from '@/cache';
-import {ClickUpItem, ClickUpType} from "@/model/ClickUpModels";
-//import {list} from "postcss";
+import {ClickUpItemFactory} from "@/model/ClickUpModels";
 
 const BASE_URL = 'https://api.clickup.com/api/v2';
 
 // Cache keys
 const HIERARCHY_CACHE_KEY = 'hierarchy';
 const USERS_CACHE_KEY = 'users';
+
+// Factory
+const factory = new ClickUpItemFactory();
 
 function teamRootUrl() {
     return `${BASE_URL}/team/${store.get('settings.clickup_team_id')}`
@@ -20,9 +22,7 @@ export default {
      * Retrieves a page of tasks from the ClickUp API
      */
     tokenValid(token) {
-
         return new Promise((resolve, reject) => {
-
             request({
                 method: 'GET',
                 mode: 'no-cors',
@@ -136,7 +136,7 @@ export default {
             });
         })
 
-        return response.map(space => new ClickUpItem(space.id, space.name, ClickUpType.SPACE))
+        return response.map(space => factory.createSpace(space))
     },
 
     async getLists(spaceId) {
@@ -150,7 +150,7 @@ export default {
         }))
 
         let list = folderlessLists.concat(folderedLists.flat());
-        return list.map(list => new ClickUpItem(list.id, list.name, ClickUpType.LIST))
+        return list.map(list => factory.createList(list))
     },
 
     async getTasks(listId) {
@@ -179,10 +179,10 @@ export default {
         let tasks = results
             .filter(task => task.parent == null)
             .map(task => {
-                let item = new ClickUpItem(task.id, task.name, ClickUpType.TASK)
+                let item = factory.createTask(task)
                 subtasks
                     .filter(subtask => subtask.parent == task.id)
-                    .map(subtask => new ClickUpItem(subtask.id, subtask.name, ClickUpType.SUBTASK))
+                    .map(subtask => factory.createSubtask(subtask))
                     .forEach(subtask => item.addChild(subtask))
                 return item
             })

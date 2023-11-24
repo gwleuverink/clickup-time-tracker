@@ -221,7 +221,15 @@ function renderMentionLabel(option) {
 function renderSwitcherIcon(option) {
   // Opion.option = id, label, leaf, name, type, value
   let icon = null;
+  let color = null;
 
+  console.log(store.get('settings'))
+
+  if (store.get('settings.custom_color_enabled')) {
+    color = store.get('settings.color')
+  } else {
+    color = option.option.color
+  }
 
   switch (option.option.type) {
     case 'space':
@@ -235,7 +243,7 @@ function renderSwitcherIcon(option) {
       break;
   }
 
-  return h(NIcon, { size: '15px', id: 'cascader-icon' }, { default: () => h(icon) })
+  return h(NIcon, { size: '15px', id: 'cascader-icon', color: color }, { default: () => h(icon) })
 }
 
 function onUpdateIndeterminateKeys(keys) {

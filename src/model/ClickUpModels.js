@@ -4,9 +4,51 @@ export const ClickUpType = {
     TASK: "task",
     SUBTASK: "subtask",
 }
+export class ClickUpItemFactory {
 
+    constructor() {
+        this.colorMap = new Map();
+    }
+
+    createItem(item, type) {
+        if (item instanceof ClickUpItem){
+            return item;
+        }
+        // Colors
+        if (item.color && !this.colorMap[item.color]){
+            console.log("Adding color", item.id, item.color)
+            this.colorMap.set(item.id, item.color)
+        } else if (item.space.id && this.colorMap.has(item.space.id)){
+            item.color = this.colorMap.get(item.space.id);
+        }
+        // Create item
+        if (typeof item === "object"){
+            // This is the only place where clickup items are created
+            return new ClickUpItem(item.id, item.name, type, item.color);
+        }
+        throw new Error("Invalid item");
+    }
+
+    createSpace(item){
+        return this.createItem(item, ClickUpType.SPACE);
+    }
+
+    createList(item){
+        return this.createItem(item, ClickUpType.LIST);
+    }
+
+    createTask(item){
+        return this.createItem(item, ClickUpType.TASK);
+    }
+
+    createSubtask(item){
+        return this.createItem(item, ClickUpType.SUBTASK);
+    }
+
+}
 export class ClickUpItem{
-    constructor(id, name, type){
+    // This is the only place where the clickup item is defined
+    constructor(id, name, type, color){
         if (!Object.values(ClickUpType).includes(type)){
             throw new Error("Invalid type");
         }
@@ -33,6 +75,8 @@ export class ClickUpItem{
                 this.disable = false;
                 break;
         }
+
+        this.color = color;
     }
 
     addChild(child){
