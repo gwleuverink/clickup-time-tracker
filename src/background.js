@@ -39,6 +39,13 @@ ipcMain.on('refresh-clickup-hierarchy', (event) => {
         .catch(err => event.reply('fetch-clickup-hierarchy-error', err))
 })
 
+//Fetch color palette from ClickUp
+ipcMain.on('get-clickup-colors', (event) => {
+    clickupService.getColorsBySpace()
+        .then(colors => event.reply('set-clickup-colors', colors))
+        .catch(err => event.reply('fetch-clickup-colors-error', err))
+})
+
 async function createWindow() {
     // Create the browser window.
     const win = new BrowserWindow({

@@ -20,7 +20,7 @@ export default {
             draggable: editable,
             resizable: editable,
             deletable: editable,
-            class: !editable ? 'not-editable' : null
+            class: !editable ? 'not-editable' : null + ' ' + entry.task_location.space_id ? 'space-' + entry.task_location.space_id : null
         }
     },
 

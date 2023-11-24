@@ -43,49 +43,10 @@ export default {
         })
     },
 
-
-    /*
-     * Get all time tracking entries within a given range
-     */
-    getTimeTrackingRange(start, end, userId) {
-
-        return new Promise((resolve, reject) => {
-
-            const params = {
-                start_date: start.valueOf(),
-                end_date: end.valueOf(),
-            }
-
-            // Only set assignee when argument was given
-            if (userId) {
-                params.assignee = userId
-            }
-
-            request({
-                method: 'GET',
-                mode: 'no-cors',
-                url: `${teamRootUrl()}/time_entries?` + new URLSearchParams(params),
-
-                headers: {
-                    'Authorization': store.get('settings.clickup_access_token'),
-                    'Content-Type': 'application/json'
-                }
-            }, (error, response) => {
-                if (error) return reject(error)
-                const body = JSON.parse(response.body)
-
-                if (body.err) { // This friggin api... return a decent response code for fuck sake
-                    reject(body.err)
-                }
-                resolve(body.data || [])
-            });
-        })
-    },
-
     async getHierarchy() {
         console.log("Getting hierarchy")
         let options = await this.getSpaces()
-        await Promise.all( options.map(async (option) => {
+        await Promise.all(options.map(async (option) => {
             const lists = await this.getLists(option.id);
             await Promise.all(lists.map(async (list) => {
                 await this.getTasks(list.id).then(tasks => {
@@ -98,7 +59,7 @@ export default {
         return options
     },
 
-    async getCachedHierarchy(){
+    async getCachedHierarchy() {
         const cached = cache.get(HIERARCHY_CACHE_KEY)
 
         if (cached) {
@@ -139,6 +100,18 @@ export default {
         return response.map(space => factory.createSpace(space))
     },
 
+    // Keep in mind that this also could be cashed
+    getColorsBySpace() {
+        let spaces = this.getSpaces()
+        let colors = Map()
+
+        spaces.forEach(space => {
+            colors.set(space.id, space.color)
+        })
+
+        return colors
+    },
+
     async getLists(spaceId) {
         const folderlessLists = await this.getFolderlessLists(spaceId);
 
@@ -170,7 +143,6 @@ export default {
                 resolve(JSON.parse(response.body).tasks || [])
             });
         })
-
 
 
         let subtasks = results
@@ -242,6 +214,44 @@ export default {
         })
     },
 
+    /*
+    * Get all time tracking entries within a given range
+    */
+    getTimeTrackingRange(start, end, userId) {
+
+        return new Promise((resolve, reject) => {
+
+            const params = {
+                start_date: start.valueOf(),
+                end_date: end.valueOf(),
+                include_location_names: true,
+            }
+
+            // Only set assignee when argument was given
+            if (userId) {
+                params.assignee = userId
+            }
+
+            request({
+                method: 'GET',
+                mode: 'no-cors',
+                url: `${teamRootUrl()}/time_entries?` + new URLSearchParams(params),
+
+                headers: {
+                    'Authorization': store.get('settings.clickup_access_token'),
+                    'Content-Type': 'application/json'
+                }
+            }, (error, response) => {
+                if (error) return reject(error)
+                const body = JSON.parse(response.body)
+
+                if (body.err) { // This friggin api... return a decent response code for fuck sake
+                    reject(body.err)
+                }
+                resolve(body.data || [])
+            });
+        })
+    },
 
     /*
      * Create a new time tracking entry

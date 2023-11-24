@@ -335,6 +335,8 @@ export default {
 
     // Load background image if set
     this.refreshBackgroundImage();
+
+    // Get the color palette if set
   },
 
   computed: {
@@ -361,6 +363,12 @@ export default {
     | FETCH TIME TRACKING ENTRIES
     |--------------------------------------------------------------------------
     */
+
+    // TODO: Notes for color palette
+    // In the docs for the vue-cal component, it can change the color of the event based on a given class, and css that
+    // corresponds to that class. First try adding the space id as a class, and manually adding the css to the component
+    // to see if that works. If it does, then we can try to dynamically add the css to the component.
+
     async fetchEvents({startDate, endDate}) {
       clickupService
           .getTimeTrackingRange(startDate, endDate)
@@ -591,6 +599,13 @@ export default {
       bg.style.backgroundRepeat = "no-repeat";
       bg.style.backgroundPosition = "center";
       bg.style.backgroundSize = "cover";
+    },
+
+    getColorPalette: function () {
+      const palette = store.get("settings.color_palette")
+      if (!palette) return
+
+      return palette
     }
   }
 };
