@@ -223,8 +223,9 @@ function renderSwitcherIcon(option) {
   let icon = null;
   let color = null;
 
-  console.log(store.get('settings'))
-
+  // This branch was split of from another branch were the color was made a setting, so here is the check remains to
+  // see whether a custom color is set or not. This branch will be merged first so this piece will serve no purpose,
+  // till the setting is implemented.
   if (store.get('settings.custom_color_enabled')) {
     color = store.get('settings.color')
   } else {
