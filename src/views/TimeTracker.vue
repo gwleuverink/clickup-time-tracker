@@ -280,7 +280,7 @@ export default {
     UsersIcon,
     TrashIcon,
     PencilIcon,
-    InformationCircleIcon
+    InformationCircleIcon,
   },
 
   setup() {
@@ -300,6 +300,8 @@ export default {
       showTaskDetailsModal: ref(false),
       memberSelectorOpen: ref(false),
       selectedTask: ref({}),
+
+      colorPalette: ref(new Map()),
 
       rules: ref({
         task: {
@@ -335,8 +337,6 @@ export default {
 
     // Load background image if set
     this.refreshBackgroundImage();
-
-    // Get the color palette if set
   },
 
   computed: {
@@ -370,11 +370,20 @@ export default {
     // to see if that works. If it does, then we can try to dynamically add the css to the component.
 
     async fetchEvents({startDate, endDate}) {
+      const customColorEnabled = store.get("settings.custom_color_enabled")
+      if (!customColorEnabled) {
+        await this.setSpaceColorClasses()
+      }
+
       clickupService
           .getTimeTrackingRange(startDate, endDate)
           .then(entries => {
             this.events = entries
                 .map((entry) => eventFactory.fromClickup(entry)) // Map into Event DTO
+                .map((entry) => {
+                  if (customColorEnabled) this.colorEvent(entry) // Color the event
+                  return entry
+                })
                 .filter((entry) => entry); // Remove falsey entries
           })
           .catch(error => this.error({
@@ -601,12 +610,44 @@ export default {
       bg.style.backgroundSize = "cover";
     },
 
-    getColorPalette: function () {
-      const palette = store.get("settings.color_palette")
-      if (!palette) return
+    getColorPalette:async function () {
+      if (this.colorPalette.size > 0) {
+        return this.colorPalette
+      }
+      return await clickupService.getColorsBySpace()
+    },
 
-      return palette
-    }
+    colorEvent: function (event) {
+      const customColorEnabled = store.get("settings.custom_color_enabled")
+
+      if (!customColorEnabled) {
+        return event
+      }
+
+      const customColor = store.get("settings.color")
+      if (!customColor) {
+        return event
+      }
+
+      // color by custom color
+      document.documentElement.style.setProperty('--event-background-color', customColor);
+      return event
+    },
+
+    setSpaceColorClasses: function () {
+      this.getColorPalette().then((colorPalette) => {
+        console.log(colorPalette)
+        for (let [key, value] of colorPalette.entries()) {
+          const space_class = document.getElementsByClassName('space-' + key)[0];
+          if (!space_class) {
+            continue
+          }
+          console.log(space_class)
+          space_class.style.backgroundColor = value
+        }
+      })
+    },
+
   }
 };
 </script>

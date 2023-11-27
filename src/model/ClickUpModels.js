@@ -16,7 +16,6 @@ export class ClickUpItemFactory {
         }
         // Colors
         if (item.color && !this.colorMap[item.color]){
-            console.log("Adding color", item.id, item.color)
             this.colorMap.set(item.id, item.color)
         } else if (item.space.id && this.colorMap.has(item.space.id)){
             item.color = this.colorMap.get(item.space.id);

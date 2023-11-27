@@ -223,8 +223,6 @@ function renderSwitcherIcon(option) {
   let icon = null;
   let color = null;
 
-  console.log(store.get('settings'))
-
   if (store.get('settings.custom_color_enabled')) {
     color = store.get('settings.color')
   } else {
@@ -244,10 +242,6 @@ function renderSwitcherIcon(option) {
   }
 
   return h(NIcon, { size: '15px', id: 'cascader-icon', color: color }, { default: () => h(icon) })
-}
-
-function onUpdateIndeterminateKeys(keys) {
-  console.log(keys);
 }
 
 /*
@@ -297,8 +291,6 @@ onMounted(async () => {
               :key-field="'value'"
               :disabled-field="'disable'"
               :render-prefix="renderSwitcherIcon"
-
-              @update:indeterminate-keys="onUpdateIndeterminateKeys"
           />
 
         </n-config-provider>

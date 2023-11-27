@@ -100,10 +100,9 @@ export default {
         return response.map(space => factory.createSpace(space))
     },
 
-    // Keep in mind that this also could be cashed
-    getColorsBySpace() {
-        let spaces = this.getSpaces()
-        let colors = Map()
+    async getColorsBySpace() {
+        let spaces = await this.getSpaces()
+        let colors = new Map()
 
         spaces.forEach(space => {
             colors.set(space.id, space.color)

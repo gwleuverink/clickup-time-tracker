@@ -68,7 +68,10 @@
         <label class="text-gray-800">Color of tracking entries</label>
         <div class="grid grid-cols-2 gap-4 w-full">
           <n-form-item :show-feedback="false" :show-label="false" path="custom_color_enabled">
-            <n-switch v-model:value="model.custom_color_enabled"/>
+            <n-switch
+                v-model:value="model.custom_color_enabled"
+                @update:value="setDefaultColor"
+            />
             <label class="ml-3 text-gray-800">Enable custom color</label>
           </n-form-item>
 
@@ -76,7 +79,7 @@
             <n-color-picker
                 v-model:value="model.color"
 
-                :disabled="!(custom_color)"
+                :disabled="!(model.custom_color_enabled)"
                 :modes="['hex']"
                 class="w-full"
             />
@@ -232,6 +235,12 @@ export default {
         cache.flush()
 
         notification.success({title: "All caches flushed!", duration: 1500});
+      },
+
+      setDefaultColor(event) {
+        if (!event) {
+          model.value.color = "#ADD8E67F";
+        }
       },
 
       rules: {

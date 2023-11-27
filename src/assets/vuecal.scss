@@ -1,5 +1,10 @@
 @import '~vue-cal/dist/vuecal.css';
 
+:root {
+    --event-background-color: var(--default-event-color);
+    --event-border-color: adjust-color(--event-background-color, $alpha: -0.3);
+}
+
 .vuecal {
     $block: &;
 
@@ -83,10 +88,8 @@
         border-radius: 0 6px 6px 0;
 
         // Event background color
-        background-color: rgba(173, 216, 230, 0.5);
-        // Color for the very thin border-bottom of event, set dynamically?
-        // Border-color = event background color + 30% opacity
-        border-bottom: 0.5px solid rgba(173, 216, 230, 0.8);
+        background-color: var(--event-background-color);
+        border-bottom: 0.5px solid var(--event-border-color);
 
         transition: transform 0.08s;
 
@@ -117,8 +120,7 @@
             left: 0;
             width: 6px;
             height: 100%;
-            // Color for border-left of event, set dynamically?
-            background-color: rgba(173, 216, 230, 0.8);
+            background-color: var(--event-background-color);
         }
 
         &:hover {
@@ -141,12 +143,6 @@
             ::before {
                 background-color: rgba(240, 68, 29, 1);
             }
-        }
-
-        &.space-54347833 {
-            // Override the background color for this specific event
-            background-color: rgba(252, 24, 24, 0.6);
-            color: #666666de;
         }
     }
 }
