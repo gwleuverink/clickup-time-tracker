@@ -12,6 +12,7 @@ export default {
             taskId: entry.task.id,
             title: entry.task.name,
             taskUrl: entry.task_url,
+            spaceId: entry.task_location.space_id,
             description: entry.description,
             start: new Date(Number(entry.start)),
             end: new Date(Number(entry.start) + Number(entry.duration)),

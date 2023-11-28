@@ -6,21 +6,25 @@
 
   <!-- START | Calendar view -->
   <vue-cal
-      :editable-events="{ drag: true, resize: true, create: true }"
-      :hide-weekends="!store.get('settings.show_weekend')"
+      ref="calendar"
+      :click-to-navigate="false"
       :disable-views="['years', 'year', 'month', 'day']"
-      :on-event-dblclick="onTaskDoubleClick"
+      :drag-to-create-threshold="20"
+      :editable-events="{ drag: true, resize: true, create: true }"
+      :events="events"
+      :hide-view-selector="true"
+      :hide-weekends="!store.get('settings.show_weekend')"
       :on-event-click="onTaskSingleClick"
       :on-event-create="onTaskCreate"
-      :drag-to-create-threshold="20"
-      :click-to-navigate="false"
-      :hide-view-selector="true"
-      :watch-real-time="true"
+      :on-event-dblclick="onTaskDoubleClick"
+      :snap-to-time="15"
       :time-cell-height="90"
       :time-from="dayStart"
       :time-to="dayEnd"
-      :snap-to-time="15"
-      :events="events"
+      :watch-real-time="true"
+      active-view="week"
+      today-button
+      @mousedown="memberSelectorOpen = false"
       @ready="fetchEvents"
       @view-change="fetchEvents"
       @event-drop="updateTimeTrackingEntry"
@@ -29,28 +33,24 @@
       @keydown.meta.v.exact="duplicateSelectedTask()"
       @keydown.meta.d.exact="duplicateSelectedTask()"
       @keydown.meta.x.exact="refreshBackgroundImage()"
-      @mousedown="memberSelectorOpen = false"
-      active-view="week"
-      today-button
-      ref="calendar"
   >
     <template v-slot:title="{ title }">
       <div class="flex items-center space-x-4">
-        <span type="false" aria-label="false">{{ title }}</span>
+        <span aria-label="false" type="false">{{ title }}</span>
 
         <!-- START | Extra controls -->
         <div
             class="flex space-x-1 text-gray-600"
             style="-webkit-app-region: no-drag"
         >
-          <router-link :to="{ name: 'settings' }" replace class="hover:text-gray-800">
+          <router-link :to="{ name: 'settings' }" class="hover:text-gray-800" replace>
             <cog-icon class="w-5"/>
           </router-link>
 
           <button
               v-if="store.get('settings.admin_features_enabled')"
-              @click="memberSelectorOpen = !memberSelectorOpen"
               class="hover:text-gray-800"
+              @click="memberSelectorOpen = !memberSelectorOpen"
           >
             <users-icon class="w-5"/>
           </button>
@@ -84,42 +84,43 @@
 
     <!-- START | Custom Event template -->
     <template v-slot:event="{ event }">
+      <div :class="`space-${event.spaceId}`" :style="{ backgroundColor: colorPalette[event.spaceId] }">
 
-      <div class="vuecal__event-title">
-        <span v-text="event.title"/>
+        <div class="vuecal__event-title">
+          <span v-text="event.title"/>
 
-        <!-- START | Task context popover -->
-        <n-popover trigger="hover" :delay="500" :duration="60" width="260">
+          <!-- START | Task context popover -->
+          <n-popover :delay="500" :duration="60" trigger="hover" width="260">
 
-          <template #trigger>
+            <template #trigger>
                     <span class="vuecal__event-task-info-popover absolute top-0 right-0 py-0.5 px-1 cursor-pointer">
                         <information-circle-icon class="w-4 text-blue-300 transition-all hover:scale-125"/>
                     </span>
-          </template>
+            </template>
 
-          <template #header>
-            <span class="font-semibold text-gray-700" v-text="event.title"></span>
-          </template>
+            <template #header>
+              <span class="font-semibold text-gray-700" v-text="event.title"></span>
+            </template>
 
-          <span v-text="event.description" class="whitespace-pre-wrap"></span>
+            <span class="whitespace-pre-wrap" v-text="event.description"></span>
 
-          <hr class="my-2 -mx-3.5"/>
+            <hr class="my-2 -mx-3.5"/>
 
-          <button @click="shell.openExternal(event.taskUrl)"
-                  class="flex items-center py-1 space-x-1 italic text-gray-500 hover:text-gray-700">
-            <img class="mt-1 w-7" src="@/assets/images/white-rounded-logo.svg" alt="Open task in ClickUp">
-            <span>Open in ClickUp</span>
-          </button>
+            <button class="flex items-center py-1 space-x-1 italic text-gray-500 hover:text-gray-700"
+                    @click="shell.openExternal(event.taskUrl)">
+              <img alt="Open task in ClickUp" class="mt-1 w-7" src="@/assets/images/white-rounded-logo.svg">
+              <span>Open in ClickUp</span>
+            </button>
 
-          <button @click="onTaskDoubleClick(event)"
-                  class="flex items-center py-1 space-x-1 italic text-gray-500 hover:text-gray-700">
-            <pencil-icon class="w-4 mx-1.5"/>
-            <span>Open details</span>
-          </button>
+            <button class="flex items-center py-1 space-x-1 italic text-gray-500 hover:text-gray-700"
+                    @click="onTaskDoubleClick(event)">
+              <pencil-icon class="w-4 mx-1.5"/>
+              <span>Open details</span>
+            </button>
 
-        </n-popover>
-        <!-- END | Task context popover -->
-
+          </n-popover>
+          <!-- END | Task context popover -->
+        </div>
       </div>
 
       <!-- START | Time from/to -->
@@ -139,22 +140,22 @@
   <!-- START | Task creation modal -->
   <n-modal
       v-model:show="showTaskCreationModal"
-      @keydown.esc="cancelTaskCreation"
       :mask-closable="false"
+      @keydown.esc="cancelTaskCreation"
   >
     <n-card
         :bordered="false"
-        class="max-w-xl"
-        size="huge"
-        role="dialog"
         aria-modal="true"
+        class="max-w-xl"
+        role="dialog"
+        size="huge"
     >
 
       <TaskCreatorForm
-        @close="cancelTaskCreation"
-        @create="pushTimeTrackingEntry"
-        :start="selectedTask.start"
-        :end="selectedTask.end"
+          :end="selectedTask.end"
+          :start="selectedTask.start"
+          @close="cancelTaskCreation"
+          @create="pushTimeTrackingEntry"
       />
 
     </n-card>
@@ -165,23 +166,23 @@
   <n-modal v-model:show="showTaskDetailsModal">
     <n-card
         :bordered="false"
-        class="max-w-xl"
-        title="Edit tracking entry"
-        size="huge"
-        role="dialog"
         aria-modal="true"
+        class="max-w-xl"
+        role="dialog"
+        size="huge"
+        title="Edit tracking entry"
     >
       <template #header>
         <span class="flex items-center space-x-3">
           <n-popconfirm
               v-if="selectedTask.deletable"
               :negative-text="null"
-              @positive-click="deleteSelectedTask"
-              positive-text="delete"
               :show-icon="false"
+              positive-text="delete"
+              @positive-click="deleteSelectedTask"
           >
             <template #trigger>
-              <n-button secondary circle type="error">
+              <n-button circle secondary type="error">
                 <n-icon name="delete-tracking-entry" size="18">
                   <trash-icon/>
                 </n-icon>
@@ -199,14 +200,14 @@
         <!-- TODO: Show some task labels -->
         <!-- TODO: Show current task column -->
 
-        <n-form :model="selectedTask" :rules="rules.task" ref="editForm" size="large">
-          <n-form-item path="description" :show-label="false">
+        <n-form ref="editForm" :model="selectedTask" :rules="rules.task" size="large">
+          <n-form-item :show-label="false" path="description">
             <n-mention
-                type="textarea"
                 v-model:value="selectedTask.description"
                 :options="mentionable"
                 :render-label="renderMentionLabel"
                 placeholder="Describe what you worked on"
+                type="textarea"
             />
           </n-form-item>
         </n-form>
@@ -215,8 +216,8 @@
 
       <template #footer>
         <div class="flex justify-end space-x-2">
-          <n-button @click="closeDetailModal()" round>Cancel</n-button>
-          <n-button @click="updateTimeTrackingEntry({ event: selectedTask })" round type="primary">Update</n-button>
+          <n-button round @click="closeDetailModal()">Cancel</n-button>
+          <n-button round type="primary" @click="updateTimeTrackingEntry({ event: selectedTask })">Update</n-button>
         </div>
       </template>
 
@@ -301,8 +302,6 @@ export default {
       memberSelectorOpen: ref(false),
       selectedTask: ref({}),
 
-      colorPalette: ref(new Map()),
-
       rules: ref({
         task: {
           taskId: {
@@ -339,6 +338,12 @@ export default {
     this.refreshBackgroundImage();
   },
 
+  data() {
+    return {
+      colorPalette: this.getColorPalette(),
+    }
+  },
+
   computed: {
     dayStart() {
       if (!store.get('settings.day_start')) return 7 * 60
@@ -371,9 +376,6 @@ export default {
 
     async fetchEvents({startDate, endDate}) {
       const customColorEnabled = store.get("settings.custom_color_enabled")
-      if (!customColorEnabled) {
-        await this.setSpaceColorClasses()
-      }
 
       clickupService
           .getTimeTrackingRange(startDate, endDate)
@@ -435,7 +437,7 @@ export default {
           }));
     },
 
-    pushTimeTrackingEntry(event){
+    pushTimeTrackingEntry(event) {
       console.log("Received event from form:" + event)
       this.selectedTask = eventFactory.updateFromRemote(this.selectedTask, event);
       this.events.push(this.selectedTask);
@@ -610,13 +612,6 @@ export default {
       bg.style.backgroundSize = "cover";
     },
 
-    getColorPalette:async function () {
-      if (this.colorPalette.size > 0) {
-        return this.colorPalette
-      }
-      return await clickupService.getColorsBySpace()
-    },
-
     colorEvent: function (event) {
       const customColorEnabled = store.get("settings.custom_color_enabled")
 
@@ -634,20 +629,13 @@ export default {
       return event
     },
 
-    setSpaceColorClasses: function () {
-      this.getColorPalette().then((colorPalette) => {
-        console.log(colorPalette)
-        for (let [key, value] of colorPalette.entries()) {
-          const space_class = document.getElementsByClassName('space-' + key)[0];
-          if (!space_class) {
-            continue
-          }
-          console.log(space_class)
-          space_class.style.backgroundColor = value
-        }
-      })
+    getColorPalette: async function () {
+      if (this.colorPalette.size > 0) {
+        return this.colorPalette
+      }
+      this.colorPalette = await this.getColorsBySpace()
+      return this.colorPalette
     },
-
   }
 };
 </script>
