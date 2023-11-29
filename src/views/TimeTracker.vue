@@ -454,9 +454,11 @@ export default {
     },
 
     pushTimeTrackingEntry(event) {
-      this.selectedTask = eventFactory.updateFromRemote(this.selectedTask, event);
-      this.events.push(this.selectedTask);
       this.closeCreationModal();
+      eventFactory.updateFromRemote(this.selectedTask, event).then((entry) => {
+        this.selectedTask = entry
+        this.events.push(entry);
+      });
     },
 
     cancelTaskCreation() {
@@ -538,19 +540,16 @@ export default {
       )
           .then((entry) => {
             // Update the modeled event so copy/paste/duplicate works properly
+            this.closeDetailModal()
+
             const eventIndex = this.events.findIndex(
                 (e) => e.entryId === event.entryId
             );
-
             if (eventIndex === -1) return;
 
-            this.events[eventIndex] = eventFactory.updateFromRemote(
-                this.events[eventIndex],
-                entry
-            );
-
-            this.closeDetailModal()
-
+            eventFactory.updateFromRemote(this.events[eventIndex], entry).then((updatedEvent) => {
+              this.events[eventIndex] = updatedEvent
+            })
             console.dir(`Updated time tracking entry for: ${entry.task.name}`);
           })
           .catch(error => {
@@ -661,7 +660,7 @@ export default {
       this.colorPalette.forEach((value, key) => {
         classes += `
           .space-${key} {
-            background-color: ${value}B5;
+            background-color: ${value}59;
 
           }
           .space-${key}::before {

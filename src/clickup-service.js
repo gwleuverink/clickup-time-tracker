@@ -10,6 +10,9 @@ const HIERARCHY_CACHE_KEY = 'hierarchy';
 const USERS_CACHE_KEY = 'users';
 
 // Factory
+// The factory is used to create the correct model objects from the API response.
+// But, sometimes you don't want to create a model object, but just the api dump. So maybe an idea for future
+// refactoring, would to turn the factory optioinal based on a parameter. But for now, this works.
 const factory = new ClickUpItemFactory();
 
 function teamRootUrl() {
@@ -19,7 +22,7 @@ function teamRootUrl() {
 export default {
 
     /*
-     * Retrieves a page of tasks from the ClickUp API
+     * Checks if the given token is valid by making a request to the user endpoint.
      */
     tokenValid(token) {
         return new Promise((resolve, reject) => {
@@ -43,13 +46,17 @@ export default {
         })
     },
 
+    /*
+     * Builds a hierarchy of spaces, folders, lists, tasks and subtasks, from a team.
+     * Can be used to display the treeview options.
+     */
     async getHierarchy() {
         console.log("Getting hierarchy")
         let options = await this.getSpaces()
         await Promise.all(options.map(async (option) => {
             const lists = await this.getLists(option.id);
             await Promise.all(lists.map(async (list) => {
-                await this.getTasks(list.id).then(tasks => {
+                await this.getTasksFromList(list.id).then(tasks => {
                     list.addChildren(tasks)
                 });
                 option.addChild(list);
@@ -79,6 +86,9 @@ export default {
         cache.clear(HIERARCHY_CACHE_KEY)
     },
 
+    /*
+    * Get all spaces from a team
+     */
     async getSpaces() {
 
         let response = await new Promise((resolve, reject) => {
@@ -100,17 +110,11 @@ export default {
         return response.map(space => factory.createSpace(space))
     },
 
-    async getColorsBySpace() {
-        let spaces = await this.getSpaces()
-        let colors = new Map()
-
-        spaces.forEach(space => {
-            colors.set(space.id, space.color)
-        })
-
-        return colors
-    },
-
+    /*
+    * Get all lists from a space. This had to be done in two steps because the API does not support getting all lists
+    * from a space. So we first get all folders, then get all lists from each folder, and finally get all lists that are
+    * not in a folder. Then we combine all lists and return them. A single api call would be much nicer. sigh.
+    */
     async getLists(spaceId) {
         const folderlessLists = await this.getFolderlessLists(spaceId);
 
@@ -125,41 +129,9 @@ export default {
         return list.map(list => factory.createList(list))
     },
 
-    async getTasks(listId) {
-
-        let results = await new Promise((resolve, reject) => {
-
-            request({
-                method: 'GET',
-                mode: 'no-cors',
-                url: `${BASE_URL}/list/${listId}/task?archived=false&include_markdown_description=false&subtasks=true&include_closed=false`,
-                headers: {
-                    'Authorization': store.get('settings.clickup_access_token'),
-                    'Content-Type': 'application/json'
-                }
-            }, (error, response) => {
-                if (error) return reject(error)
-                resolve(JSON.parse(response.body).tasks || [])
-            });
-        })
-
-
-        let subtasks = results
-            .filter(task => task.parent != null)
-
-        let tasks = results
-            .filter(task => task.parent == null)
-            .map(task => {
-                let item = factory.createTask(task)
-                subtasks
-                    .filter(subtask => subtask.parent == task.id)
-                    .map(subtask => factory.createSubtask(subtask))
-                    .forEach(subtask => item.addChild(subtask))
-                return item
-            })
-        return tasks
-    },
-
+    /*
+    * Get all folders from a space
+     */
     async getFolders(spaceId) {
         return new Promise((resolve, reject) => {
 
@@ -177,6 +149,9 @@ export default {
         })
     },
 
+    /*
+    * Get all lists from a folder
+     */
     async getFolderedLists(FolderId) {
         return new Promise((resolve, reject) => {
 
@@ -194,6 +169,9 @@ export default {
         })
     },
 
+    /*
+    * Get all lists from a space that are not in a folder
+     */
     async getFolderlessLists(spaceId) {
         return new Promise((resolve, reject) => {
 
@@ -211,6 +189,79 @@ export default {
                 resolve(JSON.parse(response.body).lists || [])
             });
         })
+    },
+
+    /*
+    * Get all tasks from a list
+     */
+    async getTasksFromList(listId) {
+
+        let results = await new Promise((resolve, reject) => {
+
+            request({
+                method: 'GET',
+                mode: 'no-cors',
+                url: `${BASE_URL}/list/${listId}/task?archived=false&include_markdown_description=false&subtasks=true&include_closed=false`,
+                headers: {
+                    'Authorization': store.get('settings.clickup_access_token'),
+                    'Content-Type': 'application/json'
+                }
+            }, (error, response) => {
+                if (error) return reject(error)
+                resolve(JSON.parse(response.body).tasks || [])
+            });
+        })
+
+        // Link subtasks to their parent
+        // It would be nice if the API would do this for us, but it doesn't. Nested list? Something? Anything?
+        // Maybe it could be done faster. I would like to see it, if someone can do it better. out of curiosity.
+        let subtasks = results
+            .filter(task => task.parent != null)
+
+        let tasks = results
+            .filter(task => task.parent == null)
+            .map(task => {
+                let item = factory.createTask(task)
+                subtasks
+                    .filter(subtask => subtask.parent == task.id)
+                    .map(subtask => factory.createSubtask(subtask))
+                    .forEach(subtask => item.addChild(subtask))
+                return item
+            })
+        return tasks
+    },
+
+    async getTask(taskId) {
+        return new Promise((resolve, reject) => {
+            request({
+                method: 'GET',
+                mode: 'no-cors',
+                url: `${BASE_URL}/task/${taskId}?include_subtasks=false&include_markdown_description=false`,
+                headers: {
+                    'Authorization': store.get('settings.clickup_access_token'),
+                    'Content-Type': 'application/json'
+                }
+            }, (error, response) => {
+                if (error) return reject(error)
+                resolve(JSON.parse(response.body) || [])
+            });
+        })
+    },
+
+    async getColorsBySpace() {
+        let spaces = await this.getSpaces()
+        let colors = new Map()
+
+        spaces.forEach(space => {
+            colors.set(space.id, space.color)
+        })
+
+        return colors
+    },
+
+    async getSpaceIdFromTask(taskId) {
+        let task = await this.getTask(taskId)
+        return task.space.id
     },
 
     /*
