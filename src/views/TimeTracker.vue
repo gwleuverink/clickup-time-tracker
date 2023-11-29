@@ -84,43 +84,40 @@
 
     <!-- START | Custom Event template -->
     <template v-slot:event="{ event }">
-      <div :class="`space-${event.spaceId}`" :style="{ backgroundColor: colorPalette[event.spaceId] }">
+      <div class="vuecal__event-title">
+        <span v-text="event.title"/>
 
-        <div class="vuecal__event-title">
-          <span v-text="event.title"/>
+        <!-- START | Task context popover -->
+        <n-popover :delay="500" :duration="60" trigger="hover" width="260">
 
-          <!-- START | Task context popover -->
-          <n-popover :delay="500" :duration="60" trigger="hover" width="260">
-
-            <template #trigger>
+          <template #trigger>
                     <span class="vuecal__event-task-info-popover absolute top-0 right-0 py-0.5 px-1 cursor-pointer">
                         <information-circle-icon class="w-4 text-blue-300 transition-all hover:scale-125"/>
                     </span>
-            </template>
+          </template>
 
-            <template #header>
-              <span class="font-semibold text-gray-700" v-text="event.title"></span>
-            </template>
+          <template #header>
+            <span class="font-semibold text-gray-700" v-text="event.title"></span>
+          </template>
 
-            <span class="whitespace-pre-wrap" v-text="event.description"></span>
+          <span class="whitespace-pre-wrap" v-text="event.description"></span>
 
-            <hr class="my-2 -mx-3.5"/>
+          <hr class="my-2 -mx-3.5"/>
 
-            <button class="flex items-center py-1 space-x-1 italic text-gray-500 hover:text-gray-700"
-                    @click="shell.openExternal(event.taskUrl)">
-              <img alt="Open task in ClickUp" class="mt-1 w-7" src="@/assets/images/white-rounded-logo.svg">
-              <span>Open in ClickUp</span>
-            </button>
+          <button class="flex items-center py-1 space-x-1 italic text-gray-500 hover:text-gray-700"
+                  @click="shell.openExternal(event.taskUrl)">
+            <img alt="Open task in ClickUp" class="mt-1 w-7" src="@/assets/images/white-rounded-logo.svg">
+            <span>Open in ClickUp</span>
+          </button>
 
-            <button class="flex items-center py-1 space-x-1 italic text-gray-500 hover:text-gray-700"
-                    @click="onTaskDoubleClick(event)">
-              <pencil-icon class="w-4 mx-1.5"/>
-              <span>Open details</span>
-            </button>
+          <button class="flex items-center py-1 space-x-1 italic text-gray-500 hover:text-gray-700"
+                  @click="onTaskDoubleClick(event)">
+            <pencil-icon class="w-4 mx-1.5"/>
+            <span>Open details</span>
+          </button>
 
-          </n-popover>
-          <!-- END | Task context popover -->
-        </div>
+        </n-popover>
+        <!-- END | Task context popover -->
       </div>
 
       <!-- START | Time from/to -->
@@ -130,7 +127,6 @@
         {{ event.end.formatTime('HH:mm') }}
       </div>
       <!-- END | Time from/to -->
-
     </template>
     <!-- END | Custom Event template -->
 
@@ -330,18 +326,43 @@ export default {
     };
   },
 
+  data() {
+    return {
+      colorPalette: new Map(),
+      colorClasses: ''
+    }
+  },
+
+  async created() {
+    this.colorPalette = await this.getColorPalette();
+    this.colorClasses = this.colorPaletteToStyleClasses();
+    this.$nextTick(() => {
+      this.addStyleToHead(this.colorClasses)
+    })
+  },
+
+  watch: {
+    colorPalette: {
+      handler() {
+        this.colorClasses = this.colorPaletteToStyleClasses()
+        this.$nextTick(() => {
+          this.addStyleToHead(this.colorClasses)
+        })
+      },
+      deep: true
+    }
+  },
+
   mounted() {
     // Register background process listeners
     this.fetchMentionableUsers();
 
     // Load background image if set
     this.refreshBackgroundImage();
-  },
 
-  data() {
-    return {
-      colorPalette: this.getColorPalette(),
-    }
+    const style = document.createElement('style')
+    style.textContent = this.colorClasses
+    document.head.append(style)
   },
 
   computed: {
@@ -368,11 +389,6 @@ export default {
     | FETCH TIME TRACKING ENTRIES
     |--------------------------------------------------------------------------
     */
-
-    // TODO: Notes for color palette
-    // In the docs for the vue-cal component, it can change the color of the event based on a given class, and css that
-    // corresponds to that class. First try adding the space id as a class, and manually adding the css to the component
-    // to see if that works. If it does, then we can try to dynamically add the css to the component.
 
     async fetchEvents({startDate, endDate}) {
       const customColorEnabled = store.get("settings.custom_color_enabled")
@@ -438,7 +454,6 @@ export default {
     },
 
     pushTimeTrackingEntry(event) {
-      console.log("Received event from form:" + event)
       this.selectedTask = eventFactory.updateFromRemote(this.selectedTask, event);
       this.events.push(this.selectedTask);
       this.closeCreationModal();
@@ -629,13 +644,39 @@ export default {
       return event
     },
 
-    getColorPalette: async function () {
-      if (this.colorPalette.size > 0) {
-        return this.colorPalette
-      }
-      this.colorPalette = await this.getColorsBySpace()
-      return this.colorPalette
+    updateColorPalette: function (colorPalette) {
+      this.colorPalette = colorPalette
     },
+
+    getColorPalette: async function () {
+      return await clickupService.getColorsBySpace()
+    },
+
+    colorPaletteToStyleClasses: function (){
+      let classes = '';
+      // TODO: For dark space colors we need to change the color of the text to white
+      // try to detect if the color is dark or light
+      // https://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color
+      // hex function 105 votes
+      this.colorPalette.forEach((value, key) => {
+        classes += `
+          .space-${key} {
+            background-color: ${value}B5;
+
+          }
+          .space-${key}::before {
+            background-color: ${value};
+          }
+        `
+      })
+      return classes
+    },
+
+    addStyleToHead: function (style) {
+      const styleElement = document.createElement('style')
+      styleElement.textContent = style
+      document.head.append(styleElement)
+    }
   }
 };
 </script>

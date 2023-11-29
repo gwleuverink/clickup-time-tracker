@@ -1,8 +1,8 @@
 @import '~vue-cal/dist/vuecal.css';
 
 :root {
-    --event-background-color: var(--default-event-color);
-    --event-border-color: adjust-color(--event-background-color, $alpha: -0.3);
+    --event-background-color: #ADD8E67F;
+    --event-border-color: #ADD8E64D;
 }
 
 .vuecal {

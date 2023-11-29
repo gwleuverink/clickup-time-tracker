@@ -42,6 +42,11 @@ export default {
     }),
 
     updateFromRemote: (original, remote) => {
+        console.log("Eventfactory.updateFromRemote")
+        console.log(original)
+        console.log(remote)
+        // TODO: This is the function used to after a new entry is created, it does not have class attributes
+        // Find the space id from the remote task and add it to the entry? but how?
         return Object.assign(original, {
             entryId: remote.id,
             taskId: remote.task.id,
