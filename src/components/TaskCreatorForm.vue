@@ -247,10 +247,6 @@ function renderSwitcherIcon(option) {
   return h(NIcon, { size: '15px', id: 'cascader-icon', color: color }, { default: () => h(icon) })
 }
 
-function onUpdateIndeterminateKeys(keys) {
-  console.log(keys);
-}
-
 /*
 |--------------------------------------------------------------------------
 | MAIN
@@ -298,8 +294,6 @@ onMounted(async () => {
               :key-field="'value'"
               :disabled-field="'disable'"
               :render-prefix="renderSwitcherIcon"
-
-              @update:indeterminate-keys="onUpdateIndeterminateKeys"
           />
 
         </n-config-provider>
