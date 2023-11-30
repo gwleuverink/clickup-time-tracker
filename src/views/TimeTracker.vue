@@ -333,36 +333,24 @@ export default {
     }
   },
 
-  async created() {
-    this.colorPalette = await this.getColorPalette();
-    this.colorClasses = this.colorPaletteToStyleClasses();
-    this.$nextTick(() => {
-      this.addStyleToHead(this.colorClasses)
-    })
-  },
-
-  watch: {
-    colorPalette: {
-      handler() {
-        this.colorClasses = this.colorPaletteToStyleClasses()
-        this.$nextTick(() => {
-          this.addStyleToHead(this.colorClasses)
-        })
-      },
-      deep: true
-    }
-  },
-
-  mounted() {
+  async mounted() {
     // Register background process listeners
     this.fetchMentionableUsers();
 
     // Load background image if set
     this.refreshBackgroundImage();
 
-    const style = document.createElement('style')
-    style.textContent = this.colorClasses
-    document.head.append(style)
+    if (!store.get('settings.custom_color_enabled')) {
+      this.colorPalette = await this.getColorPalette();
+      this.colorClasses = this.colorPaletteToStyleClasses();
+      this.$nextTick(() => {
+        this.addStyleToHead(this.colorClasses)
+      })
+    } else {
+      this.$nextTick(() => {
+        this.removeStyleFromHead()
+      })
+    }
   },
 
   computed: {
@@ -392,7 +380,7 @@ export default {
 
     async fetchEvents({startDate, endDate}) {
       const customColorEnabled = store.get("settings.custom_color_enabled")
-
+      console.log(startDate, endDate)
       clickupService
           .getTimeTrackingRange(startDate, endDate)
           .then(entries => {
@@ -416,6 +404,7 @@ export default {
     |--------------------------------------------------------------------------
     */
     onTaskCreate(event, deleteCallable) {
+      this.colorEvent(event)
       // Workaround: Open modal when mouse is released
       // Register mouseup listener that deregisters itself
       const openModalWhenMouseReleased = () => {
@@ -462,7 +451,6 @@ export default {
     },
 
     cancelTaskCreation() {
-      console.log("Canceling task creation")
       this.closeCreationModal();
       this.deleteCallable();
     },
@@ -562,7 +550,7 @@ export default {
             // TODO: Reset event to what it was before failed update
           });
 
-      originalEvent; /*  */
+      originalEvent;
     },
 
     /*
@@ -627,24 +615,9 @@ export default {
     },
 
     colorEvent: function (event) {
-      const customColorEnabled = store.get("settings.custom_color_enabled")
-
-      if (!customColorEnabled) {
-        return event
-      }
-
       const customColor = store.get("settings.color")
-      if (!customColor) {
-        return event
-      }
-
-      // color by custom color
       document.documentElement.style.setProperty('--event-background-color', customColor);
       return event
-    },
-
-    updateColorPalette: function (colorPalette) {
-      this.colorPalette = colorPalette
     },
 
     getColorPalette: async function () {
@@ -653,15 +626,10 @@ export default {
 
     colorPaletteToStyleClasses: function (){
       let classes = '';
-      // TODO: For dark space colors we need to change the color of the text to white
-      // try to detect if the color is dark or light
-      // https://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color
-      // hex function 105 votes
       this.colorPalette.forEach((value, key) => {
         classes += `
           .space-${key} {
             background-color: ${value}59;
-
           }
           .space-${key}::before {
             background-color: ${value};
@@ -674,7 +642,15 @@ export default {
     addStyleToHead: function (style) {
       const styleElement = document.createElement('style')
       styleElement.textContent = style
+      styleElement.id = 'space-colors'
       document.head.append(styleElement)
+    },
+
+    removeStyleFromHead: function () {
+      const styleElement = document.getElementById('space-colors')
+      if (styleElement) {
+        document.head.removeChild(styleElement)
+      }
     }
   }
 };

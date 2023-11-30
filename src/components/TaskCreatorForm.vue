@@ -92,10 +92,6 @@ async function getClickUpHierarchy() {
 
   }).then((hierarchy) => {
     clickUpItems.value = hierarchy
-    onSuccess({
-      title: "Clickup hierarchy refreshed",
-      content: "The Clickup hierarchy has been refreshed in the background",
-    })
     loadingClickup.value = false;
   })
 }
