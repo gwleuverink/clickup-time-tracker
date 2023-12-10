@@ -220,6 +220,8 @@ export default {
           {
             required: true,
             validator(rule, value) {
+                console.log(value);
+                console.log(model.value.day_end)
                 if (Number(value) >= Number(model.value.day_end)) {
                     return new Error("Must be less than the end of day");
                 }

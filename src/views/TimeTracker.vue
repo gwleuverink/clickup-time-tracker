@@ -371,6 +371,9 @@ export default {
           if(! store.get('settings.day_end')) return 22 * 60
 
           const dateTime = new Date(store.get('settings.day_end'))
+          if (dateTime.getHours() === 0) {
+              return 24 * 60
+          }
 
           return dateTime.getHours() * 60;
       },
