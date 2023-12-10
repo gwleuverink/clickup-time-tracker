@@ -12,7 +12,7 @@
       <n-form-item label="ClickUp Team ID" path="clickup_team_id">
         <n-input v-model:value="model.clickup_team_id" clearable />
       </n-form-item>
-
+      <!-- TODO: replace with a tree select with a clock icon -->
       <div class="flex space-x-4">
         <n-form-item label="Day starts at" path="day_start" class="flex-grow">
             <n-time-picker
