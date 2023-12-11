@@ -175,14 +175,14 @@
 <script>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { NForm, NFormItem, NInput, NSelect, NSwitch, NButton, NPopconfirm, useNotification } from "naive-ui";
+import { NForm, NFormItem, NInput, NSelect, NSwitch, NButton, NPopconfirm, NColorPicker, useNotification } from "naive-ui";
 import { BackspaceIcon, ClockIcon } from "@heroicons/vue/24/outline";
 import clickupService from '@/clickup-service';
 import store from "@/store";
 import cache from "@/cache";
 
 export default {
-  components: { NForm, NFormItem, NInput, NSelect, NSwitch, NButton, NPopconfirm, BackspaceIcon, ClockIcon },
+  components: { NForm, NFormItem, NInput, NSelect, NSwitch, NButton, NPopconfirm, BackspaceIcon, ClockIcon, NColorPicker},
   
   setup() {
     const form = ref(null);
@@ -191,7 +191,6 @@ export default {
     const model = ref(store.get("settings") || {});
     const hours = ref(Array.from(Array(25).keys()).map((i) => ({ label: `${i}:00`, value: i })));
     let custom_color = ref(false);
-
 
     function mustFlushCachesAfterPersist() {
       // Either the CU acces token or team id has changed

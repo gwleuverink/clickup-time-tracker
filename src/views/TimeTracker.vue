@@ -373,7 +373,10 @@ export default {
     */
 
     async fetchEvents({startDate, endDate}) {
-      const customColorEnabled = store.get("settings.custom_color_enabled")
+      let customColorEnabled = false
+      if (store.get("settings.custom_color_enabled")) {
+        customColorEnabled = store.get("settings.custom_color_enabled")
+      }
       console.log(startDate, endDate)
       clickupService
           .getTimeTrackingRange(startDate, endDate)
