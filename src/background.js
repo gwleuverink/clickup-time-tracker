@@ -18,33 +18,25 @@ import path from 'path';
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
+// Fetch ClickUp tasks from cache when the app starts up
+ipcMain.on('get-clickup-cards', event => {
+    clickupService.getCachedTasks()
+        .then(tasks => event.reply('set-clickup-cards', tasks))
+        .catch(err => event.reply('fetch-clickup-cards-error', err))
+})
+
+// Clear ClickUp tasks cache & fetch fresh list
+ipcMain.on('refresh-clickup-cards', event => {
+    clickupService.clearCachedTasks()
+    clickupService.getCachedTasks()
+        .then(tasks => event.reply('set-clickup-cards', tasks))
+        .catch(err => event.reply('fetch-clickup-cards-error', err))
+})
+
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
     { scheme: 'app', privileges: { secure: true, standard: true } }
 ])
-
-
-// Fetch ClickUp hierarchy when the app starts up
-ipcMain.on('get-clickup-hierarchy', (event) => {
-    clickupService.getCachedHierarchy()
-        .then(hierarchy => event.reply('set-clickup-hierarchy', hierarchy))
-        .catch(err => event.reply('fetch-clickup-hierarchy-error', err))
-})
-
-// Clear ClickUp hierarchy cache & fetch fresh hierarchy
-ipcMain.on('refresh-clickup-hierarchy', (event) => {
-    clickupService.clearCachedHierarchy()
-    clickupService.getHierarchy()
-        .then(hierarchy => event.reply('set-clickup-hierarchy', hierarchy))
-        .catch(err => event.reply('fetch-clickup-hierarchy-error', err))
-})
-
-//Fetch color palette from ClickUp
-ipcMain.on('get-clickup-colors', (event) => {
-    clickupService.getColorsBySpace()
-        .then(colors => event.reply('set-clickup-colors', colors))
-        .catch(err => event.reply('fetch-clickup-colors-error', err))
-})
 
 async function createWindow() {
     // Create the browser window.
