@@ -356,11 +356,13 @@ export default {
   computed: {
       dayStart() {
           if(! store.get('settings.day_start')) return 7 * 60
+          if (store.get('settings.day_start') > 24) return 7 * 60
           return store.get('settings.day_start') * 60;
       },
 
       dayEnd() {
           if(! store.get('settings.day_end')) return 22 * 60
+          if(store.get('settings.day_end') > 24) return 22 * 60
           return store.get('settings.day_end') * 60;
       },
   },
