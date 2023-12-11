@@ -354,21 +354,15 @@ export default {
   },
 
   computed: {
-    dayStart() {
-      if (!store.get('settings.day_start')) return 7 * 60
+      dayStart() {
+          if(! store.get('settings.day_start')) return 7 * 60
+          return store.get('settings.day_start') * 60;
+      },
 
-      const dateTime = new Date(store.get('settings.day_start'))
-
-      return dateTime.getHours() * 60;
-    },
-
-    dayEnd() {
-      if (!store.get('settings.day_end')) return 22 * 60
-
-      const dateTime = new Date(store.get('settings.day_end'))
-
-      return dateTime.getHours() * 60;
-    },
+      dayEnd() {
+          if(! store.get('settings.day_end')) return 22 * 60
+          return store.get('settings.day_end') * 60;
+      },
   },
 
   methods: {
