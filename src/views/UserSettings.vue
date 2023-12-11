@@ -12,24 +12,27 @@
       <n-form-item label="ClickUp Team ID" path="clickup_team_id">
         <n-input v-model:value="model.clickup_team_id" clearable />
       </n-form-item>
-      <!-- TODO: replace with a tree select with a clock icon -->
       <div class="flex space-x-4">
         <n-form-item label="Day starts at" path="day_start" class="flex-grow">
-            <n-time-picker
+            <n-select
                 v-model:value="model.day_start"
-                default-formatted-value="8:00"
-                format="H:00"
-                :actions="['confirm']" class="w-full"
-            />
+                :options="hours"
+            >
+                <template #arrow>
+                    <ClockIcon class="w-4" />
+                </template>
+            </n-select>
         </n-form-item>
 
         <n-form-item label="Day ends at" path="day_end" class="flex-grow">
-            <n-time-picker
+            <n-select
                 v-model:value="model.day_end"
-                default-formatted-value="18:00"
-                format="H:00"
-                :actions="['confirm']" class="w-full"
-            />
+                :options="hours"
+            >
+                <template #arrow>
+                    <ClockIcon class="w-4" />
+                </template>
+            </n-select>
         </n-form-item>
       </div>
 
@@ -138,20 +141,21 @@
 <script>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { NForm, NFormItem, NInput, NTimePicker, NSwitch, NButton, NPopconfirm, useNotification } from "naive-ui";
-import { BackspaceIcon } from "@heroicons/vue/24/outline";
+import { NForm, NFormItem, NInput, NSelect, NSwitch, NButton, NPopconfirm, useNotification } from "naive-ui";
+import { BackspaceIcon, ClockIcon } from "@heroicons/vue/24/outline";
 import clickupService from '@/clickup-service';
 import store from "@/store";
 import cache from "@/cache";
 
 export default {
-  components: { NForm, NFormItem, NInput, NTimePicker, NSwitch, NButton, NPopconfirm, BackspaceIcon },
+  components: { NForm, NFormItem, NInput, NSelect, NSwitch, NButton, NPopconfirm, BackspaceIcon, ClockIcon },
 
   setup() {
     const form = ref(null);
     const router = useRouter();
     const notification = useNotification();
     const model = ref(store.get("settings") || {});
+    const hours = ref(Array.from(Array(25).keys()).map((i) => ({ label: `${i}:00`, value: i })));
 
     function mustFlushCachesAfterPersist() {
         // Either the CU acces token or team id has changed
@@ -163,6 +167,7 @@ export default {
       form,
 
       model,
+      hours,
 
       persist() {
         form.value

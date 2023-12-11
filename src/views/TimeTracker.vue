@@ -361,21 +361,12 @@ export default {
   computed: {
       dayStart() {
           if(! store.get('settings.day_start')) return 7 * 60
-
-          const dateTime = new Date(store.get('settings.day_start'))
-
-          return dateTime.getHours() * 60;
+          return store.get('settings.day_start') * 60;
       },
 
       dayEnd() {
           if(! store.get('settings.day_end')) return 22 * 60
-
-          const dateTime = new Date(store.get('settings.day_end'))
-          if (dateTime.getHours() === 0) {
-              return 24 * 60
-          }
-
-          return dateTime.getHours() * 60;
+          return store.get('settings.day_end') * 60;
       },
   },
 
