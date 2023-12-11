@@ -1,5 +1,10 @@
 @import '~vue-cal/dist/vuecal.css';
 
+:root {
+    --event-background-color: #ADD8E67F;
+    --event-border-color: #ADD8E64D;
+}
+
 .vuecal {
     $block: &;
 
@@ -82,8 +87,9 @@
         border-top: 2px solid #fff;
         border-radius: 0 6px 6px 0;
 
-        background-color: rgba(173, 216, 230, 0.5);
-        border-bottom: 0.5px solid rgba(173, 216, 230, 0.8);
+        // Event background color
+        background-color: var(--event-background-color);
+        border-bottom: 0.5px solid var(--event-border-color);
 
         transition: transform 0.08s;
 
@@ -114,7 +120,7 @@
             left: 0;
             width: 6px;
             height: 100%;
-            background-color: rgba(173, 216, 230, 0.8);
+            background-color: var(--event-background-color);
         }
 
         &:hover {
@@ -129,6 +135,8 @@
         }
 
         &.not-editable {
+            // Override the background color for this specific event, set dynamically?
+            // Non-editable events are red? How about a faded version of the event color? Like it is disabled?
             background-color: rgba(240, 68, 29, 0.6);
             color: white;
 
