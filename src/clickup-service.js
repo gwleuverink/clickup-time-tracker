@@ -215,19 +215,46 @@ export default {
         // Link subtasks to their parent
         // It would be nice if the API would do this for us, but it doesn't. Nested list? Something? Anything?
         // Maybe it could be done faster. I would like to see it, if someone can do it better. out of curiosity.
-        let subtasks = results
-            .filter(task => task.parent != null)
+        let tasks = []
 
-        let tasks = results
-            .filter(task => task.parent == null)
-            .map(task => {
-                let item = factory.createTask(task)
-                subtasks
-                    .filter(subtask => subtask.parent == task.id)
-                    .map(subtask => factory.createSubtask(subtask))
-                    .forEach(subtask => item.addChild(subtask))
-                return item
-            })
+
+        while (results.length > 0) {
+            let task = results.pop()
+            if (task.parent != null) {
+                let addChildInChildren = function (children, task) {
+                    if (children) {
+                        if (children.some(child => child.id == task.parent)) {
+                            children.find(child => child.id == task.parent).addChild(factory.createSubtask(task))
+                            children.sort(function (a, b) {
+                                let textA = a.name.toUpperCase();
+                                let textB = b.name.toUpperCase();
+                                return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+                            });
+                            return true
+                        } else {
+                            return children.some(child => addChildInChildren(child.children, task))
+                        }
+                    } else {
+                        return false
+                    }
+                }
+                if (addChildInChildren(tasks, task) === false) {
+                    results.unshift(task)
+                }
+            } else if (task.parent == null) {
+                tasks.push(factory.createTask(task))
+            } else {
+                results.unshift(task)
+            }
+
+        }
+        tasks.sort(function (a, b) {
+            let textA = a.name.toUpperCase();
+            let textB = b.name.toUpperCase();
+            return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+        });
+
+
         return tasks
     },
 
