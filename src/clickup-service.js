@@ -1,9 +1,13 @@
 import request from 'request';
 import store from '@/store';
 import cache from '@/cache';
+import {ClickUpItem, ClickUpType} from "@/model/ClickUpModels";
+//import {list} from "postcss";
 
 const BASE_URL = 'https://api.clickup.com/api/v2';
-const TASKS_CACHE_KEY = 'tasks';
+
+// Cache keys
+const HIERARCHY_CACHE_KEY = 'hierarchy';
 const USERS_CACHE_KEY = 'users';
 
 function teamRootUrl() {
@@ -15,7 +19,7 @@ export default {
     /*
      * Retrieves a page of tasks from the ClickUp API
      */
-     tokenValid(token) {
+    tokenValid(token) {
 
         return new Promise((resolve, reject) => {
 
@@ -32,13 +36,12 @@ export default {
 
                 const user = JSON.parse(response.body).user
 
-                if (! user) reject('Invalid response')
+                if (!user) reject('Invalid response')
 
                 resolve(true)
             });
         })
     },
-
 
 
     /*
@@ -54,7 +57,7 @@ export default {
             }
 
             // Only set assignee when argument was given
-            if(userId) {
+            if (userId) {
                 params.assignee = userId
             }
 
@@ -71,7 +74,7 @@ export default {
                 if (error) return reject(error)
                 const body = JSON.parse(response.body)
 
-                if(body.err) { // This friggin api... return a decent response code for fuck sake
+                if (body.err) { // This friggin api... return a decent response code for fuck sake
                     reject(body.err)
                 }
                 resolve(body.data || [])
@@ -79,23 +82,49 @@ export default {
         })
     },
 
-    /*
-     * Retrieves a page of tasks from the ClickUp API
-     */
-    getTasksPage(page) {
+    async getHierarchy() {
+        console.log("Getting hierarchy")
+        let options = await this.getSpaces()
+        await Promise.all( options.map(async (option) => {
+            const lists = await this.getLists(option.id);
+            await Promise.all(lists.map(async (list) => {
+                await this.getTasks(list.id).then(tasks => {
+                    list.addChildren(tasks)
+                });
+                option.addChild(list);
+            }))
+        }));
+        console.log("Hierarchy built")
+        return options
+    },
 
-        page = page || 0
+    async getCachedHierarchy(){
+        const cached = cache.get(HIERARCHY_CACHE_KEY)
 
-        return new Promise((resolve, reject) => {
+        if (cached) {
+            console.log("Got hierarchy from cache")
+            return cached
+        }
 
+        let hierarchy = await this.getHierarchy()
+        return cache.put(
+            HIERARCHY_CACHE_KEY,
+            hierarchy,
+            3600 * 6 // plus 6 hours
+        )
+    },
+
+    clearCachedHierarchy() {
+        cache.clear(HIERARCHY_CACHE_KEY)
+    },
+
+    async getSpaces() {
+
+        let response = await new Promise((resolve, reject) => {
             request({
                 method: 'GET',
                 mode: 'no-cors',
-                url: `${teamRootUrl()}/task?` + new URLSearchParams({
-                    page: page,
-                    archived: false,
-                    include_closed: false,
-                }),
+                url: `${BASE_URL}/team/${store.get('settings.clickup_team_id')}/space?archived=false'`,
 
                 headers: {
                     'Authorization': store.get('settings.clickup_access_token'),
@@ -103,61 +132,116 @@ export default {
                 }
             }, (error, response) => {
                 if (error) return reject(error)
+                resolve(JSON.parse(response.body).spaces || [])
+            });
+        })
 
+        return response.map(space => new ClickUpItem(space.id, space.name, ClickUpType.SPACE))
+    },
+
+    async getLists(spaceId) {
+        const folderlessLists = await this.getFolderlessLists(spaceId);
+
+        let folderedLists = [];
+        const folders = await this.getFolders(spaceId);
+
+        await Promise.all(folders.map(async (folder) => {
+            folderedLists = folderedLists.concat(await this.getFolderedLists(folder.id));
+        }))
+
+        let list = folderlessLists.concat(folderedLists.flat());
+        return list.map(list => new ClickUpItem(list.id, list.name, ClickUpType.LIST))
+    },
+
+    async getTasks(listId) {
+
+        let results = await new Promise((resolve, reject) => {
+
+            request({
+                method: 'GET',
+                mode: 'no-cors',
+                url: `${BASE_URL}/list/${listId}/task?archived=false&include_markdown_description=false&subtasks=true&include_closed=false`,
+                headers: {
+                    'Authorization': store.get('settings.clickup_access_token'),
+                    'Content-Type': 'application/json'
+                }
+            }, (error, response) => {
+                if (error) return reject(error)
                 resolve(JSON.parse(response.body).tasks || [])
+            });
+        })
+
+
+
+        let subtasks = results
+            .filter(task => task.parent != null)
+
+        let tasks = results
+            .filter(task => task.parent == null)
+            .map(task => {
+                let item = new ClickUpItem(task.id, task.name, ClickUpType.TASK)
+                subtasks
+                    .filter(subtask => subtask.parent == task.id)
+                    .map(subtask => new ClickUpItem(subtask.id, subtask.name, ClickUpType.SUBTASK))
+                    .forEach(subtask => item.addChild(subtask))
+                return item
+            })
+        return tasks
+    },
+
+    async getFolders(spaceId) {
+        return new Promise((resolve, reject) => {
+
+            request({
+                method: 'GET',
+                url: `${BASE_URL}/space/${spaceId}/folder?archived=false`,
+                headers: {
+                    'Authorization': store.get('settings.clickup_access_token'),
+                    'Content-Type': 'application/json'
+                }
+            }, (error, response) => {
+                if (error) return reject(error)
+                resolve(JSON.parse(response.body).folders || [])
             });
         })
     },
 
-    /*
-    * Get all tasks. Iterated over a paginated list in order to fetch them all.
-    * This might take a while
-    */
-    async getTasks() {
+    async getFolderedLists(FolderId) {
+        return new Promise((resolve, reject) => {
 
-        let page = 0
-        let results = []
-
-        do {
-            try {
-                results = await results.concat(await this.getTasksPage(page))
-                page++
-            } catch(e) {
-                console.log(`Error retrieving tasks page ${page}. Retrying...`, e)
-            }
-        } while (results.length / page === 100)
-
-        return results
+            request({
+                method: 'GET',
+                url: `${BASE_URL}/folder/${FolderId}/list?archived=false`,
+                headers: {
+                    'Authorization': store.get('settings.clickup_access_token'),
+                    'Content-Type': 'application/json'
+                }
+            }, (error, response) => {
+                if (error) return reject(error)
+                resolve(JSON.parse(response.body).lists || [])
+            });
+        })
     },
 
-    async getCachedTasks() {
+    async getFolderlessLists(spaceId) {
+        return new Promise((resolve, reject) => {
 
-        const cached = cache.get(TASKS_CACHE_KEY)
+            request({
+                method: 'GET',
+                mode: 'no-cors',
+                url: `${BASE_URL}/space/${spaceId}/list?archived=false`,
 
-        if (cached) {
-            return cached
-        }
-
-        // Fetch a fresh tasklist
-        let tasks = await this.getTasks()
-
-        // Only keep the data we care about
-        tasks = tasks.map(task => ({
-            id: task.id,
-            name: `${task.name}`,
-            folder: `${task.folder.name}`
-        }))
-
-        return cache.put(
-            TASKS_CACHE_KEY,
-            tasks,
-            3600 * 6 // plus 6 hours
-        )
+                headers: {
+                    'Authorization': store.get('settings.clickup_access_token'),
+                    'Content-Type': 'application/json'
+                }
+            }, (error, response) => {
+                if (error) return reject(error)
+                resolve(JSON.parse(response.body).lists || [])
+            });
+        })
     },
 
-    clearCachedTasks() {
-        cache.clear(TASKS_CACHE_KEY)
-    },
 
     /*
      * Create a new time tracking entry
@@ -258,7 +342,7 @@ export default {
                         return a.username < b.username
                             ? -1
                             : 1
-                      })
+                    })
 
                 resolve(users)
             })
