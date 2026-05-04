@@ -1,3 +1,17 @@
+> [!IMPORTANT]
+> This project is no longer actively maintained. I'm grateful that it has provided value to so many people over the years. Thank you all for your kind words and feedback! 🙏
+> Development continues in the following community forks (at the time of writing):
+> 
+> - https://github.com/OwnWeb/clickup-time-tracker
+> - https://github.com/MichielSaey/clickup-time-tracker
+>
+>Please direct issues, PRs, and feature requests to one of the forks above.
+
+<br />
+<br />
+<br />
+
+
 <p align="center"><a href="https://github.com/gwleuverink/clickup-time-tracker/releases" target="_blank"><img src="./build/icons/256x256.png" width="120" style="filter: drop-shadow(0px 6px 6px #e2e2e2)"></a></p>
 
 <p align="center">A tool for tracking time on ClickUp tasks</p>
