@@ -424,7 +424,8 @@ export default {
         value: card.id,
         name: `${card.name}`,
         folder: `${card.folder}`,
-        label: `${card.name} ${card.folder}` // Native UI uses this for fuzzy searching
+        space: `${card.space}`,
+        label: `${card.name} ${card.folder} ${card.space}` // Native UI uses this for fuzzy searching
       }));
 
       this.loadingClickupCards = false;
@@ -525,7 +526,7 @@ export default {
     renderTaskOptionLabel(option) {
         return h('div', { class: 'my-1' }, [
             h('div', option.name),
-            h('div', { class: 'text-xs text-gray-500' }, option.folder)
+            h('div', { class: 'text-xs text-gray-500' }, `${option.folder} / ${option.space}`)
         ])
     },
 
